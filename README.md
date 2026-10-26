@@ -1,0 +1,115 @@
+# Karma
+
+> See your karma. Grow every day.
+
+Karma is a mobile-first PWA for spiritual self-reflection. You tell it about your day (voice or text, in Gujarati, Hindi or English), an AI identifies your actions as **Punya** (merit) or **Paap** (a growth area), scores them with a published rubric, and shows the result as two filling **ghadas** plus charts. It draws on the Bhagavad Gita and Jain values.
+
+- **Frontend:** React 18, Vite, TypeScript, Tailwind, React Router, Recharts, Framer Motion, `vite-plugin-pwa`
+- **Backend:** Supabase (Auth, Postgres + RLS, Edge Functions)
+- **AI:** provider-switchable Edge Function (`gemini` | `groq` | `anthropic` | `openai`); the key never reaches the browser
+- **Panchang:** `astronomy-engine`, Lahiri ayanamsa, amanta Gujarati months, computed on the device
+- **Hosting:** Vercel. **CI:** GitHub Actions. **Tests:** Vitest + React Testing Library + Playwright
+
+## Try it in 30 seconds (no backend)
+
+```bash
+npm install
+npm run dev
+```
+
+With no Supabase variables set, Karma runs in **demo mode**: data stays in `localStorage`, 30 days of sample history are generated, and a keyword-based mock analyser stands in for the AI. Click **Try the demo** on the landing page.
+
+## Scripts
+
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server on :5173 |
+| `npm run build` | Typecheck + production build into `dist/` |
+| `npm test` | Vitest unit and component tests |
+| `npm run e2e` | Playwright, 3 key flows against the built app (demo mode) |
+| `npm run lint` / `npm run typecheck` | ESLint / `tsc` |
+| `npm run sync:shared` | Regenerates `supabase/functions/_shared/teachings.index.json` from `src/content/teachings.json` (a unit test fails if they drift) |
+| `npm run supabase:migrate` | `supabase db push` |
+| `npm run supabase:functions:deploy` | Syncs shared data, then deploys `analyze-day` and `delete-account` |
+| `npm run seed` | Local/dev only: demo user + 30 days of data (refuses non-local URLs) |
+
+## Deploy, step by step
+
+### 1. Create the Supabase project
+1. Go to <https://supabase.com/dashboard> and create a project (free tier). Choose a region near your users (for India, Mumbai `ap-south-1`).
+2. In **Project Settings → API** copy the **Project URL** and the **anon public** key. These are the only two values the browser needs.
+3. Install the CLI (`npm i -g supabase` or `scoop install supabase`) and log in yourself: `supabase login`.
+4. Link the project: `supabase link --project-ref YOUR-PROJECT-REF`.
+
+### 2. Run migrations
+```bash
+npm run supabase:migrate
+```
+This applies `supabase/migrations/20261026000000_init.sql` (tables, indexes, the `daily_summary` view, Row Level Security policies, and the trigger that creates a profile when someone signs up). Every table has RLS on, scoped to `auth.uid()`.
+
+### 3. Set Edge Function secrets
+Create `supabase/.env.secrets` (it is git-ignored; see `.env.example` for the names):
+```
+AI_PROVIDER=gemini
+AI_API_KEY=your-provider-key
+AI_MODEL=
+DAILY_ANALYSIS_LIMIT=10
+ALLOWED_ORIGIN=https://your-domain
+```
+Then:
+```bash
+supabase secrets set --env-file supabase/.env.secrets
+npm run supabase:functions:deploy
+```
+Get a free Gemini key at <https://aistudio.google.com/apikey>. To switch provider, change `AI_PROVIDER`, `AI_API_KEY` and (optionally) `AI_MODEL` and redeploy secrets; no code change.
+
+### 4. Enable Google sign-in
+1. In [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services → OAuth consent screen**: set up an External app named Karma, add your support email.
+2. **Credentials → Create credentials → OAuth client ID → Web application**.
+   - **Authorised JavaScript origins:** `https://your-domain` and `http://localhost:5173`
+   - **Authorised redirect URIs:** `https://YOUR-PROJECT-REF.supabase.co/auth/v1/callback`
+3. Copy the Client ID and Client secret into Supabase **Authentication → Providers → Google**, and enable it.
+4. In Supabase **Authentication → URL Configuration** set **Site URL** to `https://your-domain` and add these **Redirect URLs**: `https://your-domain`, `https://your-domain/auth?mode=reset`, `http://localhost:5173`.
+5. Under **Authentication → Providers → Email** keep **Confirm email** on (email verification) and set minimum password length to 8.
+
+### 5. Deploy the frontend to Vercel
+1. Log in yourself: `npx vercel login`, then `npx vercel link` in this folder (or import the GitHub repo at <https://vercel.com/new>).
+2. Add environment variables (Production and Preview): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (and optionally `VITE_GHADA_DAILY_CAP`, `VITE_DAILY_ANALYSIS_LIMIT`).
+3. Deploy: `npx vercel --prod`. `vercel.json` already contains the SPA rewrite and security headers (CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy).
+4. **Custom domain:** Vercel project → **Settings → Domains → Add**, then create the DNS record Vercel shows (A/CNAME). Update `ALLOWED_ORIGIN`, the Supabase Site URL/redirects and the Google OAuth origins to the new domain.
+
+### 6. Test checklist
+- [ ] Landing page loads; language switch works (ગુજરાતી / हिंदी / English)
+- [ ] Sign up with email → verification mail arrives → link signs you in → onboarding appears
+- [ ] Google sign-in works (after step 4)
+- [ ] Onboarding saves profile; consent is required to finish
+- [ ] Home shows greeting, today's date and the Gujarati tithi line
+- [ ] Talk: typing a day and pressing **Analyse** returns action cards and the ghadas animate
+- [ ] A self-harm sentence returns the supportive message with **14416**, with nothing scored
+- [ ] 11th analysis in a day shows the friendly limit message (default limit 10)
+- [ ] "Keep my words" off → entry text is gone after analysis, actions remain
+- [ ] **Insights** and **Pratikraman** show data; Pratikraman saves a reflection and shows the completion screen
+- [ ] **Profile → Export** downloads JSON and CSV
+- [ ] **Profile → Delete** removes the account (user disappears from Supabase **Authentication → Users**, rows gone)
+- [ ] Two different accounts cannot see each other's data (RLS)
+- [ ] Install as an app on a phone; mic permission prompt appears only when you tap the mic
+- [ ] Lighthouse mobile ≥ 90 on Performance, Accessibility, Best Practices and SEO
+
+## How scoring works
+
+- Rubric: `supabase/functions/_shared/rubric.v1.json` (versioned; the version is stored on every entry). 11 categories, weights 1 (small), 2-3 (medium), 4-5 (major). Intention matters; neutral routine is not scored.
+- The Edge Function calls the model at **temperature 0**, validates the reply with **zod**, retries once on invalid output, then post-processes deterministically (clamps weights, drops neutral items, applies the Jain `ahimsa_food` +1).
+- The reflection teaching is chosen **only** from `src/content/teachings.json` (47 short paraphrases with sources). If the model returns an unknown id, a deterministic fallback is used. The model can never invent a verse.
+- Crisis language (self-harm, suicide, abuse, intent to harm others) is caught before the provider is called; nothing is scored and Tele-MANAS 14416 is shown.
+- Ghada: full at 50 points per day (configurable), week ×7, month ×30, lifetime on a log scale.
+
+## Privacy
+
+No audio is ever stored (voice is converted to text by your browser's speech service). No analytics, trackers or ads. Users can export (JSON/CSV) and delete everything. Replace the placeholder contact address `privacy@karma.example` in `src/content/legal.ts` and `src/i18n/*.json`, and have the policy reviewed by a lawyer before launch; it is written for India's DPDP Act but is not legal advice.
+
+## Known limitations
+
+- The daily reminder is a browser notification that fires while the app/PWA is open; it is not a server push.
+- Panchang uses a linear Lahiri ayanamsa approximation and does not mark *adhik* months. Tithi is taken at local sunrise for Ahmedabad.
+- Voice depends on the browser's Web Speech API (best in Chrome/Edge/Android); text always works.
+- The `AI_MODEL` defaults are suggestions; set `AI_MODEL` to a model your key can access.

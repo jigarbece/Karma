@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 251 245 230;
+  --card: 255 255 255;
+  --ink: 42 33 24;
+  --muted: 104 90 74;
+  --line: 233 222 196;
+  --saffron: 242 140 40;
+  --saffron-text: 160 68 6;
+  --gold: 201 144 20;
+  --indigo: 40 36 110;
+  --indigo-soft: 232 230 250;
+  --shadow: 120 80 20;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: 18 16 46;
+  --card: 30 27 68;
+  --ink: 246 238 220;
+  --muted: 196 188 170;
+  --line: 56 52 104;
+  --saffron: 245 166 60;
+  --saffron-text: 246 188 72;
+  --gold: 245 185 66;
+  --indigo: 150 146 245;
+  --indigo-soft: 44 40 98;
+  --shadow: 0 0 0;
+  color-scheme: dark;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--ink));
+  font-family: 'Hind Vadodara', 'Noto Sans Devanagari', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+:lang(hi) body,
+html[lang='hi'] body {
+  font-family: 'Noto Sans Devanagari', 'Hind Vadodara', sans-serif;
+}
+
+/* faint lotus / mandala wash behind the app */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220' fill='none' stroke='%23C99014' stroke-width='1.2'><circle cx='110' cy='110' r='20'/><circle cx='110' cy='110' r='60'/><g><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z'/><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z' transform='rotate(45 110 110)'/><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z' transform='rotate(90 110 110)'/><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z' transform='rotate(135 110 110)'/><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z' transform='rotate(180 110 110)'/><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z' transform='rotate(225 110 110)'/><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z' transform='rotate(270 110 110)'/><path d='M110 50c14 18 14 42 0 60c-14-18-14-42 0-60z' transform='rotate(315 110 110)'/></g></svg>");
+  background-size: 220px 220px;
+}
+
+:focus-visible {
+  outline: 3px solid rgb(var(--saffron-text));
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl bg-card p-4 shadow-soft border border-line/70;
+  }
+  .btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 py-2 text-base font-semibold transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-saffron text-[#2A1A08] shadow-soft hover:brightness-105;
+  }
+  .btn-ghost {
+    @apply btn border border-line bg-card text-ink hover:bg-indigo-soft;
+  }
+  .btn-indigo {
+    @apply btn bg-indigo text-card hover:brightness-110;
+  }
+  .field {
+    @apply min-h-[44px] w-full rounded-xl border border-line bg-card px-3 py-2 text-base text-ink placeholder:text-muted/80;
+  }
+  .chip {
+    @apply inline-flex min-h-[44px] items-center gap-2 rounded-full border border-line bg-card px-4 text-base transition;
+  }
+  .chip[aria-pressed='true'],
+  .chip[aria-checked='true'] {
+    @apply border-saffron-text bg-saffron/20 font-semibold;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sr-only-focusable:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

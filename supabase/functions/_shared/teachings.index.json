@@ -1,0 +1,574 @@
+[
+  {
+    "id": "gita-2-47",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "honesty_work",
+      "discipline_health",
+      "seva"
+    ]
+  },
+  {
+    "id": "gita-2-14",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "krodh",
+      "discipline_health"
+    ]
+  },
+  {
+    "id": "gita-2-48",
+    "traditions": [
+      "hindu_gita",
+      "general"
+    ],
+    "categories": [
+      "discipline_health",
+      "honesty_work"
+    ]
+  },
+  {
+    "id": "gita-2-63",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "krodh",
+      "vani"
+    ]
+  },
+  {
+    "id": "gita-3-19",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "family_duty",
+      "honesty_work"
+    ]
+  },
+  {
+    "id": "gita-3-21",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "family_duty",
+      "satya"
+    ]
+  },
+  {
+    "id": "gita-4-39",
+    "traditions": [
+      "hindu_gita",
+      "general"
+    ],
+    "categories": [
+      "discipline_health",
+      "gratitude_bhakti"
+    ]
+  },
+  {
+    "id": "gita-5-10",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "gratitude_bhakti",
+      "honesty_work",
+      "seva"
+    ]
+  },
+  {
+    "id": "gita-5-18",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "jeev_daya",
+      "seva"
+    ]
+  },
+  {
+    "id": "gita-6-5",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "discipline_health",
+      "krodh"
+    ]
+  },
+  {
+    "id": "gita-6-17",
+    "traditions": [
+      "hindu_gita",
+      "general"
+    ],
+    "categories": [
+      "discipline_health"
+    ]
+  },
+  {
+    "id": "gita-6-35",
+    "traditions": [
+      "hindu_gita",
+      "general"
+    ],
+    "categories": [
+      "discipline_health",
+      "krodh"
+    ]
+  },
+  {
+    "id": "gita-9-26",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "gratitude_bhakti",
+      "daan"
+    ]
+  },
+  {
+    "id": "gita-9-27",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "gratitude_bhakti",
+      "seva",
+      "daan"
+    ]
+  },
+  {
+    "id": "gita-12-13",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "jeev_daya",
+      "krodh",
+      "vani"
+    ]
+  },
+  {
+    "id": "gita-12-15",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "vani",
+      "krodh"
+    ]
+  },
+  {
+    "id": "gita-16-1",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "satya",
+      "daan",
+      "ahimsa_food",
+      "jeev_daya"
+    ]
+  },
+  {
+    "id": "gita-16-21",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "krodh",
+      "honesty_work"
+    ]
+  },
+  {
+    "id": "gita-17-15",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "vani",
+      "satya"
+    ]
+  },
+  {
+    "id": "gita-17-20",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "daan",
+      "seva"
+    ]
+  },
+  {
+    "id": "gita-18-5",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "daan",
+      "discipline_health",
+      "seva"
+    ]
+  },
+  {
+    "id": "gita-18-46",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "honesty_work",
+      "seva"
+    ]
+  },
+  {
+    "id": "gita-6-32",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "jeev_daya",
+      "family_duty"
+    ]
+  },
+  {
+    "id": "gita-3-35",
+    "traditions": [
+      "hindu_gita",
+      "general"
+    ],
+    "categories": [
+      "family_duty",
+      "honesty_work",
+      "discipline_health"
+    ]
+  },
+  {
+    "id": "gita-2-40",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "discipline_health",
+      "seva",
+      "gratitude_bhakti"
+    ]
+  },
+  {
+    "id": "jain-ts-5-21",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "seva",
+      "jeev_daya",
+      "family_duty"
+    ]
+  },
+  {
+    "id": "jain-ts-7-11",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "jeev_daya",
+      "vani",
+      "krodh"
+    ]
+  },
+  {
+    "id": "jain-ts-7-1",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "ahimsa_food",
+      "satya",
+      "honesty_work",
+      "discipline_health"
+    ]
+  },
+  {
+    "id": "jain-acharanga-1-4",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "ahimsa_food",
+      "jeev_daya"
+    ]
+  },
+  {
+    "id": "jain-dashavaikalika-1-1",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "ahimsa_food",
+      "discipline_health",
+      "jeev_daya"
+    ]
+  },
+  {
+    "id": "jain-dashavaikalika-8",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "krodh",
+      "satya",
+      "daan"
+    ]
+  },
+  {
+    "id": "jain-uttaradhyayana-29",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "krodh",
+      "vani",
+      "family_duty"
+    ]
+  },
+  {
+    "id": "jain-khamemi",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "krodh",
+      "vani",
+      "jeev_daya",
+      "family_duty"
+    ]
+  },
+  {
+    "id": "jain-aparigraha",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "daan",
+      "discipline_health"
+    ]
+  },
+  {
+    "id": "jain-anekant",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "vani",
+      "satya",
+      "krodh"
+    ]
+  },
+  {
+    "id": "jain-live-let-live",
+    "traditions": [
+      "jain",
+      "general"
+    ],
+    "categories": [
+      "jeev_daya",
+      "ahimsa_food"
+    ]
+  },
+  {
+    "id": "swami-shikshapatri-ahimsa",
+    "traditions": [
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "ahimsa_food",
+      "jeev_daya"
+    ]
+  },
+  {
+    "id": "swami-shikshapatri-daan",
+    "traditions": [
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "daan",
+      "seva"
+    ]
+  },
+  {
+    "id": "swami-shikshapatri-satya",
+    "traditions": [
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "satya",
+      "honesty_work",
+      "vani"
+    ]
+  },
+  {
+    "id": "tulsi-parhit",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "seva",
+      "jeev_daya",
+      "daan"
+    ]
+  },
+  {
+    "id": "kabir-bura",
+    "traditions": [
+      "general",
+      "hindu_gita"
+    ],
+    "categories": [
+      "vani",
+      "krodh",
+      "satya"
+    ]
+  },
+  {
+    "id": "mbh-ahimsa",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "ahimsa_food",
+      "jeev_daya"
+    ]
+  },
+  {
+    "id": "mbh-golden-rule",
+    "traditions": [
+      "hindu_gita",
+      "swaminarayan",
+      "general"
+    ],
+    "categories": [
+      "vani",
+      "family_duty",
+      "satya"
+    ]
+  },
+  {
+    "id": "kural-314",
+    "traditions": [
+      "general",
+      "jain"
+    ],
+    "categories": [
+      "krodh",
+      "vani",
+      "jeev_daya"
+    ]
+  },
+  {
+    "id": "general-gratitude",
+    "traditions": [
+      "general",
+      "hindu_gita",
+      "jain",
+      "swaminarayan"
+    ],
+    "categories": [
+      "gratitude_bhakti",
+      "family_duty"
+    ]
+  },
+  {
+    "id": "general-seva-small",
+    "traditions": [
+      "general",
+      "hindu_gita",
+      "jain",
+      "swaminarayan"
+    ],
+    "categories": [
+      "seva",
+      "daan",
+      "family_duty"
+    ]
+  },
+  {
+    "id": "general-fresh-start",
+    "traditions": [
+      "general",
+      "hindu_gita",
+      "jain",
+      "swaminarayan"
+    ],
+    "categories": [
+      "discipline_health",
+      "krodh",
+      "vani",
+      "satya"
+    ]
+  }
+]
