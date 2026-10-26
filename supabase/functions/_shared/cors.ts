@@ -1,6 +1,12 @@
-// Set ALLOWED_ORIGIN (e.g. https://karma.example.com) in function secrets for production.
+// ALLOWED_ORIGIN accepts one origin or a comma-separated list, e.g.
+//   https://karma.example.com,http://localhost:5173
+// Leave it unset (or "*") only for quick local experiments.
 export function corsHeaders(origin: string | null, allowed: string | undefined): Record<string, string> {
-  const allow = allowed && allowed !== '*' ? allowed : origin ?? '*';
+  const list = (allowed ?? '').split(',').map((s) => s.trim().replace(/\/$/, '')).filter(Boolean);
+  let allow: string;
+  if (list.length === 0 || list.includes('*')) allow = origin ?? '*';
+  else if (origin && list.includes(origin)) allow = origin;
+  else allow = list[0];
   return {
     'access-control-allow-origin': allow,
     'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type',
