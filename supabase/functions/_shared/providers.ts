@@ -4,7 +4,7 @@
 export type Provider = 'gemini' | 'groq' | 'anthropic' | 'openai';
 
 export const DEFAULT_MODELS: Record<Provider, string> = {
-  gemini: 'gemini-2.5-flash',
+  gemini: 'gemini-3.8-flash',
   groq: 'llama-3.3-70b-versatile',
   anthropic: 'claude-haiku-5-5',
   openai: 'gpt-4o-mini',

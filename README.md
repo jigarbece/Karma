@@ -112,4 +112,4 @@ No audio is ever stored (voice is converted to text by your browser's speech ser
 - The daily reminder is a browser notification that fires while the app/PWA is open; it is not a server push.
 - Panchang uses a linear Lahiri ayanamsa approximation and does not mark *adhik* months. Tithi is taken at local sunrise for Ahmedabad.
 - Voice depends on the browser's Web Speech API (best in Chrome/Edge/Android); text always works.
-- The `AI_MODEL` defaults are suggestions; set `AI_MODEL` to a model your key can access.
+- The `AI_MODEL` defaults are suggestions and providers retire models (Google retired `gemini-2.5-flash` for new users); if analysis returns `AI provider error 404 ... model`, run `npx supabase secrets set AI_MODEL=<current model>`.
