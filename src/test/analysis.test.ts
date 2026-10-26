@@ -1,5 +1,5 @@
 import { buildSystemPrompt, detectSafety, extractJson, finalize, parseAnalysis, type TeachingIndexEntry, type UserContext } from '../../supabase/functions/_shared/analysis.ts';
-import { callModel, readAiConfig } from '../../supabase/functions/_shared/providers.ts';
+import { callModel, callWithFallback, readAiConfig, readAiConfigs } from '../../supabase/functions/_shared/providers.ts';
 import rubric from '../../supabase/functions/_shared/rubric.v1.json';
 
 const index: TeachingIndexEntry[] = [
@@ -67,6 +67,52 @@ describe('safety', () => {
   });
   it('does not flag ordinary text', () => {
     expect(detectSafety('I end my day with prayer and fed the dog')).toBe(false);
+  });
+});
+
+describe('provider fallback', () => {
+  const env = { AI_PROVIDER: 'gemini', AI_API_KEY: 'k1', AI_FALLBACK_PROVIDER: 'groq', AI_FALLBACK_API_KEY: 'k2' } as Record<string, string>;
+  it('reads an optional fallback config', () => {
+    const cfgs = readAiConfigs((n) => env[n]);
+    expect(cfgs.map((c) => c.provider)).toEqual(['gemini', 'groq']);
+    expect(readAiConfigs((n) => ({ AI_API_KEY: 'k' } as Record<string, string>)[n])).toHaveLength(1);
+  });
+  it('uses the fallback when the primary keeps failing', async () => {
+    const f = (async (url: string) =>
+      String(url).includes('googleapis')
+        ? new Response('overloaded', { status: 503 })
+        : new Response(JSON.stringify({ choices: [{ message: { content: 'FROM_GROQ' } }] }), { status: 200 })) as unknown as typeof fetch;
+    const out = await callWithFallback(readAiConfigs((n) => env[n]), 's', 'u', f, 1);
+    expect(out.text).toBe('FROM_GROQ');
+    expect(out.cfg.provider).toBe('groq');
+  });
+  it('throws when every provider fails', async () => {
+    const f = (async () => new Response('down', { status: 500 })) as unknown as typeof fetch;
+    await expect(callWithFallback(readAiConfigs((n) => env[n]), 's', 'u', f, 1)).rejects.toThrow(/500/);
+  });
+});
+
+describe('provider retry', () => {
+  it('retries a temporary 503 and then succeeds', async () => {
+    let calls = 0;
+    const f = (async () => {
+      calls++;
+      return calls < 3
+        ? new Response('{"error":"busy"}', { status: 503 })
+        : new Response(JSON.stringify({ choices: [{ message: { content: 'OK' } }] }), { status: 200 });
+    }) as unknown as typeof fetch;
+    const out = await callModel({ provider: 'groq', model: 'm', apiKey: 'k' }, 's', 'u', f, 1);
+    expect(out).toBe('OK');
+    expect(calls).toBe(3);
+  });
+  it('does not retry a 401', async () => {
+    let calls = 0;
+    const f = (async () => {
+      calls++;
+      return new Response('nope', { status: 401 });
+    }) as unknown as typeof fetch;
+    await expect(callModel({ provider: 'groq', model: 'm', apiKey: 'k' }, 's', 'u', f, 1)).rejects.toThrow(/401/);
+    expect(calls).toBe(1);
   });
 });
 

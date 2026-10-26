@@ -80,6 +80,22 @@ export function Ghada({ kind, fraction, label, className }: Props) {
       <path d="M32 82 C26 98 26 116 32 132" stroke="#fff" strokeOpacity="0.28" strokeWidth="4" strokeLinecap="round" fill="none" />
       {/* band pattern */}
       <path d="M22 100 C50 112 110 112 138 100" stroke={punya ? '#FFE9A8' : '#8A86F2'} strokeOpacity="0.55" strokeWidth="1.5" fill="none" strokeDasharray="2 4" />
+      {/* rising sparkles over the golden water */}
+      {punya && !reduce && fraction > 0.02 && (
+        <g fill="#FFE9A8">
+          {[0, 1, 2].map((i) => (
+            <motion.circle
+              key={i}
+              cx={62 + i * 18}
+              cy={level}
+              r={1.6 + i * 0.4}
+              initial={{ opacity: 0 }}
+              animate={{ y: [-2, -26 - i * 8], opacity: [0, 0.9, 0] }}
+              transition={{ duration: 3 + i, repeat: Infinity, delay: i * 0.9, ease: 'easeOut' }}
+            />
+          ))}
+        </g>
+      )}
       {/* flame / lotus mark */}
       {punya ? (
         <path d="M80 8c3 4 5 6 5 9a5 5 0 0 1-10 0c0-3 2-5 5-9z" fill="#FFB347" stroke="#C77F0A" strokeWidth="1" />

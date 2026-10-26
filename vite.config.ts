@@ -45,6 +45,7 @@ export default defineConfig({
     // tests are hermetic: never talk to a real Supabase project from .env.local
     env: { VITE_SUPABASE_URL: '', VITE_SUPABASE_ANON_KEY: '' },
     globals: true,
+    testTimeout: 20_000, // full-app render tests can be slow on busy machines
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
   },

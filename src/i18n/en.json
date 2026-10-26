@@ -6,7 +6,6 @@
   "nav.pratikraman": "Pratikraman",
   "nav.profile": "Profile",
   "nav.label": "Main navigation",
-
   "common.save": "Save",
   "common.cancel": "Cancel",
   "common.continue": "Continue",
@@ -34,7 +33,6 @@
   "common.on": "On",
   "common.off": "Off",
   "common.none_yet": "Nothing here yet.",
-
   "landing.promise": "See your karma. Grow every day.",
   "landing.sub": "Tell Karma about your day in your own words. It gently notes your Punya and Paap and fills two ghadas, so you can reflect and grow.",
   "landing.f1.t": "Speak or type your day",
@@ -47,7 +45,6 @@
   "landing.google": "Continue with Google",
   "landing.email": "Continue with email",
   "landing.demo": "Try the demo",
-
   "auth.signin": "Sign in",
   "auth.signup": "Create account",
   "auth.forgot": "Forgot password?",
@@ -65,7 +62,6 @@
   "auth.password_updated": "Password updated. You are signed in.",
   "auth.signout": "Sign out",
   "auth.google_setup": "Google sign-in needs Supabase to be configured (see README, step 4). For now, use the demo.",
-
   "onb.title": "Welcome to Karma",
   "onb.step": "Step {n} of {total}",
   "onb.name.q": "What should we call you?",
@@ -81,18 +77,15 @@
   "onb.finish": "Begin my journey",
   "onb.consent_required": "Please accept the privacy policy to continue.",
   "onb.name_required": "Please tell us your name.",
-
   "tradition.hindu_gita": "Hindu – Gita",
   "tradition.jain": "Jain",
   "tradition.swaminarayan": "Swaminarayan",
   "tradition.general": "General spiritual",
-
   "greeting.jsk": "Jai Shri Krishna",
   "greeting.jj": "Jai Jinendra",
   "greeting.jsw": "Jai Swaminarayan",
   "greeting.namaste": "Namaste",
   "greeting.radhe": "Radhe Radhe",
-
   "goal.less_anger": "Less anger",
   "goal.more_seva": "More seva",
   "goal.truthful_speech": "Truthful speech",
@@ -100,7 +93,6 @@
   "goal.family_time": "Family time",
   "goal.discipline": "Discipline",
   "goal.daan": "Daan",
-
   "cat.seva": "Seva",
   "cat.family_duty": "Family duty",
   "cat.jeev_daya": "Compassion to beings",
@@ -112,7 +104,6 @@
   "cat.discipline_health": "Discipline & health",
   "cat.gratitude_bhakti": "Gratitude & bhakti",
   "cat.ahimsa_food": "Ahimsa & food",
-
   "home.greeting": "{greeting}, {name}",
   "home.punya_ghada": "Punya ghada",
   "home.paap_ghada": "Paap ghada",
@@ -131,7 +122,6 @@
   "home.trend_flat": "Steady",
   "home.range_label": "Time range",
   "home.ghada_label": "{kind} ghada: {value} points, {pct}% full",
-
   "talk.title": "Tell me about your day",
   "talk.placeholder": "Type or speak: what did you do today? Gujarati, Hindi and English can be mixed.",
   "talk.hold": "Tap to speak",
@@ -158,7 +148,6 @@
   "talk.type_punya": "Punya",
   "talk.type_paap": "Growth area",
   "talk.type_neutral": "Neutral",
-
   "insights.title": "Insights",
   "insights.history": "Ghada history",
   "insights.trend": "Net karma trend",
@@ -172,7 +161,6 @@
   "insights.empty": "Insights appear after your first entries.",
   "insights.heat_legend": "Less ↔ more punya",
   "insights.goal_progress": "Net {n} this week",
-
   "prat.title": "Pratikraman",
   "prat.sub": "An evening review. Look back gently, reflect, and commit to one small change.",
   "prat.range_today": "Today",
@@ -192,7 +180,6 @@
   "prat.complete.body": "You looked at your day with honesty and kindness. That is the heart of growth.",
   "prat.kshama_line": "I ask forgiveness from all beings, and I forgive all.",
   "prat.pending": "{n} left to reflect on",
-
   "profile.title": "Profile & settings",
   "profile.edit": "Your details",
   "profile.name": "Name",
@@ -222,10 +209,8 @@
   "profile.about": "About & how scoring works",
   "profile.city": "City",
   "profile.timezone": "Time zone",
-
   "legal.updated": "Last updated: {date}",
   "legal.contact": "Contact: privacy@karma.example (replace with your address)",
-
   "about.title": "How Karma scores your day",
   "about.p1": "Karma reads what you share and identifies deliberate actions. Each action is labelled Punya (merit) or Paap (a growth area) and given a weight from 1 to 5.",
   "about.p2": "Small acts score 1, medium acts 2–3, major acts 4–5. Ordinary routine such as commuting or meals is neutral and not scored.",
@@ -234,6 +219,9 @@
   "about.p5": "The ghada fills at 50 points per day (week ×7, month ×30). Lifetime uses a log scale. Karma is a mirror for reflection, not a judgment of you. It gives no legal, medical or financial advice.",
   "about.rubric": "Categories",
   "about.panchang": "The tithi shown on Home is computed on your device (Lahiri ayanamsa, amanta months, Gujarati calendar). Adhik months are not marked separately.",
-
-  "offline.banner": "You are offline. Some features need a connection."
+  "offline.banner": "You are offline. Some features need a connection.",
+  "home.streak": "{n}-day streak",
+  "home.empty_body": "Begin with one honest sentence about today.",
+  "home.chart_empty": "Your weekly line appears after your first reflection.",
+  "nav.skip": "Skip to content"
 }

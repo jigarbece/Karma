@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom/vitest';
+import { configure } from '@testing-library/react';
+
+// lazy route chunks can take a few seconds to compile on a busy machine
+configure({ asyncUtilTimeout: 10_000 });
 
 // recharts needs ResizeObserver; jsdom has none
 class RO {

@@ -10,6 +10,12 @@ Karma is a mobile-first PWA for spiritual self-reflection. You tell it about you
 - **Panchang:** `astronomy-engine`, Lahiri ayanamsa, amanta Gujarati months, computed on the device
 - **Hosting:** Vercel. **CI:** GitHub Actions. **Tests:** Vitest + React Testing Library + Playwright
 
+## Product and engineering docs (AI-DLC)
+
+- [Inception: vision, personas, stories, risks](docs/aidlc/01-inception.md)
+- [Construction: architecture, ADRs, design system, threat model, tests](docs/aidlc/02-construction.md)
+- [Operations: release, observability, runbook, backlog, retrospective](docs/aidlc/03-operations.md)
+
 ## Try it in 30 seconds (no backend)
 
 ```bash

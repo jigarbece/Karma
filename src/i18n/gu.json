@@ -6,7 +6,6 @@
   "nav.pratikraman": "પ્રતિક્રમણ",
   "nav.profile": "પ્રોફાઇલ",
   "nav.label": "મુખ્ય નેવિગેશન",
-
   "common.save": "સાચવો",
   "common.cancel": "રદ કરો",
   "common.continue": "આગળ વધો",
@@ -34,7 +33,6 @@
   "common.on": "ચાલુ",
   "common.off": "બંધ",
   "common.none_yet": "હજી કંઈ નથી.",
-
   "landing.promise": "તમારું કર્મ જુઓ. રોજ આગળ વધો.",
   "landing.sub": "તમારા દિવસ વિશે તમારા શબ્દોમાં કર્મને કહો. તે પુણ્ય અને પાપની નરમાશથી નોંધ કરે છે અને બે ઘડા ભરે છે, જેથી તમે ચિંતન કરી આગળ વધી શકો.",
   "landing.f1.t": "બોલો કે લખો",
@@ -47,7 +45,6 @@
   "landing.google": "Google સાથે આગળ વધો",
   "landing.email": "ઇમેઇલ સાથે આગળ વધો",
   "landing.demo": "ડેમો અજમાવો",
-
   "auth.signin": "સાઇન ઇન",
   "auth.signup": "એકાઉન્ટ બનાવો",
   "auth.forgot": "પાસવર્ડ ભૂલી ગયા?",
@@ -65,7 +62,6 @@
   "auth.password_updated": "પાસવર્ડ બદલાયો. તમે સાઇન ઇન છો.",
   "auth.signout": "સાઇન આઉટ",
   "auth.google_setup": "Google સાઇન ઇન માટે Supabase સેટ કરવું જરૂરી છે (README, પગલું 4). હાલ માટે ડેમો વાપરો.",
-
   "onb.title": "કર્મમાં આપનું સ્વાગત છે",
   "onb.step": "પગલું {n} / {total}",
   "onb.name.q": "અમે તમને શું કહીને બોલાવીએ?",
@@ -81,18 +77,15 @@
   "onb.finish": "મારી યાત્રા શરૂ કરો",
   "onb.consent_required": "આગળ વધવા ગોપનીયતા નીતિ સ્વીકારો.",
   "onb.name_required": "કૃપા કરીને તમારું નામ લખો.",
-
   "tradition.hindu_gita": "હિન્દુ – ગીતા",
   "tradition.jain": "જૈન",
   "tradition.swaminarayan": "સ્વામિનારાયણ",
   "tradition.general": "સામાન્ય આધ્યાત્મિક",
-
   "greeting.jsk": "જય શ્રી કૃષ્ણ",
   "greeting.jj": "જય જિનેન્દ્ર",
   "greeting.jsw": "જય સ્વામિનારાયણ",
   "greeting.namaste": "નમસ્તે",
   "greeting.radhe": "રાધે રાધે",
-
   "goal.less_anger": "ઓછો ગુસ્સો",
   "goal.more_seva": "વધુ સેવા",
   "goal.truthful_speech": "સત્ય વાણી",
@@ -100,7 +93,6 @@
   "goal.family_time": "પરિવાર સાથે સમય",
   "goal.discipline": "શિસ્ત",
   "goal.daan": "દાન",
-
   "cat.seva": "સેવા",
   "cat.family_duty": "પારિવારિક ફરજ",
   "cat.jeev_daya": "જીવદયા",
@@ -112,7 +104,6 @@
   "cat.discipline_health": "શિસ્ત અને આરોગ્ય",
   "cat.gratitude_bhakti": "કૃતજ્ઞતા અને ભક્તિ",
   "cat.ahimsa_food": "અહિંસા અને આહાર",
-
   "home.greeting": "{greeting}, {name}",
   "home.punya_ghada": "પુણ્યનો ઘડો",
   "home.paap_ghada": "પાપનો ઘડો",
@@ -131,7 +122,6 @@
   "home.trend_flat": "સ્થિર",
   "home.range_label": "સમયગાળો",
   "home.ghada_label": "{kind}: {value} ગુણ, {pct}% ભરાયો",
-
   "talk.title": "આજે તમે શું કર્યું?",
   "talk.placeholder": "લખો કે બોલો: આજે તમે શું કર્યું? ગુજરાતી, હિન્દી અને અંગ્રેજી ભેળવી શકાય.",
   "talk.hold": "બોલવા માટે ટેપ કરો",
@@ -158,7 +148,6 @@
   "talk.type_punya": "પુણ્ય",
   "talk.type_paap": "વિકાસનું ક્ષેત્ર",
   "talk.type_neutral": "તટસ્થ",
-
   "insights.title": "અંતર્દૃષ્ટિ",
   "insights.history": "ઘડાનો ઇતિહાસ",
   "insights.trend": "કુલ કર્મનો વલણ",
@@ -172,7 +161,6 @@
   "insights.empty": "પહેલી નોંધો પછી અંતર્દૃષ્ટિ દેખાશે.",
   "insights.heat_legend": "ઓછું ↔ વધુ પુણ્ય",
   "insights.goal_progress": "આ અઠવાડિયે કુલ {n}",
-
   "prat.title": "પ્રતિક્રમણ",
   "prat.sub": "સાંજનું અવલોકન. નરમાશથી પાછળ જુઓ, ચિંતન કરો અને એક નાનો ફેરફાર નક્કી કરો.",
   "prat.range_today": "આજે",
@@ -192,7 +180,6 @@
   "prat.complete.body": "તમે તમારા દિવસને પ્રામાણિકતા અને કરુણાથી જોયો. વિકાસનું હાર્દ એ જ છે.",
   "prat.kshama_line": "હું સર્વ જીવો પાસે ક્ષમા માગું છું અને સર્વને ક્ષમા આપું છું.",
   "prat.pending": "ચિંતન માટે {n} બાકી",
-
   "profile.title": "પ્રોફાઇલ અને સેટિંગ્સ",
   "profile.edit": "તમારી વિગતો",
   "profile.name": "નામ",
@@ -222,10 +209,8 @@
   "profile.about": "વિશે અને ગુણ કેવી રીતે અપાય છે",
   "profile.city": "શહેર",
   "profile.timezone": "સમય ક્ષેત્ર",
-
   "legal.updated": "છેલ્લું અપડેટ: {date}",
   "legal.contact": "સંપર્ક: privacy@karma.example (તમારા સરનામાથી બદલો)",
-
   "about.title": "કર્મ તમારા દિવસને કેવી રીતે ગુણ આપે છે",
   "about.p1": "કર્મ તમે કહેલું વાંચે છે અને સભાન કાર્યો ઓળખે છે. દરેક કાર્યને પુણ્ય કે પાપ (વિકાસનું ક્ષેત્ર) તરીકે નામ મળે છે અને 1 થી 5 સુધીનું વજન અપાય છે.",
   "about.p2": "નાનું કાર્ય 1, મધ્યમ 2–3, મોટું 4–5. મુસાફરી કે ભોજન જેવી રોજિંદી બાબતો તટસ્થ છે અને ગુણ અપાતા નથી.",
@@ -234,6 +219,9 @@
   "about.p5": "ઘડો દરરોજ 50 ગુણે ભરાય છે (અઠવાડિયું ×7, મહિનો ×30). આખા જીવન માટે લોગ સ્કેલ વપરાય છે. કર્મ ચિંતન માટેનો અરીસો છે, તમારા પર ચુકાદો નથી. તે કાનૂની, તબીબી કે નાણાકીય સલાહ આપતું નથી.",
   "about.rubric": "શ્રેણીઓ",
   "about.panchang": "હોમ પર દેખાતી તિથિ તમારા ઉપકરણ પર ગણાય છે (લાહિરી અયનાંશ, અમાંત મહિના, ગુજરાતી પંચાંગ). અધિક માસ અલગથી દર્શાવાતો નથી.",
-
-  "offline.banner": "તમે ઑફલાઇન છો. કેટલીક સુવિધાઓને ઇન્ટરનેટ જોઈએ."
+  "offline.banner": "તમે ઑફલાઇન છો. કેટલીક સુવિધાઓને ઇન્ટરનેટ જોઈએ.",
+  "home.streak": "{n} દિવસનો સતત ક્રમ",
+  "home.empty_body": "આજના વિશે એક પ્રામાણિક વાક્યથી શરૂઆત કરો.",
+  "home.chart_empty": "તમારી પહેલી નોંધ પછી સાપ્તાહિક રેખા દેખાશે.",
+  "nav.skip": "સીધા મુખ્ય ભાગ પર જાઓ"
 }

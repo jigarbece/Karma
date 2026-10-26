@@ -4,7 +4,7 @@ import { z } from 'zod';
 import rubric from '../_shared/rubric.v1.json' with { type: 'json' };
 import teachingIndex from '../_shared/teachings.index.json' with { type: 'json' };
 import { buildSystemPrompt, buildUserPrompt, detectSafety, finalize, localDateIn, parseAnalysis, type TeachingIndexEntry } from '../_shared/analysis.ts';
-import { callModel, readAiConfig } from '../_shared/providers.ts';
+import { callWithFallback, readAiConfigs } from '../_shared/providers.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
 
 declare const Deno: { env: { get(name: string): string | undefined }; serve(h: (req: Request) => Response | Promise<Response>): void };
@@ -51,13 +51,17 @@ Deno.serve(async (req) => {
 
     const ctx = { language, tradition: profile.tradition, goals: profile.goals ?? [] } as const;
     const index = teachingIndex as TeachingIndexEntry[];
-    const cfg = readAiConfig((n) => Deno.env.get(n));
+    const configs = readAiConfigs((n) => Deno.env.get(n));
     const system = buildSystemPrompt(rubric as any, index, ctx as any);
 
-    let result = parseAnalysis(await callModel(cfg, system, buildUserPrompt(transcript)));
+    const first = await callWithFallback(configs, system, buildUserPrompt(transcript));
+    let cfg = first.cfg;
+    let result = parseAnalysis(first.text);
     if (!result.ok) {
       const retryUser = `${buildUserPrompt(transcript)}\n\nYour previous reply was invalid (${result.error}). Reply again with ONLY the JSON object in the exact shape.`;
-      result = parseAnalysis(await callModel(cfg, system, retryUser));
+      const second = await callWithFallback(configs, system, retryUser);
+      cfg = second.cfg;
+      result = parseAnalysis(second.text);
     }
     if (!result.ok) return json({ error: 'ai_invalid_output' }, 502, cors);
     if (result.value.safety_flag) return json({ safety_flag: true, actions: [], reflection: null, entry: null }, 200, cors);

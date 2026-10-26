@@ -5,15 +5,21 @@ import { signedWeight } from '../lib/ghada';
 import type { KarmaAction } from '../lib/types';
 
 export function Segmented<T extends string>({
-  value, onChange, options, label,
+  value, onChange, options, label, tone = 'day',
 }: {
   value: T;
   onChange: (v: T) => void;
   options: Array<{ value: T; label: string }>;
   label: string;
+  tone?: 'day' | 'night';
 }) {
+  const night = tone === 'night';
   return (
-    <div role="group" aria-label={label} className="flex rounded-full border border-line bg-card p-1">
+    <div
+      role="group"
+      aria-label={label}
+      className={`flex rounded-full border p-1 ${night ? 'border-gold-light/30 bg-white/10 backdrop-blur' : 'border-line bg-card'}`}
+    >
       {options.map((o) => (
         <button
           key={o.value}
@@ -21,7 +27,9 @@ export function Segmented<T extends string>({
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
           className={`min-h-[44px] flex-1 rounded-full px-2 text-sm font-semibold transition ${
-            value === o.value ? 'bg-indigo text-card' : 'text-muted hover:text-ink'
+            value === o.value
+              ? night ? 'bg-gold-light text-night shadow' : 'bg-night text-cream shadow'
+              : night ? 'text-cream/85 hover:text-cream' : 'text-muted hover:text-ink'
           }`}
         >
           {o.label}
@@ -43,8 +51,9 @@ export function Spinner({ label }: { label: string }) {
 export function PageTitle({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
   return (
     <header className="mb-4">
-      <h1 className="text-2xl font-bold text-ink">{children}</h1>
-      {sub ? <p className="mt-1 text-muted">{sub}</p> : null}
+      <h1 className="text-4xl font-bold leading-tight text-ink lg:text-5xl">{children}</h1>
+      {sub ? <p className="mt-1 text-muted lg:text-lg">{sub}</p> : null}
+      <div className="gold-rule mt-3 max-w-xs" aria-hidden="true" />
     </header>
   );
 }
