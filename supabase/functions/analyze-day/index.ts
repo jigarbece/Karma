@@ -91,7 +91,10 @@ Deno.serve(async (req) => {
 
     return json({ safety_flag: false, entry, actions, reflection: final.reflection }, 200, cors);
   } catch (e) {
-    console.error('analyze-day failed', e instanceof Error ? e.message : e);
-    return json({ error: 'internal_error' }, 500, cors);
+    const raw = e instanceof Error ? e.message : String(e);
+    console.error('analyze-day failed', raw);
+    // Surface a short, key-free reason so the app can show what went wrong.
+    const message = raw.replace(/AIza[\w-]+|AQ\.[\w.-]+|sk-[\w-]+|gsk_[\w-]+/g, '[key]').slice(0, 300);
+    return json({ error: 'internal_error', message }, 500, cors);
   }
 });

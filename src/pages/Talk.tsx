@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
-import { RateLimitError, type AnalyzeResponse } from '../lib/repo';
+import { AnalyzeError, RateLimitError, type AnalyzeResponse } from '../lib/repo';
 import { getTeaching } from '../lib/teachings';
 import { totalsForRange } from '../lib/ghada';
 import { useSpeech } from '../lib/useSpeech';
@@ -85,7 +85,13 @@ export default function Talk() {
         await refresh();
       }
     } catch (e) {
-      setError(e instanceof RateLimitError ? t('talk.limit', { n: e.limit }) : t('common.error'));
+      setError(
+        e instanceof RateLimitError
+          ? t('talk.limit', { n: e.limit })
+          : e instanceof AnalyzeError
+            ? `${t('common.error')} (${e.code}${e.detail ? `: ${e.detail}` : ''})`
+            : t('common.error'),
+      );
     } finally {
       setBusy(false);
     }

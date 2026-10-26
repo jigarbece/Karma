@@ -18,6 +18,12 @@ export class RateLimitError extends Error {
   }
 }
 
+export class AnalyzeError extends Error {
+  constructor(public code: string, public detail: string) {
+    super(code);
+  }
+}
+
 export interface DayReflection {
   date: string;
   teaching_id: string;
@@ -261,11 +267,12 @@ export function makeSupabaseRepo(userId: string): Repo {
       const { data, error } = await sb.functions.invoke('analyze-day', { body: input });
       if (error) {
         const ctx = (error as { context?: Response }).context;
-        if (ctx && ctx.status === 429) {
+        if (ctx && typeof ctx.json === 'function') {
           const body = await ctx.json().catch(() => ({}));
-          throw new RateLimitError(body.limit ?? DAILY_ANALYSIS_LIMIT);
+          if (ctx.status === 429) throw new RateLimitError(body.limit ?? DAILY_ANALYSIS_LIMIT);
+          throw new AnalyzeError(body.error ?? `http_${ctx.status}`, body.message ?? '');
         }
-        throw error;
+        throw new AnalyzeError('network', error.message ?? '');
       }
       return {
         entry: data.entry ?? null,
