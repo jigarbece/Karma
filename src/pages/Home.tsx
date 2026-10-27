@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
@@ -7,7 +7,7 @@ import { getTeaching } from '../lib/teachings';
 import { totalsForRange, addDays, rangeDays } from '../lib/ghada';
 import { useSpeech } from '../lib/useSpeech';
 import { useTithi } from '../lib/useTithi';
-import type { Range } from '../lib/types';
+import type { Lang, Range } from '../lib/types';
 import { GhadaPair } from '../components/GhadaPair';
 import { ShlokaCard } from '../components/ShlokaCard';
 import { MicButton } from '../components/MicButton';
@@ -35,7 +35,9 @@ export default function Home() {
     setText(v);
   }, []);
   const getBase = useCallback(() => textRef.current, []);
-  const speech = useSpeech(lang, getBase, setBoth);
+  // voice clips go to the server when the browser cannot recognise the language itself (always for Gujarati)
+  const transcribe = useMemo(() => (repo ? (audio: Blob, l: Lang) => repo.transcribe(audio, l) : undefined), [repo]);
+  const speech = useSpeech(lang, getBase, setBoth, transcribe);
 
   const [showFound, setShowFound] = useState(false);
   // bring the two ghadas into view so the new points are seen filling them
@@ -91,9 +93,10 @@ export default function Home() {
         : speech.error === 'language-not-supported' || speech.error === 'service-not-allowed' ? t('talk.voice_lang')
           : speech.error === 'network' ? t('talk.voice_network')
             : speech.error === 'audio-capture' ? t('talk.voice_nomic')
-              : t('talk.voice_error')
+              : speech.error === 'transcribe-failed' ? t('talk.voice_server')
+                : t('talk.voice_error')
     : '';
-  const status = speech.listening ? t('talk.listening') : t('talk.hold');
+  const status = speech.transcribing ? t('talk.transcribing') : speech.listening ? t('talk.listening') : t('talk.hold');
 
   return (
     <div className="space-y-6">
@@ -121,7 +124,7 @@ export default function Home() {
           onChange={(e) => setBoth(e.target.value)} maxLength={4000} lang={lang}
         />
         <div className="mt-3 flex items-center gap-3">
-          <MicButton active={speech.listening} onClick={speech.listening ? speech.stop : speech.start} label={speech.listening ? t('talk.listening') : t('talk.hold')} />
+          <MicButton active={speech.listening} disabled={speech.transcribing} onClick={speech.listening ? speech.stop : speech.start} label={speech.transcribing ? t('talk.transcribing') : speech.listening ? t('talk.listening') : t('talk.hold')} />
           <p className="min-w-0 flex-1 text-sm text-muted max-[419px]:sr-only" aria-live="polite">{status}</p>
           <button type="button" className="btn-primary ml-auto shrink-0 !px-7" onClick={analyse} disabled={busy || !text.trim()}>{t('talk.analyse')}</button>
         </div>

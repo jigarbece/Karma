@@ -94,6 +94,8 @@ Keep a copy of `TRANSCRIPT_KEY` in a password manager. If it is unset, the funct
 npm run supabase:functions:deploy
 ```
 
+This deploys `analyze-day`, `delete-account` and `transcribe`. `transcribe` is what makes **Gujarati voice** work on any phone and browser: the app records a short clip (up to 60 s), the function sends it to Whisper on Groq and returns the text. It reuses the Groq key from step 4 (`AI_PROVIDER=groq` + `AI_API_KEY`, or the Groq fallback key); set `TRANSCRIBE_API_KEY` only if you want a separate key, and `TRANSCRIBE_MODEL` to change the model (default `whisper-large-v3`). The clip is held in memory for that one request and is never stored. Needs Android 5+ Chrome or iOS 14.5+ Safari (anything with a microphone and MediaRecorder); Hindi and English use the browser's own live recognition and fall back to this path when it is missing.
+
 ## 6. Push the code (Vercel builds from `main`)
 
 ```bash

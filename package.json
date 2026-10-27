@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "supabase:migrate": "npx supabase db push",
-    "supabase:functions:deploy": "npm run sync:shared && npx supabase functions deploy analyze-day --use-api && npx supabase functions deploy delete-account --use-api",
+    "supabase:functions:deploy": "npm run sync:shared && npx supabase functions deploy analyze-day --use-api && npx supabase functions deploy delete-account --use-api && npx supabase functions deploy transcribe --use-api",
     "seed": "tsx scripts/seed.ts",
     "sync:shared": "node scripts/sync-shared.mjs",
     "icons": "node scripts/make-icons.mjs"

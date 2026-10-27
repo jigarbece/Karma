@@ -114,16 +114,16 @@ interface Props {
   fraction: number;
   label: string;
   className?: string;
-  showPercent?: boolean;
+  /** Points written on the pot, for example "+27". Never a percentage. */
+  centerText?: string;
 }
 
 /** Glossy ghada with a live liquid level. Colour is never the only signal: callers add text + numbers. */
-export function Ghada({ kind, fraction, label, className, showPercent = true }: Props) {
+export function Ghada({ kind, fraction, label, className, centerText }: Props) {
   const id = useId().replace(/:/g, '');
   const reduce = useReducedMotion();
   const L = kind === 'punya' ? GOLD : DARK;
   const f = Math.max(0, Math.min(1, fraction));
-  const pct = Math.round(f * 100);
   const y = BOTTOM - f * (BOTTOM - TOP);
   const h = BOTTOM - y;
   const ease = reduce ? { duration: 0 } : { duration: 0.95, ease: [0.2, 0.72, 0.25, 1] as [number, number, number, number] };
@@ -205,9 +205,9 @@ export function Ghada({ kind, fraction, label, className, showPercent = true }: 
         <circle key={i} className={`gh-twinkle gh-t${i}`} cx={cx} cy={cy} r={r} fill={L.sparkle} />
       ))}
 
-      {showPercent && (
-        <text x="210" y="267" textAnchor="middle" fontSize="44" fontWeight="900" fill="#fff" style={{ filter: L.text.shadow }}>
-          {pct}%
+      {centerText && (
+        <text x="210" y="267" textAnchor="middle" fontSize={centerText.length > 6 ? 34 : centerText.length > 4 ? 40 : 48} fontWeight="900" fill="#fff" style={{ filter: L.text.shadow }}>
+          {centerText}
         </text>
       )}
     </svg>

@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { blobToBase64 } from './audio';
 import { localDate } from './ghada';
 import { mockAnalyze } from './mockAnalyze';
 import { sampleHistory } from './sample';
@@ -40,6 +41,8 @@ export interface Repo {
   listAllEntries(): Promise<Entry[]>;
   getReflection(date: string): Promise<DayReflection | null>;
   analyze(input: { transcript: string; date: string; language: string }): Promise<AnalyzeResponse>;
+  /** Voice clip to text, for browsers that cannot recognise the language themselves (Gujarati especially). Nothing is kept. */
+  transcribe(audio: Blob, language: Lang): Promise<string>;
   addFeedback(actionId: string, comment: string): Promise<void>;
   listPratikraman(): Promise<PratikramanRecord[]>;
   savePratikraman(actionId: string, reflection: string, commitment: string): Promise<PratikramanRecord>;
@@ -63,6 +66,24 @@ async function devAnalyze(payload: { transcript: string; date: string; language:
     const r = await fetch('/dev-api/analyze', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
     const body = await r.json().catch(() => null);
     if (r.ok && body && Array.isArray(body.actions)) return body as DevAnalysis;
+    if (body && r.status !== 404 && r.status !== 501) throw new AnalyzeError(body.error ?? `http_${r.status}`, body.message ?? '');
+  } catch (e) {
+    if (e instanceof AnalyzeError) throw e;
+  }
+  return null;
+}
+
+/** DEV ONLY: voice to text through `/dev-api/transcribe` (vite.dev-ai.ts). Null when unavailable so callers use the Edge Function. */
+async function devTranscribe(audio: Blob, language: Lang): Promise<string | null> {
+  if (!import.meta.env.DEV || import.meta.env.MODE === 'test') return null;
+  try {
+    const r = await fetch('/dev-api/transcribe', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ audio: await blobToBase64(audio), mime: audio.type || 'audio/webm', language }),
+    });
+    const body = await r.json().catch(() => null);
+    if (r.ok && body && typeof body.text === 'string') return body.text;
     if (body && r.status !== 404 && r.status !== 501) throw new AnalyzeError(body.error ?? `http_${r.status}`, body.message ?? '');
   } catch (e) {
     if (e instanceof AnalyzeError) throw e;
@@ -156,6 +177,11 @@ export function seedDemo(withSample: boolean): void {
 }
 
 export const localRepo: Repo = {
+  async transcribe(audio, language) {
+    const text = await devTranscribe(audio, language);
+    if (text === null) throw new AnalyzeError('transcribe_unavailable', '');
+    return text;
+  },
   async getProfile() {
     return readDb().profile;
   },
@@ -259,6 +285,19 @@ function mapAction(r: Row): KarmaAction {
 export function makeSupabaseRepo(userId: string): Repo {
   const sb = supabase!;
   return {
+    async transcribe(audio, language) {
+      const local = await devTranscribe(audio, language);
+      if (local !== null) return local;
+      const { data, error } = await sb.functions.invoke('transcribe', {
+        body: { audio: await blobToBase64(audio), mime: audio.type || 'audio/webm', language },
+      });
+      if (error) {
+        const ctx = (error as { context?: Response }).context;
+        const body = ctx && typeof ctx.json === 'function' ? await ctx.json().catch(() => ({})) : {};
+        throw new AnalyzeError(body.error ?? 'network', body.message ?? error.message ?? '');
+      }
+      return typeof data?.text === 'string' ? data.text : '';
+    },
     async getProfile() {
       const { data, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
       if (error) throw error;

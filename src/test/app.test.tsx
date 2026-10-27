@@ -29,6 +29,10 @@ describe('Karma app (demo mode)', () => {
     expect(screen.getByTestId('shloka')).toHaveTextContent('Bhagavad Gita');
     expect(screen.getByRole('img', { name: /Punya ghada/ })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Paap ghada/ })).toBeInTheDocument();
+    // the pots carry points, never a percentage
+    expect(screen.getByRole('img', { name: /Punya ghada/ })).toHaveTextContent(/^\+\d+$/);
+    expect(screen.getByRole('img', { name: /Paap ghada/ })).toHaveTextContent(/^(−\d+|0)$/);
+    expect(document.body.textContent).not.toMatch(/\d\s*%/);
     expect(screen.getByTestId('net-pill')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Tell me about your day' })).toBeInTheDocument();
     // the whole app is four destinations

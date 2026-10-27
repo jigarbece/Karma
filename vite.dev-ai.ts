@@ -14,13 +14,14 @@ import {
   type Rubric, type TeachingIndexEntry, type UserContext,
 } from './supabase/functions/_shared/analysis.ts';
 import { callWithFallback, readAiConfigs } from './supabase/functions/_shared/providers.ts';
+import { base64ToBytes, DEFAULT_TRANSCRIBE_MODEL, MAX_AUDIO_BYTES, pickTranscribeKey, transcribeAudio } from './supabase/functions/_shared/transcribe.ts';
 
-function readBody(req: IncomingMessage): Promise<string> {
+function readBody(req: IncomingMessage, max = 20_000): Promise<string> {
   return new Promise((resolve, reject) => {
     let data = '';
     req.on('data', (c) => {
       data += c;
-      if (data.length > 20_000) reject(new Error('body too large'));
+      if (data.length > max) reject(new Error('body too large'));
     });
     req.on('end', () => resolve(data));
     req.on('error', reject);
@@ -32,6 +33,32 @@ export function devAi(env: Record<string, string>): Plugin {
     name: 'karma-dev-ai',
     apply: 'serve',
     configureServer(server) {
+      // voice to text for Gujarati and other languages the browser cannot do itself (same code as the `transcribe` function)
+      server.middlewares.use('/dev-api/transcribe', async (req, res) => {
+        const send = (status: number, body: unknown) => {
+          res.statusCode = status;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify(body));
+        };
+        if (req.method !== 'POST') return send(405, { error: 'method_not_allowed' });
+        try {
+          const body = JSON.parse(await readBody(req, Math.ceil(MAX_AUDIO_BYTES * 1.4) + 1000)) as { audio?: string; mime?: string; language?: 'gu' | 'hi' | 'en' };
+          const apiKey = pickTranscribeKey((n) => env[n]);
+          if (!apiKey) return send(501, { error: 'transcribe_not_configured' });
+          if (!body.audio || !body.language) return send(400, { error: 'bad_request' });
+          const text = await transcribeAudio({
+            bytes: base64ToBytes(body.audio), mime: body.mime ?? 'audio/webm', language: body.language, apiKey,
+            model: env.TRANSCRIBE_MODEL || DEFAULT_TRANSCRIBE_MODEL,
+          });
+          return send(200, { text });
+        } catch (e) {
+          const raw = e instanceof Error ? e.message : String(e);
+          const message = raw.replace(/gsk_[\w-]+|AIza[\w-]+|AQ\.[\w.-]+|sk-[\w-]+/g, '[key]').slice(0, 300);
+          console.error('[dev-transcribe]', message);
+          return send(500, { error: 'internal_error', message });
+        }
+      });
+
       server.middlewares.use('/dev-api/analyze', async (req, res) => {
         const send = (status: number, body: unknown) => {
           res.statusCode = status;
