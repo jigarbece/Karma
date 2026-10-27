@@ -125,6 +125,20 @@ export default function Profile() {
             <span className="sr-only">{profile.keep_words ? t('common.on') : t('common.off')}</span>
           </button>
         </div>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="font-semibold" id="board">{t('profile.show_on_board')}</div>
+            <p className="text-sm text-muted">{t('profile.show_on_board_hint')}</p>
+          </div>
+          <button
+            type="button" role="switch" aria-checked={profile.show_on_board !== false} aria-labelledby="board"
+            onClick={() => save({ show_on_board: profile.show_on_board === false })}
+            className={`relative h-8 w-14 shrink-0 rounded-full transition ${profile.show_on_board !== false ? 'bg-saffron' : 'bg-line'}`}
+          >
+            <span className={`absolute top-1 h-6 w-6 rounded-full bg-card shadow transition-all ${profile.show_on_board !== false ? 'left-7' : 'left-1'}`} />
+            <span className="sr-only">{profile.show_on_board !== false ? t('common.on') : t('common.off')}</span>
+          </button>
+        </div>
       </section>
 
       <section className="card space-y-3" aria-labelledby="exp">

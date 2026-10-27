@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { blobToBase64 } from './audio';
-import { localDate } from './ghada';
+import { demoBoard, DEFAULT_SETTINGS, type Announcement, type AppSettings, type Board } from './community';
+import { localDate, totalsForRange } from './ghada';
 import { mockAnalyze } from './mockAnalyze';
 import { sampleHistory } from './sample';
 import { sealLocal } from './seal';
@@ -41,6 +42,12 @@ export interface Repo {
   listAllEntries(): Promise<Entry[]>;
   getReflection(date: string): Promise<DayReflection | null>;
   analyze(input: { transcript: string; date: string; language: string }): Promise<AnalyzeResponse>;
+  /** This week's common punya ghada and leaderboard (masked names, punya only). Null when unavailable. */
+  communityBoard(): Promise<Board | null>;
+  /** The active message from the owner, if any. */
+  announcement(): Promise<Announcement | null>;
+  /** Goals the owner can change. */
+  settings(): Promise<AppSettings>;
   /** Voice clip to text, for browsers that cannot recognise the language themselves (Gujarati especially). Nothing is kept. */
   transcribe(audio: Blob, language: Lang): Promise<string>;
   addFeedback(actionId: string, comment: string): Promise<void>;
@@ -177,6 +184,16 @@ export function seedDemo(withSample: boolean): void {
 }
 
 export const localRepo: Repo = {
+  async communityBoard() {
+    const db = readDb();
+    return demoBoard(db.profile?.name ?? '', totalsForRange(db.actions, 'week', localDate()).punya);
+  },
+  async announcement() {
+    return null;
+  },
+  async settings() {
+    return DEFAULT_SETTINGS;
+  },
   async transcribe(audio, language) {
     const text = await devTranscribe(audio, language);
     if (text === null) throw new AnalyzeError('transcribe_unavailable', '');
@@ -286,6 +303,24 @@ function mapAction(r: Row): KarmaAction {
 export function makeSupabaseRepo(userId: string): Repo {
   const sb = supabase!;
   return {
+    async communityBoard() {
+      const { data, error } = await sb.rpc('community_board');
+      return error || !data ? null : (data as Board);
+    },
+    async announcement() {
+      const { data } = await sb.from('announcements').select('id, message').eq('active', true).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      return data ? ({ id: data.id as number, message: data.message as Announcement['message'] }) : null;
+    },
+    async settings() {
+      const { data } = await sb.from('app_settings').select('key, value');
+      const out = { ...DEFAULT_SETTINGS };
+      for (const r of data ?? []) {
+        const n = Number(r.value);
+        if (r.key === 'community_goal' && n > 0) out.community_goal = n;
+        if (r.key === 'personal_goal' && n > 0) out.personal_goal = n;
+      }
+      return out;
+    },
     async transcribe(audio, language) {
       const local = await devTranscribe(audio, language);
       if (local !== null) return local;

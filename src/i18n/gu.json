@@ -337,5 +337,21 @@
   "insights.needs_care": "ધ્યાન માંગે છે",
   "insights.bars": "ક્યાં સારું કર્યું અને ક્યાં સુધારો કરવો",
   "visitors.count": "{n} મુલાકાતીઓ",
-  "visitors.aria": "{n} લોકોએ મુલાકાત લીધી છે"
+  "visitors.aria": "{n} લોકોએ મુલાકાત લીધી છે",
+  "community.title": "સામૂહિક પુણ્ય ઘડો",
+  "community.sub": "આ અઠવાડિયે {n} લોકો સાથે મળીને ભરી રહ્યા છે",
+  "community.goal": "લક્ષ્ય {goal} ગુણ, હજી {left} બાકી",
+  "community.goal_done": "લક્ષ્ય સાથે મળીને પૂરું થયું. જય શ્રી કૃષ્ણ!",
+  "community.board": "આ અઠવાડિયાના ટોચના પુણ્ય",
+  "community.you": "તમે",
+  "community.rank": "ક્રમ {n}",
+  "community.ghada_label": "સામૂહિક પુણ્ય ઘડો: {value} ગુણ",
+  "community.leading": "આ અઠવાડિયે તમે આગળ છો! આગળ રહેવા ચાલુ રાખો.",
+  "community.chase": "આગળ નીકળી જાઓ! {name} પાસે {points} ગુણ છે. આગળ થવા તમારે હજી {gap} ગુણ જોઈએ.",
+  "community.chase_next": "આગળનું પગલું: {name} ને પાછળ છોડવા ફક્ત {gap} ગુણ બાકી.",
+  "community.new": "બોર્ડમાં જોડાવા તમારો દિવસ કહો.",
+  "community.empty": "આ અઠવાડિયે હજી પુણ્ય નથી. ઘડો ભરવાની શરૂઆત તમે કરો!",
+  "community.cta": "મારો દિવસ કહું અને આગળ નીકળું",
+  "profile.show_on_board": "મને સામૂહિક બોર્ડ પર બતાવો",
+  "profile.show_on_board_hint": "ફક્ત તમારા નામનો પહેલો અડધો ભાગ અને ફક્ત પુણ્ય ગુણ બતાવાય છે. બંધ કરો તો યાદીમાં નહીં દેખાઓ; તમારા ગુણ સામૂહિક ઘડામાં ભરાતા રહેશે."
 }

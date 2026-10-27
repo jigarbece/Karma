@@ -84,6 +84,22 @@ describe('Karma app (demo mode)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('shows the common punya ghada and a half-masked leaderboard that asks you to beat the leader', async () => {
+    bootDemo('/');
+    const user = userEvent.setup();
+    render(<App />);
+    const board = await screen.findByTestId('community', {}, { timeout: 4000 });
+    expect(within(board).getByRole('heading', { name: 'Common Punya Ghada' })).toBeInTheDocument();
+    const rows = within(board).getAllByTestId('leader-row');
+    expect(rows.length).toBeGreaterThanOrEqual(3);
+    expect(rows[0].textContent).toMatch(/\*/); // names are half hidden
+    expect(rows[0].textContent).not.toMatch(/Aarav Shah/);
+    expect(within(board).getByTestId('chase').textContent).toMatch(/Beat the leader|You are leading/);
+    // the call to action takes you to the message box
+    await user.click(within(board).getByRole('button', { name: /beat the leader/i }));
+    expect(screen.getByRole('textbox', { name: 'Tell me about your day' })).toHaveFocus();
+  });
+
   it('has an admin page that explains itself when there is no live backend', async () => {
     bootDemo('/admin');
     render(<App />);

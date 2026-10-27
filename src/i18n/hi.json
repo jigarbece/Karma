@@ -337,5 +337,21 @@
   "insights.needs_care": "ध्यान चाहिए",
   "insights.bars": "कहाँ अच्छा किया और कहाँ सुधार करना है",
   "visitors.count": "{n} आगंतुक",
-  "visitors.aria": "{n} लोग आ चुके हैं"
+  "visitors.aria": "{n} लोग आ चुके हैं",
+  "community.title": "सामूहिक पुण्य घड़ा",
+  "community.sub": "इस सप्ताह {n} लोग मिलकर भर रहे हैं",
+  "community.goal": "लक्ष्य {goal} अंक, अभी {left} बाकी",
+  "community.goal_done": "लक्ष्य मिलकर पूरा हुआ। जय श्री कृष्ण!",
+  "community.board": "इस सप्ताह के शीर्ष पुण्य",
+  "community.you": "आप",
+  "community.rank": "क्रम {n}",
+  "community.ghada_label": "सामूहिक पुण्य घड़ा: {value} अंक",
+  "community.leading": "इस सप्ताह आप आगे हैं! आगे रहने के लिए जारी रखें।",
+  "community.chase": "आगे निकलिए! {name} के पास {points} अंक हैं। आगे होने के लिए आपको {gap} अंक और चाहिए।",
+  "community.chase_next": "अगला कदम: {name} को पीछे छोड़ने के लिए सिर्फ़ {gap} अंक।",
+  "community.new": "बोर्ड में जुड़ने के लिए अपना दिन बताइए।",
+  "community.empty": "इस सप्ताह अभी पुण्य नहीं। घड़ा भरने की शुरुआत आप करें!",
+  "community.cta": "अपना दिन बताऊँ और आगे निकलूँ",
+  "profile.show_on_board": "मुझे सामूहिक बोर्ड पर दिखाएँ",
+  "profile.show_on_board_hint": "केवल आपके नाम का पहला आधा हिस्सा और सिर्फ़ पुण्य अंक दिखते हैं। बंद करने पर आप सूची में नहीं दिखेंगे; आपके अंक सामूहिक घड़े में फिर भी भरेंगे।"
 }

@@ -337,5 +337,21 @@
   "insights.needs_care": "Needs care",
   "insights.bars": "Where you did well and where to grow",
   "visitors.count": "{n} visitors",
-  "visitors.aria": "{n} people have visited"
+  "visitors.aria": "{n} people have visited",
+  "community.title": "Common Punya Ghada",
+  "community.sub": "{n} people are filling it together this week",
+  "community.goal": "Goal {goal} points, {left} to go",
+  "community.goal_done": "Goal reached together. Jai Shri Krishna!",
+  "community.board": "This week's top punya",
+  "community.you": "You",
+  "community.rank": "Rank {n}",
+  "community.ghada_label": "Common punya ghada: {value} points",
+  "community.leading": "You are leading this week! Keep going and stay ahead.",
+  "community.chase": "Beat the leader! {name} has {points} points. You need {gap} more to lead.",
+  "community.chase_next": "Next step: pass {name}, only {gap} more points.",
+  "community.new": "Say your day to join the board.",
+  "community.empty": "No punya yet this week. Be the first to fill the ghada!",
+  "community.cta": "Say my day and beat the leader",
+  "profile.show_on_board": "Show me on the community board",
+  "profile.show_on_board_hint": "Only the first half of your name is shown, with punya points only. Turn off to stay off the list; your points still fill the common ghada."
 }

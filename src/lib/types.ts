@@ -46,6 +46,8 @@ export interface Profile {
   consent_at: string | null;
   onboarding_done: boolean;
   keep_words: boolean;
+  /** show me (name half hidden) on the community board; true unless the user turned it off */
+  show_on_board?: boolean;
   theme: 'light' | 'dark';
 }
 

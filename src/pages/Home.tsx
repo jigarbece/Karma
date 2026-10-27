@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
@@ -13,6 +13,8 @@ import { ShlokaCard } from '../components/ShlokaCard';
 import { MicButton } from '../components/MicButton';
 import { Disagree } from '../components/Disagree';
 import { AnalysisDialog } from '../components/AnalysisDialog';
+import { CommunityBoard } from '../components/CommunityBoard';
+import type { Board } from '../lib/community';
 import { Icon } from '../components/Icon';
 import { ActionCard, Segmented, Spinner } from '../components/ui';
 
@@ -38,6 +40,20 @@ export default function Home() {
   // voice clips go to the server when the browser cannot recognise the language itself (always for Gujarati)
   const transcribe = useMemo(() => (repo ? (audio: Blob, l: Lang) => repo.transcribe(audio, l) : undefined), [repo]);
   const speech = useSpeech(lang, getBase, setBoth, transcribe);
+
+  const [board, setBoard] = useState<Board | null>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+  // the common ghada and leaderboard reload whenever the user's own points change
+  useEffect(() => {
+    let live = true;
+    repo?.communityBoard().then((b) => live && setBoard(b)).catch(() => undefined);
+    return () => { live = false; };
+  }, [repo, actions]);
+  const beatTheLeader = useCallback(() => {
+    const box = messageRef.current;
+    box?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+    box?.focus({ preventScroll: true });
+  }, [reduceMotion]);
 
   const [showFound, setShowFound] = useState(false);
   // bring the two ghadas into view so the new points are seen filling them
@@ -120,7 +136,7 @@ export default function Home() {
         <h2 id="say" className="mb-3 font-display text-2xl font-bold leading-tight sm:text-3xl">{t('home.mic_title')}</h2>
         <label htmlFor="story" className="sr-only">{t('home.mic_title')}</label>
         <textarea
-          id="story" rows={4} className="field block w-full resize-y" placeholder={t('talk.placeholder')} value={text}
+          id="story" ref={messageRef} rows={4} className="field block w-full resize-y" placeholder={t('talk.placeholder')} value={text}
           onChange={(e) => setBoth(e.target.value)} maxLength={4000} lang={lang}
         />
         <div className="mt-3 flex items-center gap-3">
@@ -190,7 +206,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. What each act was worth, and the shloka of the day */}
+      {/* 3. Everyone's common punya ghada and the leaderboard */}
+      {board && <CommunityBoard board={board} onCta={beatTheLeader} />}
+
+      {/* 4. What each act was worth, and the shloka of the day */}
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start [&>*]:min-w-0">
         <section aria-labelledby="acts" className="min-w-0">
           <h2 id="acts" className="mb-2 font-display text-2xl font-bold">
