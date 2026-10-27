@@ -48,6 +48,23 @@ export function useSpeech(lang: Lang, getBase: () => string, onText: (text: stri
     recRef.current?.stop();
   }, []);
 
+  /** Ends the current session at once and makes it ignore anything it still reports. */
+  const kill = useCallback(() => {
+    const old = recRef.current;
+    recRef.current = null;
+    if (old) {
+      old.onresult = null;
+      old.onerror = null;
+      old.onend = null;
+      try {
+        old.abort();
+      } catch {
+        /* already stopped */
+      }
+    }
+    setListening(false);
+  }, []);
+
   const start = useCallback(() => {
     const Ctor = getCtor();
     if (!Ctor) {
@@ -55,34 +72,58 @@ export function useSpeech(lang: Lang, getBase: () => string, onText: (text: stri
       return;
     }
     setError(null);
-    recRef.current?.abort();
-    const rec = new Ctor();
-    rec.lang = LOCALE[lang];
-    rec.continuous = !isMobile();
-    rec.interimResults = true;
+    kill();
     const base = getBase();
-    rec.onresult = (e) => {
-      // rebuild from every result each time, so repeated or re-sent results never double the text
-      let spoken = '';
-      for (let i = 0; i < e.results.length; i++) spoken += e.results[i][0].transcript;
-      spoken = spoken.trim();
-      onText(base ? `${base.trimEnd()} ${spoken}` : spoken);
-    };
-    rec.onerror = (e) => {
-      if (e.error !== 'aborted' && e.error !== 'no-speech') setError(e.error);
-      setListening(false);
-    };
-    rec.onend = () => setListening(false);
-    recRef.current = rec;
-    try {
-      rec.start();
-      setListening(true);
-    } catch {
-      setError('start-failed');
-    }
-  }, [lang, getBase, onText]);
+    const continuous = !isMobile();
+    // some Android builds only know the bare code ("gu") and reject "gu-IN", so retry once with it
+    const tags = [LOCALE[lang], LOCALE[lang].split('-')[0]];
 
-  useEffect(() => () => recRef.current?.abort(), []);
+    const begin = (attempt: number) => {
+      const rec = new Ctor();
+      rec.lang = tags[attempt];
+      rec.continuous = continuous;
+      rec.interimResults = true;
+      rec.onresult = (e) => {
+        if (recRef.current !== rec) return;
+        // rebuild from every result each time, so repeated or re-sent results never double the text
+        let spoken = '';
+        for (let i = 0; i < e.results.length; i++) spoken += e.results[i][0].transcript;
+        spoken = spoken.trim();
+        onText(base ? `${base.trimEnd()} ${spoken}` : spoken);
+      };
+      rec.onerror = (e) => {
+        if (recRef.current !== rec) return;
+        if (e.error === 'language-not-supported' && attempt + 1 < tags.length) {
+          recRef.current = null;
+          begin(attempt + 1);
+          return;
+        }
+        if (e.error !== 'aborted' && e.error !== 'no-speech') setError(e.error);
+        setListening(false);
+      };
+      rec.onend = () => {
+        if (recRef.current === rec) setListening(false);
+      };
+      recRef.current = rec;
+      try {
+        rec.start();
+        setListening(true);
+      } catch {
+        recRef.current = null;
+        setListening(false);
+        setError('start-failed');
+      }
+    };
+    begin(0);
+  }, [lang, getBase, onText, kill]);
+
+  // switching language stops the mic first; the next tap starts listening in the new language
+  useEffect(() => {
+    kill();
+    setError(null);
+  }, [lang, kill]);
+
+  useEffect(() => kill, [kill]);
 
   return { supported, listening, error, start, stop };
 }

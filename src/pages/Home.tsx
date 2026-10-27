@@ -12,6 +12,7 @@ import { GhadaPair } from '../components/GhadaPair';
 import { ShlokaCard } from '../components/ShlokaCard';
 import { MicButton } from '../components/MicButton';
 import { Disagree } from '../components/Disagree';
+import { AnalysisDialog } from '../components/AnalysisDialog';
 import { Icon } from '../components/Icon';
 import { ActionCard, Segmented, Spinner } from '../components/ui';
 
@@ -36,6 +37,16 @@ export default function Home() {
   const getBase = useCallback(() => textRef.current, []);
   const speech = useSpeech(lang, getBase, setBoth);
 
+  const [showFound, setShowFound] = useState(false);
+  // bring the two ghadas into view so the new points are seen filling them
+  const goToGhadas = useCallback(() => {
+    requestAnimationFrame(() => stageRef.current?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' }));
+  }, [reduceMotion]);
+  const closeFound = useCallback(() => {
+    setShowFound(false);
+    goToGhadas();
+  }, [goToGhadas]);
+
   const analyse = async () => {
     if (!repo || !text.trim()) return;
     if (speech.listening) speech.stop();
@@ -48,8 +59,9 @@ export default function Home() {
       if (!r.safety_flag) {
         setBoth('');
         await refresh();
-        // bring the two ghadas into view so the new points are seen filling them
-        requestAnimationFrame(() => stageRef.current?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' }));
+        // show what was found first; closing the dialog moves to the ghadas
+        if (r.actions.some((a) => a.type !== 'neutral')) setShowFound(true);
+        else goToGhadas();
       }
     } catch (e) {
       setError(
@@ -85,7 +97,8 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      {demo && <p className="rounded-2xl bg-indigo-soft px-4 py-2 text-sm text-indigo">{t('common.demo')}</p>}
+      {showFound && result && <AnalysisDialog actions={result.actions} onClose={closeFound} />}
+      {demo &&<p className="rounded-2xl bg-indigo-soft px-4 py-2 text-sm text-indigo">{t('common.demo')}</p>}
 
       <header>
         <h1 className="text-2xl font-semibold leading-snug text-balance sm:text-3xl">

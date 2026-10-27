@@ -19,6 +19,14 @@ test('2. user says their day and each act gets its own points with a dharma prin
   await page.getByRole('button', { name: 'Try the demo' }).click();
   await page.getByRole('textbox', { name: 'Tell me about your day' }).fill('I donated food and helped a friend, but I lied to my boss.');
   await page.getByRole('button', { name: 'Analyse' }).click();
+  // a popup first says what was found: Punya versus things to reflect upon, with the words still hidden
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByTestId('dlg-punya')).toContainText(/\+\d+/);
+  await expect(dialog.getByTestId('dlg-growth')).toContainText('−');
+  await expect(dialog.getByTestId('dlg-masked').first()).toBeVisible();
+  await dialog.getByRole('button', { name: 'See my ghadas' }).click();
+  await expect(dialog).toHaveCount(0);
   // acts are masked by default; points are visible
   await expect(page.getByTestId('masked-act').first()).toBeVisible();
   await expect(page.getByText('Gave in charity')).toHaveCount(0);

@@ -62,6 +62,22 @@ describe('Karma app (demo mode)', () => {
     expect(within(card).queryByText('Gave in charity')).not.toBeInTheDocument();
   });
 
+  it('opens a popup after Analyse with Punya and reflect-upon totals, words hidden until asked, then closes', async () => {
+    bootDemo('/');
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(await screen.findByRole('textbox', { name: 'Tell me about your day' }), 'I donated food and I shouted at my brother');
+    await user.click(screen.getByRole('button', { name: 'Analyse' }));
+    const dialog = await screen.findByRole('dialog', {}, { timeout: 8000 });
+    expect(within(dialog).getByTestId('dlg-punya')).toHaveTextContent(/\+\d+/);
+    expect(within(dialog).getByTestId('dlg-growth')).toHaveTextContent(/−\d+/);
+    expect(within(dialog).queryByText('Gave in charity')).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Show details' }));
+    expect(within(dialog).getByText('Gave in charity')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'See my ghadas' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('shows the act text and its dharma principle in whichever language is selected', async () => {
     bootDemo('/history');
     const user = userEvent.setup();
