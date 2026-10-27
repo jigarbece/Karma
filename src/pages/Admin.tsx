@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { adminCall, downloadText, toCsv } from '../lib/adminApi';
+import { Announcements, AdminsPage, FeedbackInbox, SettingsPage, SystemPage } from './AdminTools';
 import { useI18n } from '../lib/i18n';
 import { addDays, localDate, totalsForRange } from '../lib/ghada';
 import { categoryTotals } from '../lib/insights';
@@ -29,19 +31,9 @@ interface AdminUser {
   id: string; email: string; name: string; language: string; onboarded: boolean;
   created_at: string; last_sign_in_at: string | null; blocked: boolean; admin: boolean; days_analysed: number;
   analysed_7d?: number; last_analysed_at?: string | null; punya_acts?: number; paap_acts?: number;
+  board_hidden?: boolean; on_board?: boolean;
 }
 interface Group { date: string; type: 'punya' | 'paap'; category: Category; mode: string; points: number; count: number }
-
-/** Calls the admin-only Edge Function. */
-async function adminCall<T = unknown>(body: object): Promise<T> {
-  const { data, error } = await supabase!.functions.invoke('admin-users', { body });
-  if (error) {
-    const ctx = (error as { context?: Response }).context;
-    const b = ctx && typeof ctx.json === 'function' ? await ctx.json().catch(() => ({})) : {};
-    throw new Error(b.error ?? error.message);
-  }
-  return data as T;
-}
 
 function Tile({ label, value, sub, testId }: { label: string; value: number | string; sub?: string; testId: string }) {
   return (
@@ -126,18 +118,42 @@ function Overview() {
 function UsersPage() {
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('all');
   const [note, setNote] = useState('');
 
   useEffect(() => {
     adminCall<{ users: AdminUser[] }>({ action: 'list' }).then((d) => setUsers(d.users)).catch((e) => setNote(`Could not load users: ${e.message}`));
   }, []);
 
-  const shown = (users ?? []).filter((u) => `${u.email} ${u.name}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const weekAgo = Date.now() - 7 * 86400000;
+  const shown = (users ?? [])
+    .filter((u) => `${u.email} ${u.name}`.toLowerCase().includes(query.trim().toLowerCase()))
+    .filter((u) =>
+      filter === 'all' ? true
+        : filter === 'blocked' ? u.blocked
+          : filter === 'inactive' ? !u.last_sign_in_at || new Date(u.last_sign_in_at).getTime() < weekAgo
+            : filter === 'new' ? new Date(u.created_at).getTime() > weekAgo
+              : (u.days_analysed === 0));
+  const exportCsv = () => downloadText(`karma-users-${localDate()}.csv`, toCsv(shown.map((u) => ({
+    email: u.email, name: u.name, language: u.language, joined: day(u.created_at), last_seen: day(u.last_sign_in_at),
+    days_analysed: u.days_analysed, analysed_7d: u.analysed_7d ?? 0, punya_acts: u.punya_acts ?? 0, paap_acts: u.paap_acts ?? 0,
+    setup_done: u.onboarded ? 'yes' : 'no', blocked: u.blocked ? 'yes' : 'no',
+  }))));
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-3xl font-bold">Users {users && <span className="font-sans text-lg font-normal text-muted">({fmt(users.length)})</span>}</h1>
-        <input className="field !min-h-[40px] max-w-xs" placeholder="Search name or email" aria-label="Search users" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <h1 className="text-3xl font-bold">Users {users && <span className="font-sans text-lg font-normal text-muted">({fmt(shown.length)}{shown.length !== users.length ? ` of ${fmt(users.length)}` : ''})</span>}</h1>
+        <div className="flex flex-wrap gap-2">
+          <input className="field !min-h-[40px] max-w-[14rem]" placeholder="Search name or email" aria-label="Search users" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <select className="field !min-h-[40px] !w-auto" aria-label="Filter users" value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="all">Everyone</option>
+            <option value="new">New this week</option>
+            <option value="inactive">Not seen in 7 days</option>
+            <option value="never">Never analysed a day</option>
+            <option value="blocked">Blocked</option>
+          </select>
+          <button type="button" className="btn-ghost !min-h-[40px] !px-3 text-sm" onClick={exportCsv} disabled={shown.length === 0}>Export CSV</button>
+        </div>
       </div>
       {note && <p role="alert" className="card text-muted">{note}</p>}
       {!users ? !note && <Spinner label="Loading users" /> : (
@@ -238,6 +254,17 @@ function UserDetail() {
     .catch((e) => setProblem(`Could not load this user: ${e.message}`)), [id]);
   useEffect(() => { void load(); }, [load]);
 
+  const toggleBoard = async () => {
+    if (!user) return;
+    try {
+      await adminCall({ action: 'board', id, hidden: !user.board_hidden });
+      setNote(user.board_hidden ? 'Shown on the leaderboard again.' : 'Hidden from the leaderboard.');
+      await load();
+    } catch (e) {
+      setNote((e as Error).message === 'run_community_sql' ? 'Run the community SQL (20261031000000_community_and_admin.sql) first.' : `Could not change: ${(e as Error).message}`);
+    }
+  };
+
   const act = async (action: 'block' | 'unblock' | 'delete') => {
     if (!user) return;
     if (action === 'delete' && window.prompt(`This permanently deletes ${user.email} and all their data. Type DELETE to confirm.`) !== 'DELETE') return;
@@ -288,7 +315,10 @@ function UserDetail() {
           </p>
         </div>
         {!user.admin && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-ghost !min-h-[40px] !px-3 text-sm" onClick={toggleBoard} data-testid="board-toggle">
+              {user.board_hidden ? 'Show on leaderboard' : 'Hide from leaderboard'}
+            </button>
             <button type="button" className="btn-ghost !min-h-[40px] !px-3 text-sm" onClick={() => act(user.blocked ? 'unblock' : 'block')}>{user.blocked ? 'Unblock' : 'Block'}</button>
             <button type="button" className="btn-ghost !min-h-[40px] !px-3 text-sm text-paapred" onClick={() => act('delete')}>Delete</button>
           </div>
@@ -365,6 +395,11 @@ export default function Admin() {
         <p className="hidden px-4 pb-1 font-display text-xl font-bold lg:block">Admin</p>
         <NavLink to="/admin" end className={link}>Overview</NavLink>
         <NavLink to="/admin/users" className={link}>Users</NavLink>
+        <NavLink to="/admin/feedback" className={link}>Feedback</NavLink>
+        <NavLink to="/admin/announcements" className={link}>Announcements</NavLink>
+        <NavLink to="/admin/settings" className={link}>Settings</NavLink>
+        <NavLink to="/admin/admins" className={link}>Admins</NavLink>
+        <NavLink to="/admin/system" className={link}>System</NavLink>
         <p className="hidden px-4 pt-3 text-xs text-muted lg:block">Super admin: you can read every user's entries.</p>
       </nav>
       <div className="min-w-0">
@@ -372,6 +407,11 @@ export default function Admin() {
           <Route index element={<Overview />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="users/:id" element={<UserDetail />} />
+          <Route path="feedback" element={<FeedbackInbox />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="admins" element={<AdminsPage />} />
+          <Route path="system" element={<SystemPage />} />
         </Routes>
       </div>
     </div>

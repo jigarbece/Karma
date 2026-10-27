@@ -85,6 +85,15 @@ alter table public.actions add constraint actions_mode_check check (mode in ('do
 notify pgrst, 'reload schema';
 ```
 
+### 3d. Admin area, community ghada, announcements (run once, in this order)
+
+Run the files from `supabase/migrations/` in the SQL Editor:
+
+1. `20261029000000_admin_stats.sql`, then add yourself: `insert into public.admins (email) values ('you@example.com');`
+2. `20261031000000_community_and_admin.sql`: adds the common punya ghada and leaderboard (names half masked in SQL), the opt-out and owner-hide flags, `app_settings` (goals) and `announcements`.
+
+The owner area is at `/admin`: Overview, Users (search, filters, CSV, block, delete), each user's ghadas and entries, Feedback, Announcements, Settings, Admins and System health. Deploy the functions again (step 5) so `admin-users` has the new actions.
+
 ## 4. Edge Function secrets (terminal, in the project folder)
 
 ```bash

@@ -10,6 +10,12 @@ declare const Deno: { env: { get(name: string): string | undefined }; serve(h: (
 // `entries` returns the decrypted diary text and acts.
 const Body = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }),
+  z.object({ action: z.literal('health') }),
+  z.object({ action: z.literal('feedback') }),
+  z.object({ action: z.literal('admins') }),
+  z.object({ action: z.literal('admin_add'), email: z.string().email().max(200) }),
+  z.object({ action: z.literal('admin_remove'), email: z.string().email().max(200) }),
+  z.object({ action: z.literal('board'), id: z.string().uuid(), hidden: z.boolean() }),
   z.object({ action: z.literal('detail'), id: z.string().uuid() }),
   z.object({ action: z.literal('entries'), id: z.string().uuid() }),
   z.object({ action: z.literal('block'), id: z.string().uuid() }),
@@ -38,6 +44,58 @@ Deno.serve(async (req) => {
     const parsed = Body.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) return json({ error: 'bad_request' }, 400, cors);
     const body = parsed.data;
+
+    if (body.action === 'health') {
+      const has = (n: string) => Boolean(Deno.env.get(n));
+      return json({
+        ai: has('AI_API_KEY'), ai_provider: Deno.env.get('AI_PROVIDER') ?? 'gemini', ai_model: Deno.env.get('AI_MODEL') ?? '(default)',
+        ai_fallback: has('AI_FALLBACK_API_KEY'), voice: has('TRANSCRIBE_API_KEY') || (Deno.env.get('AI_PROVIDER') === 'groq' && has('AI_API_KEY')) || (Deno.env.get('AI_FALLBACK_PROVIDER') === 'groq' && has('AI_FALLBACK_API_KEY')),
+        message_key: has('TRANSCRIPT_KEY'), allowed_origin: Deno.env.get('ALLOWED_ORIGIN') ?? '(any)', daily_limit: Number(Deno.env.get('DAILY_ANALYSIS_LIMIT') ?? 10),
+      }, 200, cors);
+    }
+
+    if (body.action === 'admins') {
+      return json({ admins: [...adminEmails].sort(), me: me.user.email.toLowerCase() }, 200, cors);
+    }
+    if (body.action === 'admin_add') {
+      const { error } = await admin.from('admins').upsert({ email: body.email.toLowerCase() });
+      if (error) throw error;
+      return json({ ok: true }, 200, cors);
+    }
+    if (body.action === 'admin_remove') {
+      if (body.email.toLowerCase() === me.user.email.toLowerCase()) return json({ error: 'cannot_manage_self' }, 400, cors);
+      const { error } = await admin.from('admins').delete().eq('email', body.email.toLowerCase());
+      if (error) throw error;
+      return json({ ok: true }, 200, cors);
+    }
+
+    if (body.action === 'board') {
+      const { error } = await admin.from('profiles').update({ board_hidden: body.hidden }).eq('id', body.id);
+      if (error) return json({ error: /board_hidden/.test(error.message) ? 'run_community_sql' : 'internal_error' }, 400, cors);
+      return json({ ok: true }, 200, cors);
+    }
+
+    if (body.action === 'feedback') {
+      const { data: fb, error: fErr } = await admin.from('action_feedback').select('*').order('created_at', { ascending: false }).limit(200);
+      if (fErr) throw fErr;
+      const ids = [...new Set((fb ?? []).map((f: any) => f.action_id))];
+      const { data: acts } = ids.length ? await admin.from('actions').select('*').in('id', ids) : { data: [] as any[] };
+      const actOf = new Map((acts ?? []).map((a: any) => [a.id, a]));
+      const emailOf = new Map<string, string>();
+      for (const uid of new Set((fb ?? []).map((f: any) => f.user_id as string))) {
+        const { data: u } = await admin.auth.admin.getUserById(uid);
+        emailOf.set(uid, u?.user?.email ?? '');
+      }
+      return json({
+        feedback: (fb ?? []).map((f: any) => {
+          const a: any = actOf.get(f.action_id);
+          return {
+            id: f.id, created_at: f.created_at, comment: f.comment, user_id: f.user_id, email: emailOf.get(f.user_id) ?? '',
+            act: a ? { summary: a.translations?.en?.summary || a.summary, reason: a.translations?.en?.reason || a.reason || '', type: a.type, points: a.weight, principle: a.basis ?? '', mode: a.mode ?? 'done', date: a.entry_date } : null,
+          };
+        }),
+      }, 200, cors);
+    }
 
     if (body.action === 'list') {
       const users: any[] = [];
@@ -93,7 +151,7 @@ Deno.serve(async (req) => {
     if (body.action === 'detail') {
       const { data: t, error: tErr } = await admin.auth.admin.getUserById(body.id);
       if (tErr || !t.user) return json({ error: 'not_found' }, 404, cors);
-      const { data: prof } = await admin.from('profiles').select('name, language, onboarding_done').eq('id', body.id).maybeSingle();
+      const { data: prof } = await admin.from('profiles').select('*').eq('id', body.id).maybeSingle();
       // Aggregated per day, type, category and mode: points and counts only. The wording of acts, their reasons and the
       // diary text are never selected into the response.
       const { data: rows } = await admin.from('actions').select('*').eq('user_id', body.id).limit(20000);
@@ -110,6 +168,7 @@ Deno.serve(async (req) => {
       return json({
         user: {
           id: t.user.id, email: t.user.email ?? '', name: prof?.name ?? '', language: prof?.language ?? '', onboarded: Boolean(prof?.onboarding_done),
+          board_hidden: Boolean(prof?.board_hidden), on_board: prof?.show_on_board !== false,
           created_at: t.user.created_at, last_sign_in_at: t.user.last_sign_in_at ?? null,
           blocked: Boolean((t.user as any).banned_until && new Date((t.user as any).banned_until).getTime() > Date.now()),
           admin: adminEmails.has(String(t.user.email ?? '').toLowerCase()), days_analysed: days ?? 0,
