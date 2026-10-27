@@ -41,6 +41,83 @@ function DailyBars({ title, days, pick, color }: { title: string; days: Day[]; p
   );
 }
 
+interface AdminUser {
+  id: string; email: string; name: string; language: string; onboarded: boolean;
+  created_at: string; last_sign_in_at: string | null; blocked: boolean; admin: boolean; days_analysed: number;
+}
+
+const day = (iso: string | null) => (iso ? iso.slice(0, 10) : 'never');
+
+/** Everyone who registered, with block / unblock / delete. Shows no diary text, acts or points: those stay private to each user. */
+function Users() {
+  const [users, setUsers] = useState<AdminUser[] | null>(null);
+  const [query, setQuery] = useState('');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState('');
+
+  const call = async (body: object) => {
+    const { data, error } = await supabase!.functions.invoke('admin-users', { body });
+    if (error) {
+      const ctx = (error as { context?: Response }).context;
+      const b = ctx && typeof ctx.json === 'function' ? await ctx.json().catch(() => ({})) : {};
+      throw new Error(b.error ?? error.message);
+    }
+    return data;
+  };
+  const load = () => call({ action: 'list' }).then((d) => setUsers(d.users as AdminUser[])).catch((e) => setNote(`Could not load users: ${e.message}`));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void load(); }, []);
+
+  const act = async (u: AdminUser, action: 'block' | 'unblock' | 'delete') => {
+    if (action === 'delete' && window.prompt(`This permanently deletes ${u.email} and all their data. Type DELETE to confirm.`) !== 'DELETE') return;
+    if (action === 'block' && !window.confirm(`Block ${u.email} from signing in?`)) return;
+    setBusy(u.id);
+    try {
+      await call({ action, id: u.id });
+      setNote(`${action === 'delete' ? 'Deleted' : action === 'block' ? 'Blocked' : 'Unblocked'} ${u.email}.`);
+      await load();
+    } catch (e) {
+      setNote(`Could not ${action}: ${(e as Error).message}`);
+    } finally {
+      setBusy('');
+    }
+  };
+
+  const shown = (users ?? []).filter((u) => `${u.email} ${u.name}`.toLowerCase().includes(query.trim().toLowerCase()));
+  return (
+    <section className="card !p-4" aria-labelledby="users-h">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="users-h" className="font-display text-xl font-bold">Users {users && <span className="font-sans text-base font-normal text-muted">({fmt(users.length)})</span>}</h2>
+        <input className="field !min-h-[40px] max-w-xs" placeholder="Search name or email" aria-label="Search users" value={query} onChange={(e) => setQuery(e.target.value)} />
+      </div>
+      {note && <p role="status" className="mt-2 rounded-xl bg-indigo-soft p-2 text-sm">{note}</p>}
+      {!users ? <Spinner label="Loading users" /> : (
+        <ul className="mt-3 divide-y divide-line/70">
+          {shown.map((u) => (
+            <li key={u.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3" data-testid="admin-user">
+              <div className="min-w-0 flex-1 basis-56">
+                <p className="truncate font-semibold">{u.name || '(no name)'} <span className="font-normal text-muted">{u.email}</span></p>
+                <p className="text-xs text-muted">
+                  Joined {day(u.created_at)} · last seen {day(u.last_sign_in_at)} · {fmt(u.days_analysed)} days analysed · {u.language ? (LANG_NAME[u.language] ?? u.language) : 'no language'}{u.onboarded ? '' : ' · setup not finished'}
+                </p>
+              </div>
+              {u.admin && <span className="rounded-full bg-gold/25 px-2 py-0.5 text-xs font-semibold text-saffron-text">Admin</span>}
+              {u.blocked && <span className="rounded-full bg-indigo-soft px-2 py-0.5 text-xs font-semibold text-paapred">Blocked</span>}
+              {!u.admin && (
+                <div className="flex gap-2">
+                  <button type="button" className="btn-ghost !min-h-[40px] !px-3 text-sm" disabled={busy === u.id} onClick={() => act(u, u.blocked ? 'unblock' : 'block')}>{u.blocked ? 'Unblock' : 'Block'}</button>
+                  <button type="button" className="btn-ghost !min-h-[40px] !px-3 text-sm text-paapred" disabled={busy === u.id} onClick={() => act(u, 'delete')}>Delete</button>
+                </div>
+              )}
+            </li>
+          ))}
+          {shown.length === 0 && <li className="py-3 text-muted">No users match.</li>}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 /** Admin numbers: counts only, no names, emails or diary text. Allowed only for emails in the `admins` table. */
 export default function Admin() {
   const [stats, setStats] = useState<Stats | null>(null);
@@ -66,7 +143,7 @@ export default function Admin() {
     <div className="space-y-5">
       <header>
         <h1 className="text-3xl font-bold">Admin</h1>
-        <p className="text-muted">Counts only. No names, emails, messages or acts are shown here.</p>
+        <p className="text-muted">Numbers and the user list. Diary messages, acts and points are never shown here: they stay private to each user.</p>
       </header>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -95,6 +172,8 @@ export default function Admin() {
           ))}
         </ul>
       </section>
+
+      <Users />
     </div>
   );
 }
