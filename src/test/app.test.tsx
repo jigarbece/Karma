@@ -82,6 +82,12 @@ describe('Karma app (demo mode)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('has an admin page that explains itself when there is no live backend', async () => {
+    bootDemo('/admin');
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Admin' }, { timeout: 4000 }).catch(() => null) ?? await screen.findByText(/needs the live Supabase project/)).toBeTruthy();
+  });
+
   it('switches language at once, without waiting for the profile to save', async () => {
     bootDemo('/');
     // a profile save that never finishes, like a very slow network

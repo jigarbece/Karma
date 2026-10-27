@@ -14,6 +14,7 @@ import { About, Privacy, Terms } from './pages/Legal';
 const History = lazy(() => import('./pages/Journal'));
 const Insights = lazy(() => import('./pages/Insights'));
 const Profile = lazy(() => import('./pages/Profile'));
+const Admin = lazy(() => import('./pages/Admin'));
 
 function Loading() {
   const { t } = useI18n();
@@ -68,6 +69,7 @@ export default function App() {
               <Route path="insights" element={<Insights />} />
               <Route path="history" element={<History />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="admin" element={<Admin />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
