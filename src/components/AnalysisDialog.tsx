@@ -129,9 +129,9 @@ export function AnalysisDialog({ actions, onClose }: { actions: KarmaAction[]; o
                 {/* the teaching behind the points is shown by default: it says nothing about what the person wrote */}
                 {principle && (
                   <div className="mt-1.5 rounded-xl bg-sand/60 px-3 py-2 text-sm" data-testid="dlg-teaching">
-                    <p className="font-display text-base font-bold leading-snug">{principle.label}</p>
-                    <p className="leading-snug">{principle.about}</p>
-                    <p className="mt-0.5 text-xs text-muted">{principle.source}</p>
+                    <p className="iast text-base font-bold leading-snug">{principle.label}</p>
+                    <p className="mt-0.5 leading-snug" data-testid="dlg-moral">{principle.moral || principle.about}</p>
+                    <p className="iast mt-1 text-xs font-medium text-muted">{principle.source}</p>
                   </div>
                 )}
                 {details && (tr?.reason || a.reason) && (

@@ -401,5 +401,12 @@
   "greeting.custom": "My own",
   "profile.greeting_custom": "Your own greeting",
   "profile.greeting_custom_ph": "for example Jai Mataji",
-  "profile.greeting_save": "Save greeting"
+  "profile.greeting_save": "Save greeting",
+  "talk.nothing_help_title": "What you can tell me",
+  "talk.nothing_help_1": "Things you did: helped someone, gave food or money, fed an animal, served your parents, told the truth, prayed.",
+  "talk.nothing_help_2": "Things you said: spoke kindly or comforted someone, or lost your temper, lied or gossiped.",
+  "talk.nothing_help_3": "Times you held back: felt angry but stayed calm, resisted a temptation.",
+  "talk.nothing_help_4": "Thoughts: felt grateful or wished someone well, or felt jealous or wished harm.",
+  "talk.nothing_help_5": "Plans: something good you mean to do tomorrow.",
+  "talk.nothing_help_example": "Try something like: \"I fed the cows this morning, stayed calm when my brother shouted at me, and I plan to visit my parents tomorrow.\""
 }

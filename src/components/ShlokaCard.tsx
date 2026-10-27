@@ -36,7 +36,7 @@ export function ShlokaCard({ date, shloka }: { date: string; shloka?: Shloka }) 
           {lang === 'en' && (
             <div className="mt-3 border-t border-gold-light/20 pt-3">
               <p className="text-[0.7rem] font-semibold tracking-wide text-gold-light/80">{t('shloka.pronunciation')}</p>
-              <p className="mt-1 whitespace-pre-line text-sm italic leading-relaxed text-cream/80">{s.roman}</p>
+              <p className="iast mt-1 whitespace-pre-line text-sm leading-relaxed text-cream/90">{s.roman}</p>
             </div>
           )}
         </div>

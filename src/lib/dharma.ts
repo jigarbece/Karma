@@ -1,5 +1,6 @@
 import rubric from '../../supabase/functions/_shared/rubric.v3.json';
 import { principleText } from '../content/principleText';
+import { principleMoral } from '../content/principleMoral';
 import type { Lang } from './types';
 
 export interface DharmaPrinciple {
@@ -10,6 +11,8 @@ export interface DharmaPrinciple {
   category: string;
   source: string;
   about: string;
+  /** what the cited text teaches, in plain words (filled by localizedPrinciple) */
+  moral?: string;
 }
 
 export const DHARMA_VERSION: string = rubric.version;
@@ -23,5 +26,6 @@ export function getPrinciple(id: string | undefined): DharmaPrinciple | undefine
 /** The principle with its label, description and source in the selected language. */
 export function localizedPrinciple(p: DharmaPrinciple, lang: Lang): DharmaPrinciple {
   const t = principleText(p.id, lang);
-  return t ? { ...p, label: t.label, about: t.about, source: t.source } : p;
+  const moral = principleMoral(p.id, lang);
+  return { ...p, ...(t ? { label: t.label, about: t.about, source: t.source } : {}), moral };
 }

@@ -5,6 +5,8 @@ import hi from '../i18n/hi.json';
 import { TEACHINGS } from '../lib/teachings';
 import { CATEGORIES } from '../lib/types';
 import { PRINCIPLE_TEXT } from '../content/principleText';
+import { PRINCIPLE_MORAL } from '../content/principleMoral';
+import { getPrinciple, localizedPrinciple } from '../lib/dharma';
 import { SHLOKAS, devanagariToGujarati } from '../content/shlokas';
 import rubric from '../../supabase/functions/_shared/rubric.v3.json';
 
@@ -61,6 +63,24 @@ describe('dharma rubric v2', () => {
   it('covers both merit and growth principles', () => {
     expect(rubric.principles.filter((p) => p.type === 'punya').length).toBeGreaterThan(8);
     expect(rubric.principles.filter((p) => p.type === 'paap').length).toBeGreaterThan(8);
+  });
+});
+
+describe('the moral behind each source', () => {
+  it('has a plain-language moral in every language for every principle', () => {
+    for (const p of rubric.principles) {
+      const m = PRINCIPLE_MORAL[p.id];
+      expect(m, `moral for ${p.id}`).toBeTruthy();
+      for (const l of ['en', 'gu', 'hi'] as const) expect(m[l].length, `${p.id} ${l}`).toBeGreaterThan(30);
+      expect(m.gu).toMatch(/[઀-૿]/);
+      expect(m.hi).toMatch(/[ऀ-ॿ]/);
+    }
+  });
+  it('is shown with the principle in the selected language', () => {
+    const p = getPrinciple('parusha_vani')!;
+    expect(localizedPrinciple(p, 'en').moral).toMatch(/Speech that causes no distress/);
+    expect(localizedPrinciple(p, 'gu').moral).toMatch(/[઀-૿]/);
+    expect(localizedPrinciple(p, 'hi').moral).toMatch(/[ऀ-ॿ]/);
   });
 });
 

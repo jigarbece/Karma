@@ -57,13 +57,14 @@ export function About() {
         {PRINCIPLES.map((base) => localizedPrinciple(base, lang)).map((p) => (
           <li key={p.id} className="card !p-3">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="font-display text-xl font-bold">{p.label}</span>
+              <span className="iast text-lg font-bold">{p.label}</span>
               <span className={`shrink-0 text-sm font-semibold ${p.type === 'punya' ? 'text-good' : 'text-indigo'}`}>
                 {p.type === 'punya' ? '+' : '−'}{p.range[0]}–{p.range[1]}
               </span>
             </div>
             <div className="text-sm">{p.about}</div>
-            <div className="text-sm text-muted">{p.source}</div>
+            {p.moral && <div className="mt-1 text-sm font-medium">{p.moral}</div>}
+            <div className="iast mt-1 text-sm text-muted">{p.source}</div>
           </li>
         ))}
       </ul>

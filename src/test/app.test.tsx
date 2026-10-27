@@ -78,9 +78,25 @@ describe('Karma app (demo mode)', () => {
     expect(within(dialog).queryByText('Gave in charity')).not.toBeInTheDocument();
     // the dharma teaching and its source show without tapping anything
     expect(within(dialog).getAllByTestId('dlg-teaching')[0]).toHaveTextContent(/Annadāna|Bhagavad Gita|Mahabharata|Upanishad|Manusmriti|Puran/);
+    // and what the cited verse teaches, in plain words
+    expect(within(dialog).getAllByTestId('dlg-moral')[0].textContent!.length).toBeGreaterThan(30);
     await user.click(within(dialog).getByRole('button', { name: 'Show details' }));
     expect(within(dialog).getByText('Gave in charity')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'See my ghadas' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('when nothing is scored, says so and shows what the user can enter', async () => {
+    bootDemo('/');
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(await screen.findByRole('textbox', { name: 'Tell me about your day' }), 'I went to the office and had lunch');
+    await user.click(screen.getByRole('button', { name: 'Analyse' }));
+    const box = await screen.findByTestId('nothing-scored', {}, { timeout: 8000 });
+    expect(box).toHaveTextContent('Nothing needed scoring in what you shared');
+    expect(within(box).getByText('What you can tell me')).toBeInTheDocument();
+    expect(within(box).getAllByRole('listitem')).toHaveLength(5);
+    expect(box).toHaveTextContent(/Try something like/);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 

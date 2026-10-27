@@ -5,6 +5,7 @@
 const SAMPLES: Array<[family: string, text: string, weights: number[]]> = [
   ['"Hind Vadodara"', 'ગુજરાતી ભાષા ૧૨૩', [400, 500, 600, 700]],
   ['"Noto Sans Devanagari"', 'हिंदी भाषा १२३', [400, 500, 600, 700]],
+  ['"Noto Sans"', 'Paruṣa-vāṇī Annadāna Dama Śauca Kṣamā Bhagavad Gītā', [400, 500, 600, 700]],
   ['"Tiro Gujarati"', 'ગુજરાતી શ્લોક', [400]],
   ['"Tiro Devanagari Hindi"', 'हिंदी श्लोक', [400]],
 ];

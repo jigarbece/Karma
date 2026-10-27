@@ -136,10 +136,11 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
         <div className="mt-1 space-y-1.5 border-t border-line/60 pt-2 text-sm">
           {reason && <p>{reason}</p>}
           {principle && (
-            <p className="inline-flex flex-wrap items-baseline gap-x-2 rounded-xl bg-sand/60 px-3 py-1" data-testid="basis">
-              <span className="font-display text-base font-bold">{principle.label}</span>
-              <span className="text-xs text-muted">{principle.source}</span>
-            </p>
+            <div className="rounded-xl bg-sand/60 px-3 py-2" data-testid="basis">
+              <p className="iast text-base font-bold">{principle.label}</p>
+              {principle.moral && <p className="mt-0.5 leading-snug">{principle.moral}</p>}
+              <p className="iast mt-1 text-xs font-medium text-muted">{principle.source}</p>
+            </div>
           )}
           {children}
         </div>

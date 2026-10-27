@@ -90,7 +90,7 @@ export default function Home() {
         await refresh();
         // show what was found first; closing the dialog moves to the ghadas
         if (r.actions.some((a) => a.type !== 'neutral')) setShowFound(true);
-        else goToGhadas();
+        else requestAnimationFrame(() => document.querySelector('[data-testid=nothing-scored]')?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' })); // show the "what you can tell me" help, not the ghadas
       }
     } catch (e) {
       setError(
@@ -173,7 +173,16 @@ export default function Home() {
         </section>
       )}
 
-      {result && !result.safety_flag && result.actions.length === 0 && <p className="card text-muted">{t('talk.nothing_scored')}</p>}
+      {result && !result.safety_flag && result.actions.length === 0 && (
+        <section className="card space-y-3" aria-live="polite" data-testid="nothing-scored">
+          <p className="font-semibold">{t('talk.nothing_scored')}</p>
+          <h2 className="font-display text-xl font-bold">{t('talk.nothing_help_title')}</h2>
+          <ul className="list-disc space-y-1 pl-5 text-sm">
+            {[1, 2, 3, 4, 5].map((n) => <li key={n}>{t(`talk.nothing_help_${n}`)}</li>)}
+          </ul>
+          <p className="rounded-2xl bg-gold/20 p-3 text-sm italic">{t('talk.nothing_help_example')}</p>
+        </section>
+      )}
 
       {result && !result.safety_flag && teaching && result.reflection?.suggestion && (
         <section className="card" aria-live="polite">
