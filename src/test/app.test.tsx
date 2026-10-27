@@ -51,6 +51,27 @@ describe('Karma app (demo mode)', () => {
     expect(basis.some((b) => b.includes('Krodha'))).toBe(true);
   });
 
+  it('encrypts the saved message and never shows it again, only a masked notice', async () => {
+    bootDemo('/');
+    const user = userEvent.setup();
+    render(<App />);
+    expect(await screen.findByTestId('privacy-note')).toHaveTextContent('encrypted');
+    await user.type(await screen.findByRole('textbox', { name: 'Tell me about your day' }), 'UNIQUE-PRIVATE-PHRASE I donated food');
+    await user.click(screen.getByRole('button', { name: 'Analyse' }));
+    await screen.findAllByText('Gave in charity', {}, { timeout: 8000 });
+
+    // nothing the user wrote is shown back, and it is not stored in the clear
+    expect(screen.queryByText(/UNIQUE-PRIVATE-PHRASE/)).not.toBeInTheDocument();
+    const stored = localStorage.getItem('karma.demo.v1') ?? '';
+    expect(stored).not.toContain('UNIQUE-PRIVATE-PHRASE');
+    expect(stored).toContain('enc:v1:');
+
+    await user.click(within(screen.getByRole('navigation', { name: 'Main navigation' })).getByRole('link', { name: 'History' }));
+    expect((await screen.findAllByTestId('masked-message')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/encrypted and kept private/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/UNIQUE-PRIVATE-PHRASE/)).not.toBeInTheDocument();
+  });
+
   it('shows the safety message and Tele-MANAS number, scoring nothing', async () => {
     bootDemo('/');
     const user = userEvent.setup();

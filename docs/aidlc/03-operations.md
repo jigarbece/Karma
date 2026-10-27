@@ -16,6 +16,7 @@ Config matrix
 | `AI_FALLBACK_PROVIDER`, `AI_FALLBACK_API_KEY`, `AI_FALLBACK_MODEL` | `supabase secrets` | recommended second provider |
 | `ALLOWED_ORIGIN` | `supabase secrets` | `https://karma-828u.vercel.app,http://localhost:5173` (drop localhost for prod-only) |
 | `DAILY_ANALYSIS_LIMIT` | `supabase secrets` | default 10 |
+| `TRANSCRIPT_KEY` | `supabase secrets` | 32-byte base64 key that encrypts saved messages; losing it makes old messages unreadable (the app never reads them anyway); never rotate without a plan |
 
 ## 2. Release process
 

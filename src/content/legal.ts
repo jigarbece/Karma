@@ -13,7 +13,7 @@ export const LEGAL_UPDATED = '2026-10-26';
  */
 export const PRIVACY: Record<Lang, Section[]> = {
   en: [
-    { h: 'What we store', p: 'Your profile (name, language, tradition, goals, city, reminder time), the text of what you tell Karma (only if "Keep my words" is on), the actions identified from it with their scores and reasons, your reflections and Pratikraman notes. We never store audio.' },
+    { h: 'What we store', p: 'Your profile (name, language, tradition, goals, city, reminder time), the text of what you tell Karma (only if "Keep my words" is on), the actions identified from it with their scores and reasons, your reflections and Pratikraman notes. Saved text is encrypted at rest (AES-256-GCM) and is never displayed back in the app. We never store audio.' },
     { h: 'Why we store it', p: 'Only to show your ghadas, charts and reflections, and to let you review your own growth. We do not sell your data, show ads or use analytics trackers.' },
     { h: 'AI processing by a third party', p: 'To find actions in your words, the text you submit is sent from our server to a third-party AI provider (Google Gemini by default; Groq, Anthropic or OpenAI if the operator chooses). The provider processes it to return a result. Your name and email are not sent. Please do not include other people\'s sensitive personal details.' },
     { h: 'Voice', p: 'If you use the microphone, your browser\'s speech recognition service (for example Google in Chrome) converts speech to text on your behalf. Karma never receives or stores audio. You can always type instead.' },
@@ -24,7 +24,7 @@ export const PRIVACY: Record<Lang, Section[]> = {
     { h: 'Contact', p: 'Questions or requests: privacy@karma.example (replace with the operator\'s address). The operator is the data fiduciary.' },
   ],
   hi: [
-    { h: 'हम क्या सहेजते हैं', p: 'आपकी प्रोफ़ाइल (नाम, भाषा, परंपरा, लक्ष्य, शहर, अनुस्मारक समय), आपने कर्म को जो बताया उसका पाठ ("मेरे शब्द सहेजें" चालू होने पर ही), उससे पहचाने गए कर्म, अंक व कारण, आपके चिंतन और प्रतिक्रमण नोट। हम कभी ऑडियो नहीं सहेजते।' },
+    { h: 'हम क्या सहेजते हैं', p: 'आपकी प्रोफ़ाइल (नाम, भाषा, परंपरा, लक्ष्य, शहर, अनुस्मारक समय), आपने कर्म को जो बताया उसका पाठ ("मेरे शब्द सहेजें" चालू होने पर ही), उससे पहचाने गए कर्म, अंक व कारण, आपके चिंतन और प्रतिक्रमण नोट। सहेजा गया पाठ एन्क्रिप्ट (AES-256-GCM) करके रखा जाता है और ऐप में दोबारा कभी नहीं दिखाया जाता। हम कभी ऑडियो नहीं सहेजते।' },
     { h: 'क्यों सहेजते हैं', p: 'केवल आपके घड़े, चार्ट और चिंतन दिखाने तथा आपकी अपनी प्रगति देखने के लिए। हम आपका डेटा नहीं बेचते, विज्ञापन या ट्रैकर नहीं रखते।' },
     { h: 'तृतीय-पक्ष AI द्वारा प्रसंस्करण', p: 'कर्म पहचानने के लिए आपका भेजा पाठ हमारे सर्वर से तृतीय-पक्ष AI प्रदाता (डिफ़ॉल्ट Google Gemini; संचालक चाहे तो Groq, Anthropic या OpenAI) को भेजा जाता है। आपका नाम और ईमेल नहीं भेजा जाता। कृपया दूसरों की संवेदनशील निजी जानकारी न लिखें।' },
     { h: 'आवाज़', p: 'माइक्रोफ़ोन उपयोग करने पर आपका ब्राउज़र (जैसे Chrome में Google) आपकी ओर से बोली को पाठ में बदलता है। कर्म को ऑडियो कभी नहीं मिलता और न सहेजा जाता है। आप हमेशा लिख सकते हैं।' },
@@ -35,7 +35,7 @@ export const PRIVACY: Record<Lang, Section[]> = {
     { h: 'संपर्क', p: 'प्रश्न या अनुरोध: privacy@karma.example (संचालक के पते से बदलें)। संचालक डेटा फिड्यूशियरी है।' },
   ],
   gu: [
-    { h: 'અમે શું સાચવીએ છીએ', p: 'તમારી પ્રોફાઇલ (નામ, ભાષા, પરંપરા, લક્ષ્યો, શહેર, રિમાઇન્ડર સમય), તમે કર્મને જે કહ્યું તેનું લખાણ (ફક્ત "મારા શબ્દો સાચવો" ચાલુ હોય ત્યારે), તેમાંથી ઓળખાયેલા કાર્યો, ગુણ અને કારણો, તમારા ચિંતન અને પ્રતિક્રમણ નોંધો. અમે ક્યારેય ઑડિયો સાચવતા નથી.' },
+    { h: 'અમે શું સાચવીએ છીએ', p: 'તમારી પ્રોફાઇલ (નામ, ભાષા, પરંપરા, લક્ષ્યો, શહેર, રિમાઇન્ડર સમય), તમે કર્મને જે કહ્યું તેનું લખાણ (ફક્ત "મારા શબ્દો સાચવો" ચાલુ હોય ત્યારે), તેમાંથી ઓળખાયેલા કાર્યો, ગુણ અને કારણો, તમારા ચિંતન અને પ્રતિક્રમણ નોંધો. સાચવેલું લખાણ એન્ક્રિપ્ટ (AES-256-GCM) કરીને રખાય છે અને એપમાં ફરી ક્યારેય બતાવાતું નથી. અમે ક્યારેય ઑડિયો સાચવતા નથી.' },
     { h: 'શા માટે સાચવીએ છીએ', p: 'ફક્ત તમારા ઘડા, ચાર્ટ અને ચિંતન બતાવવા અને તમારી પોતાની પ્રગતિ જોવા માટે. અમે તમારો ડેટા વેચતા નથી, જાહેરાતો કે ટ્રેકર્સ રાખતા નથી.' },
     { h: 'ત્રીજા પક્ષ દ્વારા AI પ્રક્રિયા', p: 'કાર્યો ઓળખવા માટે તમે મોકલેલું લખાણ અમારા સર્વરથી ત્રીજા પક્ષના AI પ્રદાતા (ડિફૉલ્ટ Google Gemini; સંચાલક ઇચ્છે તો Groq, Anthropic અથવા OpenAI) ને મોકલાય છે. તમારું નામ અને ઇમેઇલ મોકલાતા નથી. કૃપા કરીને બીજાની સંવેદનશીલ અંગત માહિતી ન લખો.' },
     { h: 'અવાજ', p: 'માઇક્રોફોન વાપરો ત્યારે તમારું બ્રાઉઝર (જેમ કે Chrome માં Google) તમારા વતી બોલાયેલું લખાણમાં ફેરવે છે. કર્મને ઑડિયો ક્યારેય મળતો નથી કે સચવાતો નથી. તમે હંમેશા લખી શકો છો.' },

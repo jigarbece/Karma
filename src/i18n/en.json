@@ -41,7 +41,7 @@
   "landing.f2.d": "Every act is graded 1 to 50 by Hindu dharma principles, with the reason shown. No black box.",
   "landing.f3.t": "Wisdom for tomorrow",
   "landing.f3.d": "A short teaching from the Gita and one small step for tomorrow.",
-  "landing.privacy": "Your words are yours. We never store audio, show no ads and use no trackers. You can export or delete everything at any time.",
+  "landing.privacy": "Your words are yours. Messages are encrypted when saved and never shown again. We never store audio, show no ads and use no trackers. You can export or delete everything at any time.",
   "landing.google": "Continue with Google",
   "landing.email": "Continue with email",
   "landing.demo": "Try the demo",
@@ -193,7 +193,7 @@
   "profile.reminder_text": "Time for your Karma reflection.",
   "profile.theme": "Theme",
   "profile.keep_words": "Keep my words",
-  "profile.keep_words_hint": "When off, the text of what you say is deleted right after analysis. Actions and scores remain.",
+  "profile.keep_words_hint": "When off, your message is not saved at all. When on, it is saved encrypted and never shown. Scored acts and points always remain.",
   "profile.export": "Export my data",
   "profile.export_json": "Download JSON",
   "profile.export_csv": "Download CSV",
@@ -297,5 +297,7 @@
   "journal.sub": "Everything you have shared and what each act was worth, newest first.",
   "journal.empty": "Your entries will appear here after your first reflection.",
   "journal.write": "Write today's entry",
-  "nav.history": "History"
+  "nav.history": "History",
+  "journal.encrypted": "Your message is encrypted and kept private. Only the scored acts are shown.",
+  "talk.privacy_note": "Your message is encrypted when saved and is never shown again."
 }

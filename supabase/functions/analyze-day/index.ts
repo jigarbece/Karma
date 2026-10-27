@@ -6,6 +6,7 @@ import teachingIndex from '../_shared/teachings.index.json' with { type: 'json' 
 import { buildSystemPrompt, buildUserPrompt, detectSafety, finalize, localDateIn, parseAnalysis, type TeachingIndexEntry } from '../_shared/analysis.ts';
 import { callWithFallback, readAiConfigs } from '../_shared/providers.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
+import { encryptText } from '../_shared/crypto.ts';
 
 declare const Deno: { env: { get(name: string): string | undefined }; serve(h: (req: Request) => Response | Promise<Response>): void };
 
@@ -69,12 +70,17 @@ Deno.serve(async (req) => {
 
     const final = finalize(result.value, ctx as any, index, `${date}:${userId}`, (rubric as any).principles);
 
+    // The message is stored only encrypted (AES-256-GCM, key in the TRANSCRIPT_KEY secret) and is never shown
+    // in the app. Without a key we store nothing rather than store plain text.
+    const transcriptKey = Deno.env.get('TRANSCRIPT_KEY');
+    const sealed = profile.keep_words && transcriptKey ? await encryptText(transcript, transcriptKey) : null;
+
     const { data: entry, error: entryErr } = await supabase
       .from('entries')
       .insert({
         user_id: userId,
         entry_date: date,
-        transcript: profile.keep_words ? transcript : null,
+        transcript: sealed,
         language,
         ai_provider: cfg.provider,
         ai_model: cfg.model,

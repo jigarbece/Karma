@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
 import type { Entry } from '../lib/types';
+import { Icon } from '../components/Icon';
 import { ActionCard, PageTitle, Spinner } from '../components/ui';
 
 /** Every entry the user has shared, newest first, grouped by day. */
@@ -43,7 +44,12 @@ export default function Journal() {
                     <li key={e.id} className="card">
                       <p className="text-sm text-muted">{new Date(e.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                       {e.transcript ? (
-                        <p className="mt-1 whitespace-pre-wrap">{e.transcript}</p>
+                        // The saved message is encrypted and never shown, not even to its owner.
+                        <p className="mt-1 flex items-center gap-2 rounded-xl bg-sand/50 px-3 py-2 text-sm" data-testid="masked-message">
+                          <Icon name="lock" size={18} className="shrink-0 text-saffron-text" />
+                          <span aria-hidden="true" className="tracking-widest text-muted">••••••••••••</span>
+                          <span className="text-muted">{t('journal.encrypted')}</span>
+                        </p>
                       ) : profile?.keep_words === false ? (
                         <p className="mt-1 text-muted">{t('talk.not_kept')}</p>
                       ) : null}

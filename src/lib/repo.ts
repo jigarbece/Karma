@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { localDate } from './ghada';
 import { mockAnalyze } from './mockAnalyze';
 import { sampleHistory } from './sample';
+import { sealLocal } from './seal';
 import { getTeaching } from './teachings';
 import type { AnalysisResult, Entry, KarmaAction, PratikramanRecord, Profile } from './types';
 
@@ -192,7 +193,7 @@ export const localRepo: Repo = {
     const entry: Entry = {
       id: `a-${uid()}`,
       entry_date: date,
-      transcript: profile.keep_words ? transcript : null,
+      transcript: profile.keep_words ? await sealLocal(transcript) : null,
       language: language as Entry['language'],
       created_at: new Date().toISOString(),
     };
@@ -308,7 +309,7 @@ export function makeSupabaseRepo(userId: string): Repo {
       if (local) {
         if (local.safety_flag) return { entry: null, actions: [], reflection: null, safety_flag: true };
         const { data: entry, error: entryErr } = await sb.from('entries').insert({
-          user_id: userId, entry_date: input.date, transcript: prof?.keep_words === false ? null : input.transcript,
+          user_id: userId, entry_date: input.date, transcript: prof?.keep_words === false ? null : await sealLocal(input.transcript),
           language: input.language, ai_provider: local.provider ?? 'dev', ai_model: local.model ?? 'dev', rubric_version: 'v2',
         }).select('*').single();
         if (entryErr) throw new AnalyzeError('save_failed', entryErr.message);

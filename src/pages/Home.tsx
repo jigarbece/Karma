@@ -120,6 +120,10 @@ export default function Home() {
               </div>
               <button type="button" className="btn-primary" onClick={analyse} disabled={busy || !text.trim()}>{t('talk.analyse')}</button>
             </div>
+            <p className="flex items-center gap-2 text-sm text-muted" data-testid="privacy-note">
+              <Icon name="lock" size={16} className="shrink-0 text-saffron-text" />
+              {t('talk.privacy_note')}
+            </p>
             {busy && <Spinner label={t('talk.analysing')} />}
             {error && <p role="alert" className="rounded-xl bg-indigo-soft p-3 text-sm font-semibold text-indigo">{error}</p>}
           </section>
