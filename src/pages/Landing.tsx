@@ -6,6 +6,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { LotusDivider, Mandala } from '../components/Mandala';
 import { OmChakra } from '../components/SacredArt';
 import { ShlokaCard } from '../components/ShlokaCard';
+import { VisitorCount } from '../components/VisitorCount';
 import { localDate } from '../lib/ghada';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
@@ -101,6 +102,8 @@ export default function Landing() {
           <Link to="/privacy" className="font-semibold text-saffron-text underline">{t('profile.privacy')}</Link>
         </span>
       </p>
+
+      <div className="mt-6 text-center"><VisitorCount /></div>
     </div>
   );
 }

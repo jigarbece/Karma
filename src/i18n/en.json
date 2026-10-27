@@ -315,5 +315,7 @@
   "shloka.gita": "Bhagavad Gita",
   "insights.strongest": "Strongest area",
   "insights.needs_care": "Needs care",
-  "insights.bars": "Where you did well and where to grow"
+  "insights.bars": "Where you did well and where to grow",
+  "visitors.count": "{n} visitors",
+  "visitors.aria": "{n} people have visited"
 }

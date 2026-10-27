@@ -315,5 +315,7 @@
   "shloka.gita": "ભગવદ્ ગીતા",
   "insights.strongest": "સૌથી મજબૂત ક્ષેત્ર",
   "insights.needs_care": "ધ્યાન માંગે છે",
-  "insights.bars": "ક્યાં સારું કર્યું અને ક્યાં સુધારો કરવો"
+  "insights.bars": "ક્યાં સારું કર્યું અને ક્યાં સુધારો કરવો",
+  "visitors.count": "{n} મુલાકાતીઓ",
+  "visitors.aria": "{n} લોકોએ મુલાકાત લીધી છે"
 }

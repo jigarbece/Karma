@@ -137,7 +137,7 @@ Get a free Gemini key at <https://aistudio.google.com/apikey>. To switch provide
 
 ## Privacy
 
-Saved messages are encrypted at rest with AES-256-GCM (key in the `TRANSCRIPT_KEY` function secret) and are never shown back in the app; History shows a masked notice and only the scored acts. The text is still sent to the AI provider in plain form to be scored, and in transit it is protected by TLS. No audio is ever stored (voice is converted to text by your browser's speech service). No analytics, trackers or ads. Users can export (JSON/CSV) and delete everything. Replace the placeholder contact address `privacy@karma.example` in `src/content/legal.ts` and `src/i18n/*.json`, and have the policy reviewed by a lawyer before launch; it is written for India's DPDP Act but is not legal advice.
+The landing page and Home show a small unique-visitor count (a random anonymous browser ID, counted once; Do Not Track is respected; run `supabase/migrations/20261027000200_visitor_count.sql`). Saved messages are encrypted at rest with AES-256-GCM (key in the `TRANSCRIPT_KEY` function secret) and are never shown back in the app; History shows a masked notice and only the scored acts. The text is still sent to the AI provider in plain form to be scored, and in transit it is protected by TLS. No audio is ever stored (voice is converted to text by your browser's speech service). No analytics, trackers or ads. Users can export (JSON/CSV) and delete everything. Replace the placeholder contact address `privacy@karma.example` in `src/content/legal.ts` and `src/i18n/*.json`, and have the policy reviewed by a lawyer before launch; it is written for India's DPDP Act but is not legal advice.
 
 ## Known limitations
 

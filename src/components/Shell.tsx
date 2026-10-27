@@ -6,6 +6,7 @@ import { LotusMark } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useI18n } from '../lib/i18n';
 import { useApp } from '../lib/app';
+import { VisitorCount } from './VisitorCount';
 
 const ITEMS = [
   { to: '/', key: 'nav.home', icon: 'home', end: true },
@@ -81,11 +82,15 @@ export function Shell() {
         </div>
       </header>
 
-      <main id="main" className="mx-auto w-full max-w-5xl px-3 pb-32 pt-5 sm:px-5 md:pb-12">
+      <main id="main" className="mx-auto w-full max-w-5xl px-3 pb-6 pt-5 sm:px-5 md:pb-6">
         <motion.div key={pathname} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: 'easeOut' }}>
           <Outlet />
         </motion.div>
       </main>
+
+      <footer className="mx-auto max-w-5xl px-3 pb-28 text-center md:pb-8">
+        <VisitorCount />
+      </footer>
 
       {/* Phones: floating pill navigation */}
       <nav
