@@ -30,9 +30,13 @@ function getCtor(): RecognitionCtor | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
+/** Phone browsers (Android Chrome especially) repeat words in continuous mode, so they get one utterance per tap. */
+const isMobile = () => typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 /**
  * Live dictation. `onText` receives the full text (existing text + new speech) on every update.
  * Audio is processed by the browser; Karma never records or stores it.
+ * `error` is a Web Speech error code, or `unsupported` when the browser has no speech recognition (in-app browsers, Firefox).
  */
 export function useSpeech(lang: Lang, getBase: () => string, onText: (text: string) => void) {
   const [listening, setListening] = useState(false);
@@ -46,22 +50,22 @@ export function useSpeech(lang: Lang, getBase: () => string, onText: (text: stri
 
   const start = useCallback(() => {
     const Ctor = getCtor();
-    if (!Ctor) return;
+    if (!Ctor) {
+      setError('unsupported');
+      return;
+    }
     setError(null);
+    recRef.current?.abort();
     const rec = new Ctor();
     rec.lang = LOCALE[lang];
-    rec.continuous = true;
+    rec.continuous = !isMobile();
     rec.interimResults = true;
     const base = getBase();
-    let finals = '';
     rec.onresult = (e) => {
-      let interim = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const r = e.results[i];
-        if (r.isFinal) finals += `${r[0].transcript} `;
-        else interim += r[0].transcript;
-      }
-      const spoken = `${finals}${interim}`.trim();
+      // rebuild from every result each time, so repeated or re-sent results never double the text
+      let spoken = '';
+      for (let i = 0; i < e.results.length; i++) spoken += e.results[i][0].transcript;
+      spoken = spoken.trim();
       onText(base ? `${base.trimEnd()} ${spoken}` : spoken);
     };
     rec.onerror = (e) => {

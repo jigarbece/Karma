@@ -73,7 +73,15 @@ export default function Home() {
   const teaching = getTeaching(result?.reflection?.teaching_id);
   const net = totals.net;
   const up = net > 0 || (net === 0 && trend >= 0);
-  const status = !speech.supported ? t('talk.voice_unsupported') : speech.listening ? t('talk.listening') : speech.error ? t('talk.voice_error') : t('talk.hold');
+  const voiceProblem = speech.error
+    ? speech.error === 'unsupported' ? t('talk.voice_unsupported')
+      : speech.error === 'not-allowed' || speech.error === 'service-not-allowed' ? t('talk.voice_denied')
+        : speech.error === 'language-not-supported' ? t('talk.voice_lang')
+          : speech.error === 'network' ? t('talk.voice_network')
+            : speech.error === 'audio-capture' ? t('talk.voice_nomic')
+              : t('talk.voice_error')
+    : '';
+  const status = speech.listening ? t('talk.listening') : t('talk.hold');
 
   return (
     <div className="space-y-6">
@@ -100,10 +108,11 @@ export default function Home() {
           onChange={(e) => setBoth(e.target.value)} maxLength={4000} lang={lang}
         />
         <div className="mt-3 flex items-center gap-3">
-          {speech.supported && <MicButton active={speech.listening} onClick={speech.listening ? speech.stop : speech.start} label={speech.listening ? t('talk.listening') : t('talk.hold')} />}
+          <MicButton active={speech.listening} onClick={speech.listening ? speech.stop : speech.start} label={speech.listening ? t('talk.listening') : t('talk.hold')} />
           <p className="min-w-0 flex-1 text-sm text-muted max-[419px]:sr-only" aria-live="polite">{status}</p>
           <button type="button" className="btn-primary ml-auto shrink-0 !px-7" onClick={analyse} disabled={busy || !text.trim()}>{t('talk.analyse')}</button>
         </div>
+        {voiceProblem && <p role="alert" data-testid="voice-problem" className="mt-3 rounded-xl bg-indigo-soft p-3 text-sm font-semibold text-indigo">{voiceProblem}</p>}
         <p className="mt-3 flex items-start gap-2 text-sm text-muted" data-testid="privacy-note">
           <Icon name="lock" size={16} className="mt-0.5 shrink-0 text-saffron-text" />
           <span className="min-w-0">{t('talk.privacy_note')}</span>
