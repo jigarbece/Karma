@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../lib/app';
 import { useI18n, LANG_LABEL } from '../lib/i18n';
-import { GOALS, type Goal, type Greeting, type Lang, type Tradition } from '../lib/types';
+import type { Greeting, Lang } from '../lib/types';
 import { PageTitle } from '../components/ui';
 import { Icon } from '../components/Icon';
 import { actionsToCsv, download } from '../lib/exporters';
 
-const TRADITIONS: Tradition[] = ['hindu_gita', 'jain', 'swaminarayan', 'general'];
 const GREETINGS: Greeting[] = ['jsk', 'jj', 'jsw', 'namaste', 'radhe'];
 
 export default function Profile() {
@@ -15,7 +14,6 @@ export default function Profile() {
   const { profile, updateProfile, repo, signOut, user, demo, actions } = useApp();
   const navigate = useNavigate();
   const [name, setName] = useState(profile?.name ?? '');
-  const [city, setCity] = useState(profile?.city ?? '');
   const [saved, setSaved] = useState(false);
   const [err, setErr] = useState('');
   const [confirming, setConfirming] = useState(false);
@@ -24,8 +22,7 @@ export default function Profile() {
 
   useEffect(() => {
     setName(profile?.name ?? '');
-    setCity(profile?.city ?? '');
-  }, [profile?.name, profile?.city]);
+  }, [profile?.name]);
 
   if (!profile) return null;
 
@@ -39,8 +36,6 @@ export default function Profile() {
       setErr(t('common.error'));
     }
   };
-
-  const toggleGoal = (g: Goal) => save({ goals: profile.goals.includes(g) ? profile.goals.filter((x) => x !== g) : [...profile.goals, g] });
 
   const setReminder = async (value: string) => {
     if (value && typeof Notification !== 'undefined' && Notification.permission === 'default') {
@@ -76,15 +71,11 @@ export default function Profile() {
         {err && <p role="alert" className="rounded-xl bg-indigo-soft p-3 text-sm font-semibold text-indigo">{err}</p>}
       </div>
 
-      <section className="card space-y-4 lg:row-span-2" aria-labelledby="det">
+      <section className="card space-y-4" aria-labelledby="det">
         <h2 id="det" className="text-lg font-bold">{t('profile.edit')}</h2>
         <div>
           <label htmlFor="nm" className="mb-1 block font-semibold">{t('profile.name')}</label>
           <input id="nm" className="field" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name.trim() && name !== profile.name && save({ name: name.trim() })} maxLength={60} />
-        </div>
-        <div>
-          <label htmlFor="city" className="mb-1 block font-semibold">{t('profile.city')}</label>
-          <input id="city" className="field" value={city} onChange={(e) => setCity(e.target.value)} onBlur={() => city !== profile.city && save({ city: city.trim() })} maxLength={60} />
         </div>
         <fieldset>
           <legend className="mb-1 font-semibold">{t('profile.language')}</legend>
@@ -95,26 +86,10 @@ export default function Profile() {
           </div>
         </fieldset>
         <fieldset>
-          <legend className="mb-1 font-semibold">{t('profile.tradition')}</legend>
-          <div className="flex flex-wrap gap-2" role="radiogroup">
-            {TRADITIONS.map((x) => (
-              <button key={x} type="button" role="radio" aria-checked={profile.tradition === x} className="chip" onClick={() => save({ tradition: x })}>{t(`tradition.${x}`)}</button>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
           <legend className="mb-1 font-semibold">{t('profile.greeting')}</legend>
           <div className="flex flex-wrap gap-2" role="radiogroup">
             {GREETINGS.map((x) => (
               <button key={x} type="button" role="radio" aria-checked={profile.greeting === x} className="chip" onClick={() => save({ greeting: x })}>{t(`greeting.${x}`)}</button>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend className="mb-1 font-semibold">{t('profile.goals')}</legend>
-          <div className="flex flex-wrap gap-2">
-            {GOALS.map((g) => (
-              <button key={g} type="button" aria-pressed={profile.goals.includes(g)} className="chip" onClick={() => toggleGoal(g)}>{t(`goal.${g}`)}</button>
             ))}
           </div>
         </fieldset>

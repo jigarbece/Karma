@@ -40,10 +40,11 @@ export function devAi(env: Record<string, string>): Plugin {
         };
         if (req.method !== 'POST') return send(405, { error: 'method_not_allowed' });
         try {
-          const body = JSON.parse(await readBody(req)) as { transcript?: string; date?: string; language?: UserContext['language']; tradition?: UserContext['tradition']; goals?: string[] };
+          const body = JSON.parse(await readBody(req)) as { transcript?: string; date?: string; language?: UserContext['language'] };
           const transcript = (body.transcript ?? '').trim().slice(0, 4000);
           if (!transcript) return send(400, { error: 'bad_request' });
-          const ctx: UserContext = { language: body.language ?? 'en', tradition: body.tradition ?? 'general', goals: body.goals ?? [] };
+          // Scoring is grounded in Hindu dharma (rubric v2) for every user.
+          const ctx: UserContext = { language: body.language ?? 'en', tradition: 'hindu_gita', goals: [] };
 
           if (detectSafety(transcript)) return send(200, { safety_flag: true, actions: [], reflection: { teaching_id: '', suggestion: '' } });
 
@@ -53,7 +54,7 @@ export function devAi(env: Record<string, string>): Plugin {
           } catch (e) {
             return send(501, { error: 'ai_not_configured', message: e instanceof Error ? e.message : '' });
           }
-          const rubric = JSON.parse(readFileSync('supabase/functions/_shared/rubric.v1.json', 'utf8')) as Rubric;
+          const rubric = JSON.parse(readFileSync('supabase/functions/_shared/rubric.v2.json', 'utf8')) as Rubric;
           const index = JSON.parse(readFileSync('supabase/functions/_shared/teachings.index.json', 'utf8')) as TeachingIndexEntry[];
           const system = buildSystemPrompt(rubric, index, ctx);
 
@@ -66,7 +67,7 @@ export function devAi(env: Record<string, string>): Plugin {
           if (!parsed.ok) return send(502, { error: 'ai_invalid_output', message: parsed.error.slice(0, 200) });
           if (parsed.value.safety_flag) return send(200, { safety_flag: true, actions: [], reflection: { teaching_id: '', suggestion: '' } });
 
-          const final = finalize(parsed.value, ctx, index, `${body.date ?? ''}:${transcript}`);
+          const final = finalize(parsed.value, ctx, index, `${body.date ?? ''}:${transcript}`, rubric.principles);
           return send(200, { safety_flag: false, actions: final.actions.map((a) => ({ ...a })), reflection: final.reflection, provider: out.cfg.provider, model: out.cfg.model });
         } catch (e) {
           const raw = e instanceof Error ? e.message : String(e);

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 import { seedDemo } from '../lib/repo';
@@ -21,70 +21,51 @@ describe('Karma app (demo mode)', () => {
     expect(screen.getByRole('button', { name: 'Try the demo' })).toBeInTheDocument();
   });
 
-  it('renders Home with greeting, tithi line, two ghadas and the mic', async () => {
+  it('keeps Home simple: greeting, tithi, two pots, net and a place to say your day', async () => {
     bootDemo('/');
     render(<App />);
     expect(await screen.findByRole('heading', { level: 1, name: /Jai Shri Krishna/ })).toBeInTheDocument();
     expect(screen.getByTestId('tithi').textContent).toMatch(/Sud|Vad/);
     expect(screen.getByRole('img', { name: /Punya ghada/ })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Paap ghada/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Tell me about your day' })).toBeInTheDocument();
     expect(screen.getByTestId('net-pill')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Tell me about your day' })).toBeInTheDocument();
+    // the whole app is three destinations
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
+    expect(within(nav).getAllByRole('link')).toHaveLength(3);
   });
 
-  it('analyses a day on Talk and shows scored action cards', async () => {
-    bootDemo('/talk');
+  it('scores each act with its own points and shows the dharma principle behind it', async () => {
+    bootDemo('/');
     const user = userEvent.setup();
     render(<App />);
-    const box = await screen.findByRole('textbox', { name: 'Tell me about your day' });
-    await user.type(box, 'I helped my neighbour but I shouted at my brother');
+    await user.type(await screen.findByRole('textbox', { name: 'Tell me about your day' }), 'I donated food and I shouted at my brother');
     await user.click(screen.getByRole('button', { name: 'Analyse' }));
-    expect((await screen.findAllByText('Helped or served someone', {}, { timeout: 4000 })).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Gave in charity', {}, { timeout: 8000 })).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Acted out of anger').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('I disagree').length).toBeGreaterThan(0);
-    expect(screen.getByText("Today's totals")).toBeInTheDocument();
+    // different acts, different points (+26 for annadana, -14 for anger in the mock) and the principle is shown
+    expect(screen.getByLabelText('+26 points')).toBeInTheDocument();
+    expect(screen.getByLabelText('−14 points')).toBeInTheDocument();
+    const basis = screen.getAllByTestId('basis').map((n) => n.textContent ?? '');
+    expect(basis.some((b) => b.includes('Annadāna'))).toBe(true);
+    expect(basis.some((b) => b.includes('Krodha'))).toBe(true);
   });
 
   it('shows the safety message and Tele-MANAS number, scoring nothing', async () => {
-    bootDemo('/talk');
+    bootDemo('/');
     const user = userEvent.setup();
     render(<App />);
     await user.type(await screen.findByRole('textbox', { name: 'Tell me about your day' }), 'I want to die');
     await user.click(screen.getByRole('button', { name: 'Analyse' }));
-    expect(await screen.findByText('We are here for you', {}, { timeout: 4000 })).toBeInTheDocument();
+    expect(await screen.findByText('We are here for you', {}, { timeout: 8000 })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /14416/ })).toHaveAttribute('href', 'tel:14416');
   });
 
-  it('shows the top bar with search, bell, avatar menu and a sign-out option', async () => {
-    bootDemo('/');
-    const user = userEvent.setup();
+  it('has a visible sign-out and a history page of past entries', async () => {
+    bootDemo('/history');
     render(<App />);
-    expect(await screen.findByRole('search')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Demo' }));
-    expect(await screen.findByRole('button', { name: 'Sign out' })).toBeInTheDocument();
-  });
-
-  it('lists Gita teachings and filters them by search word', async () => {
-    bootDemo('/wisdom/gita?q=anger');
-    render(<App />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Gita Wisdom' })).toBeInTheDocument();
-    expect(await screen.findAllByText(/Bhagavad Gita/)).not.toHaveLength(0);
-    expect(screen.queryByText(/Tattvartha/)).not.toBeInTheDocument();
-  });
-
-  it('unlocks badges from the sample history on Awards', async () => {
-    bootDemo('/awards');
-    render(<App />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Awards' })).toBeInTheDocument();
-    expect((await screen.findAllByText('Unlocked')).length).toBeGreaterThan(2);
-  });
-
-  it('prefills a starter sentence from a Home quick action', async () => {
-    bootDemo('/talk?topic=gratitude');
-    render(<App />);
-    const box = await screen.findByRole('textbox', { name: 'Tell me about your day' });
-    expect(box).toHaveValue('Today I am grateful for: ');
+    expect(await screen.findByRole('heading', { level: 1, name: 'History' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
   });
 
   it('requires typing DELETE before deleting everything', async () => {

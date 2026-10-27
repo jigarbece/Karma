@@ -55,7 +55,8 @@ export interface KarmaAction {
   summary: string;
   type: KarmaType;
   category: Category;
-  weight: number; // positive magnitude; sign derived from type
+  weight: number; // points: positive integer 1-50; sign derived from type
+  basis: string; // dharma principle id (rubric v2), '' when unknown
   reason: string;
   intention_note: string;
   date: string; // entry_date (YYYY-MM-DD)
@@ -84,6 +85,7 @@ export interface AnalysisResult {
     type: KarmaType;
     category: Category;
     weight: number;
+    basis?: string;
     reason: string;
     intention_note: string;
   }>;

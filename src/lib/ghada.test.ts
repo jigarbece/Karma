@@ -2,16 +2,16 @@ import { addDays, fillFraction, localDate, longestStreak, netSeries, streak, tot
 import type { KarmaAction } from './types';
 
 const act = (date: string, type: 'punya' | 'paap', weight: number): KarmaAction => ({
-  id: `${date}-${type}-${weight}`, entry_id: 'e', summary: 's', type, category: 'seva', weight, reason: '', intention_note: '', date, created_at: '',
+  id: `${date}-${type}-${weight}`, entry_id: 'e', summary: 's', type, category: 'seva', weight, basis: '', reason: '', intention_note: '', date, created_at: '',
 });
 
 describe('ghada math', () => {
-  it('fills at 50 points per day and scales for week/month', () => {
-    expect(fillFraction(25, 'today')).toBe(0.5);
-    expect(fillFraction(50, 'today')).toBe(1);
+  it('fills at 100 points per day and scales for week/month', () => {
+    expect(fillFraction(50, 'today')).toBe(0.5);
+    expect(fillFraction(100, 'today')).toBe(1);
     expect(fillFraction(999, 'today')).toBe(1);
-    expect(fillFraction(175, 'week')).toBeCloseTo(0.5);
-    expect(fillFraction(750, 'month')).toBeCloseTo(0.5);
+    expect(fillFraction(350, 'week')).toBeCloseTo(0.5);
+    expect(fillFraction(1500, 'month')).toBeCloseTo(0.5);
   });
   it('uses a log scale for lifetime', () => {
     const a = fillFraction(100, 'lifetime');

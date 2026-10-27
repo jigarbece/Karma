@@ -14,11 +14,11 @@ export function GhadaPair({ punya, paap, range }: { punya: number; paap: number;
   const pctP = Math.round(fp * 100);
   const pctQ = Math.round(fq * 100);
   return (
-    <div className="grid grid-cols-2 items-end gap-3 sm:gap-6">
+    <div className="grid grid-cols-2 items-start gap-3 sm:gap-6">
       <figure className="flex flex-col items-center">
         <span className="tag-ribbon relative z-10 -mb-1 text-base sm:text-lg">{t('home.punya_ghada')}</span>
         <Ghada kind="punya" fraction={fp} className="w-full max-w-[190px] lg:max-w-[230px]" label={t('home.ghada_label', { kind: t('home.punya_ghada'), value: punya, pct: pctP })} />
-        <figcaption className="value-card -mt-3 w-[88%] max-w-[210px]">
+        <figcaption className="value-card -mt-3 flex min-h-[78px] w-[88%] max-w-[210px] flex-col justify-center">
           <div className="font-display text-3xl font-bold leading-none text-good lg:text-4xl">+{num(punya)}</div>
           <div className="mt-0.5 text-xs font-semibold text-muted sm:text-sm">{t('home.good_points')}</div>
         </figcaption>
@@ -26,7 +26,7 @@ export function GhadaPair({ punya, paap, range }: { punya: number; paap: number;
       <figure className="flex flex-col items-center">
         <span className="tag-ribbon relative z-10 -mb-1 text-base sm:text-lg">{t('home.paap_ghada')}</span>
         <Ghada kind="paap" fraction={fq} className="w-full max-w-[190px] lg:max-w-[230px]" label={t('home.ghada_label', { kind: t('home.paap_ghada'), value: paap, pct: pctQ })} />
-        <figcaption className="value-card -mt-3 w-[88%] max-w-[210px]">
+        <figcaption className="value-card -mt-3 flex min-h-[78px] w-[88%] max-w-[210px] flex-col justify-center">
           <div className="font-display text-3xl font-bold leading-none text-indigo lg:text-4xl">−{num(paap)}</div>
           <div className="mt-0.5 text-xs font-semibold text-muted sm:text-sm">{t('home.cleanse')}</div>
         </figcaption>

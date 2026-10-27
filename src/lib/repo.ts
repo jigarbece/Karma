@@ -144,7 +144,7 @@ export function seedDemo(withSample: boolean): void {
         db.entries.push({ id: entryId, entry_date: s.date, transcript: null, language: 'en', created_at: `${s.date}T18:00:00.000Z` });
       }
       db.actions.push({
-        id: uid(), entry_id: entryId, summary: s.summary, type: s.type, category: s.category, weight: s.weight,
+        id: uid(), entry_id: entryId, summary: s.summary, type: s.type, category: s.category, weight: s.weight, basis: s.basis,
         reason: s.reason, intention_note: '', date: s.date, created_at: `${s.date}T18:00:00.000Z`,
       });
     }
@@ -197,7 +197,7 @@ export const localRepo: Repo = {
       created_at: new Date().toISOString(),
     };
     const actions: KarmaAction[] = result.actions.map((a) => ({
-      id: uid(), entry_id: entry.id, ...a, date, created_at: entry.created_at,
+      id: uid(), entry_id: entry.id, ...a, basis: a.basis ?? '', date, created_at: entry.created_at,
     }));
     db.entries.push(entry);
     db.actions.push(...actions);
@@ -245,6 +245,7 @@ function mapAction(r: Row): KarmaAction {
     type: r.type as KarmaAction['type'],
     category: r.category as KarmaAction['category'],
     weight: r.weight as number,
+    basis: (r.basis as string) ?? '',
     reason: (r.reason as string) ?? '',
     intention_note: (r.intention_note as string) ?? '',
     date: r.entry_date as string,
@@ -308,7 +309,7 @@ export function makeSupabaseRepo(userId: string): Repo {
         if (local.safety_flag) return { entry: null, actions: [], reflection: null, safety_flag: true };
         const { data: entry, error: entryErr } = await sb.from('entries').insert({
           user_id: userId, entry_date: input.date, transcript: prof?.keep_words === false ? null : input.transcript,
-          language: input.language, ai_provider: local.provider ?? 'dev', ai_model: local.model ?? 'dev', rubric_version: 'v1',
+          language: input.language, ai_provider: local.provider ?? 'dev', ai_model: local.model ?? 'dev', rubric_version: 'v2',
         }).select('*').single();
         if (entryErr) throw new AnalyzeError('save_failed', entryErr.message);
         let rows: Row[] = [];

@@ -19,6 +19,7 @@ The Home hero uses an illustrated sunrise scene. To use a photo instead, add a l
 - [Inception: vision, personas, stories, risks](docs/aidlc/01-inception.md)
 - [Construction: architecture, ADRs, design system, threat model, tests](docs/aidlc/02-construction.md)
 - [Operations: release, observability, runbook, backlog, retrospective](docs/aidlc/03-operations.md)
+- [Iteration 2: simplify and score by Hindu dharma](docs/aidlc/04-iteration-2-simplify.md)
 
 ## Try it in 30 seconds (no backend)
 
@@ -122,11 +123,11 @@ Get a free Gemini key at <https://aistudio.google.com/apikey>. To switch provide
 
 ## How scoring works
 
-- Rubric: `supabase/functions/_shared/rubric.v1.json` (versioned; the version is stored on every entry). 11 categories, weights 1 (small), 2-3 (medium), 4-5 (major). Intention matters; neutral routine is not scored.
+- Rubric: `supabase/functions/_shared/rubric.v2.json` (versioned; stored on every entry). Hindu dharma principles (Gita, Mahabharata, Upanishads, Puranas, Manusmriti 6.92), each with an indicative range inside 1-50 points. The AI picks the exact points per act from intention, effort, who benefited and severity; the server keeps it inside the principle's range and stores the principle with the act. Neutral routine is not scored.
 - The Edge Function calls the model at **temperature 0**, validates the reply with **zod**, retries once on invalid output, then post-processes deterministically (clamps weights, drops neutral items, applies the Jain `ahimsa_food` +1).
 - The reflection teaching is chosen **only** from `src/content/teachings.json` (47 short paraphrases with sources). If the model returns an unknown id, a deterministic fallback is used. The model can never invent a verse.
 - Crisis language (self-harm, suicide, abuse, intent to harm others) is caught before the provider is called; nothing is scored and Tele-MANAS 14416 is shown.
-- Ghada: full at 50 points per day (configurable), week ×7, month ×30, lifetime on a log scale.
+- Ghada: full at 100 points per day (configurable), week ×7, month ×30, lifetime on a log scale.
 
 ## Privacy
 

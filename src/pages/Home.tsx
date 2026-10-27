@@ -1,248 +1,174 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useCallback, useRef, useState } from 'react';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
-import { addDays, netSeries, rangeDays, streak as calcStreak, totalsForRange } from '../lib/ghada';
+import { RateLimitError, AnalyzeError, type AnalyzeResponse } from '../lib/repo';
+import { getTeaching } from '../lib/teachings';
+import { totalsForRange, addDays, rangeDays } from '../lib/ghada';
+import { useSpeech } from '../lib/useSpeech';
 import { useTithi } from '../lib/useTithi';
-import { dailyTeaching, getTeaching } from '../lib/teachings';
 import type { Range } from '../lib/types';
-import type { DayReflection } from '../lib/repo';
 import { GhadaPair } from '../components/GhadaPair';
-import { NetCard } from '../components/NetCard';
+import { NetPill } from '../components/NetPill';
 import { MicButton } from '../components/MicButton';
-import { HeroScene } from '../components/HeroScene';
-import { InsightArt, Waveform } from '../components/InsightArt';
+import { Disagree } from '../components/Disagree';
 import { Icon } from '../components/Icon';
-import { LotusDivider } from '../components/Mandala';
-import { Segmented } from '../components/ui';
+import { ActionCard, Segmented, Spinner } from '../components/ui';
 
-const WeekChart = lazy(() => import('../components/WeekChart'));
-
-const QUICK = [
-  { key: 'qa.good', icon: 'sparkle', topic: 'good', tint: 'bg-gold/20 text-saffron-text' },
-  { key: 'qa.mistake', icon: 'alert', topic: 'mistake', tint: 'bg-good/15 text-good' },
-  { key: 'qa.gratitude', icon: 'heart', topic: 'gratitude', tint: 'bg-[#E5483B]/12 text-[#C9372B]' },
-  { key: 'qa.journal', icon: 'pen', topic: '', tint: 'bg-indigo-soft text-indigo' },
-] as const;
-
+/** The whole product on one screen: say your day, see two pots, read what each act was worth. */
 export default function Home() {
-  const { profile, actions, today, repo, demo } = useApp();
   const { t, num, date, lang } = useI18n();
-  const navigate = useNavigate();
+  const { profile, actions, today, repo, refresh, demo } = useApp();
   const [range, setRange] = useState<Range>('today');
-  const [reflection, setReflection] = useState<DayReflection | null>(null);
+  const [text, setText] = useState('');
+  const textRef = useRef('');
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<AnalyzeResponse | null>(null);
+  const [error, setError] = useState('');
   const tithi = useTithi(lang, today);
 
-  useEffect(() => {
-    let live = true;
-    repo?.getReflection(today).then((r) => live && setReflection(r)).catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, [repo, today, actions.length]);
+  const setBoth = useCallback((v: string) => {
+    textRef.current = v;
+    setText(v);
+  }, []);
+  const getBase = useCallback(() => textRef.current, []);
+  const speech = useSpeech(lang, getBase, setBoth);
+
+  const analyse = async () => {
+    if (!repo || !text.trim()) return;
+    if (speech.listening) speech.stop();
+    setBusy(true);
+    setError('');
+    setResult(null);
+    try {
+      const r = await repo.analyze({ transcript: text.trim(), date: today, language: lang });
+      setResult(r);
+      if (!r.safety_flag) {
+        setBoth('');
+        await refresh();
+      }
+    } catch (e) {
+      setError(
+        e instanceof RateLimitError
+          ? t('talk.limit', { n: e.limit })
+          : e instanceof AnalyzeError
+            ? `${t('common.error')} (${e.code}${e.detail ? `: ${e.detail}` : ''})`
+            : t('common.error'),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const totals = totalsForRange(actions, range, today);
   const days = rangeDays(range);
   const prev = days ? totalsForRange(actions, range, addDays(today, -days)) : null;
   const trend = prev ? totals.net - prev.net : totals.net;
-
-  const series = netSeries(actions, today, 7).map((d) => ({ label: date(d.date, { day: 'numeric', month: 'short' }), net: d.net, punya: d.punya, paap: -d.paap }));
-  const lastNet = series[series.length - 1]?.net ?? 0;
-  const thisWeek = totalsForRange(actions, 'week', today).net;
-  const lastWeek = totalsForRange(actions, 'week', addDays(today, -7)).net;
-  const delta = thisWeek - lastWeek;
-  const deltaText = `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${num(Math.abs(delta))}`;
-  const streakN = calcStreak(actions, today);
-  const isNew = actions.every((a) => a.type === 'neutral');
-
-  const tradition = profile?.tradition ?? 'general';
-  const reflected = getTeaching(reflection?.teaching_id);
-  const heroQuote = reflected ?? dailyTeaching(today, tradition);
+  const todays = actions.filter((a) => a.date === today && a.type !== 'neutral').sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   const greeting = t(`greeting.${profile?.greeting ?? 'namaste'}`);
-  const rangeLabel = range === 'today' ? t('home.net_today') : t('home.net_range');
+  const teaching = getTeaching(result?.reflection?.teaching_id);
 
   return (
     <div className="space-y-5">
       {demo && <p className="rounded-2xl bg-indigo-soft px-4 py-2 text-sm text-indigo">{t('common.demo')}</p>}
 
-      {/* Sunrise hero: greeting, tithi, the two ghadas and today's net */}
-      <section className="hero-card" aria-label="Ghadas">
-        <HeroScene className="absolute inset-0 -z-0 h-full w-full" />
-        <div className="hero-scrim absolute inset-0 lg:bg-[linear-gradient(90deg,rgb(var(--scrim)/0.88)_0%,rgb(var(--scrim)/0.5)_34%,transparent_64%)]" />
-        <div className="relative grid gap-5 p-4 sm:p-6 lg:min-h-[500px] lg:grid-cols-[1fr_1.45fr_0.95fr] lg:items-stretch lg:gap-4 lg:p-8">
-          <div className="flex flex-col">
-            <h1 className="text-4xl leading-[1.1] lg:text-5xl">
-              {t('home.greeting', { greeting, name: profile?.name || '' }).replace(/, $/, '')} 🙏
-            </h1>
-            <p className="mt-2 text-lg">
-              {tithi && <span className="font-display text-xl font-semibold" data-testid="tithi">{tithi}</span>}
-              {tithi && <span className="mx-3 opacity-50">|</span>}
-              <span>{date(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
-            </p>
-            {streakN > 0 && (
-              <p className="mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-gold/40 bg-white/60 px-3 py-1 text-sm font-semibold backdrop-blur">
-                <Icon name="krodh" size={16} className="text-saffron-text" />
-                {t('home.streak', { n: num(streakN) })}
-              </p>
-            )}
-            <div className="mt-4 max-w-sm">
-              <Segmented
-                label={t('home.range_label')}
-                value={range}
-                onChange={setRange}
-                options={[
-                  { value: 'today', label: t('common.today') },
-                  { value: 'week', label: t('common.week') },
-                  { value: 'month', label: t('common.month') },
-                  { value: 'lifetime', label: t('common.lifetime') },
-                ]}
-              />
-            </div>
-            <blockquote className="mt-auto hidden pt-8 lg:block">
-              <p className="font-display text-2xl italic leading-snug">“{heroQuote.sa ?? heroQuote.text[lang]}”</p>
-              <footer className="mt-2 text-sm opacity-80">— {heroQuote.source}</footer>
-            </blockquote>
-          </div>
+      <header>
+        <h1 className="text-4xl leading-tight lg:text-5xl">
+          {t('home.greeting', { greeting, name: profile?.name || '' }).replace(/, $/, '')} 🙏
+        </h1>
+        <p className="mt-1 text-lg text-muted">
+          {tithi && <span className="font-display text-xl font-semibold text-saffron-text" data-testid="tithi">{tithi}</span>}
+          {tithi && <span className="mx-3 opacity-50">|</span>}
+          {date(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+      </header>
 
-          <div className="self-end">
-            <GhadaPair punya={totals.punya} paap={totals.paap} range={range} />
-          </div>
-
-          <div className="self-end lg:pb-2">
-            <NetCard net={totals.net} label={rangeLabel} trend={trend} />
-          </div>
-        </div>
-      </section>
-
-      {/* Mic + quick actions */}
-      <div className="grid gap-5 lg:grid-cols-[1.7fr_1fr]">
-        <section className="panel-saffron flex items-center justify-between gap-2 px-3 py-6 sm:px-8">
-          <Waveform className="hidden h-16 w-36 shrink-0 sm:block lg:w-48" />
-          <div className="flex flex-1 flex-col items-center gap-3 text-center">
-            <MicButton size="lg" label={t('home.mic_title')} onClick={() => navigate('/talk?mic=1')} />
-            <div>
-              <h2 className="font-display text-3xl font-bold leading-tight text-[#B4400A] lg:text-4xl">{t('home.mic_title')}</h2>
-              <p className="mt-1 text-lg">{isNew ? t('home.empty_body') : t('home.tap_tell')}</p>
-            </div>
-          </div>
-          <Waveform mirror className="hidden h-16 w-36 shrink-0 sm:block lg:w-48" />
+      <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr] lg:items-start lg:gap-6">
+        {/* The two pots */}
+        <section className="sunrise-card space-y-4 p-4 sm:p-6 lg:sticky lg:top-24" aria-label="Ghadas">
+          <Segmented
+            label={t('home.range_label')}
+            value={range}
+            onChange={setRange}
+            options={[
+              { value: 'today', label: t('common.today') },
+              { value: 'week', label: t('common.week') },
+              { value: 'month', label: t('common.month') },
+              { value: 'lifetime', label: t('common.lifetime') },
+            ]}
+          />
+          <GhadaPair punya={totals.punya} paap={totals.paap} range={range} />
+          <NetPill net={totals.net} label={range === 'today' ? t('home.net_today') : t('home.net_range')} trend={trend} />
         </section>
 
-        <section className="card" aria-labelledby="qa">
-          <h2 id="qa" className="flex items-center gap-2 font-display text-2xl font-bold">
-            <Icon name="sparkle" size={22} className="text-saffron-text" />
-            {t('home.quick_actions')}
-          </h2>
-          <ul className="mt-4 grid grid-cols-4 gap-2">
-            {QUICK.map((q) => (
-              <li key={q.key}>
-                <Link
-                  to={q.topic ? `/talk?topic=${q.topic}` : '/journal'}
-                  className="flex min-h-[44px] flex-col items-center gap-2 rounded-2xl p-1 text-center text-sm font-medium hover:bg-sand/50"
-                >
-                  <span className={`grid h-14 w-14 place-items-center rounded-2xl ${q.tint}`}><Icon name={q.icon} size={26} /></span>
-                  {t(q.key)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      {/* Reflection, journey chart, daily insight */}
-      <div className="grid gap-5 lg:grid-cols-[1.15fr_1.25fr_0.9fr]">
-        <section className="card" aria-labelledby="refl">
-          <div className="flex items-center justify-between gap-2">
-            <h2 id="refl" className="flex items-center gap-2 font-display text-2xl font-bold">
-              <Icon name="lotus" size={22} className="text-saffron-text" />
-              {t('home.reflection')}
-            </h2>
-            <Link to="/wisdom/all" className="inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-saffron-text">
-              {t('home.view_more')} <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-          {reflected && reflection ? (
-            <div className="mt-2 space-y-3">
-              <blockquote>
-                {reflected.sa && <p className="font-display text-2xl leading-snug">“{reflected.sa}”</p>}
-                <p className={reflected.sa ? 'mt-1 text-base text-muted' : 'font-display text-2xl leading-snug'}>
-                  {reflected.sa ? `(${reflected.text[lang]})` : `“${reflected.text[lang]}”`}
+        <div className="space-y-5">
+          {/* Say your day */}
+          <section className="card space-y-3" aria-labelledby="say">
+            <h2 id="say" className="font-display text-3xl font-bold leading-tight">{t('home.mic_title')}</h2>
+            <label htmlFor="story" className="sr-only">{t('home.mic_title')}</label>
+            <textarea
+              id="story" rows={5} className="field resize-y" placeholder={t('talk.placeholder')} value={text}
+              onChange={(e) => setBoth(e.target.value)} maxLength={4000} lang={lang}
+            />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {speech.supported && (
+                  <MicButton size="md" active={speech.listening} onClick={speech.listening ? speech.stop : speech.start} label={speech.listening ? t('talk.listening') : t('talk.hold')} />
+                )}
+                <p className="text-sm text-muted" aria-live="polite">
+                  {!speech.supported ? t('talk.voice_unsupported') : speech.listening ? t('talk.listening') : speech.error ? t('talk.voice_error') : t('talk.hold')}
                 </p>
-                <footer className="mt-2 text-sm text-muted">— {reflected.source}</footer>
-              </blockquote>
-              {reflection.suggestion && (
-                <div className="flex gap-3 rounded-2xl bg-saffron/15 p-3">
-                  <Icon name="sparkle" size={22} className="mt-0.5 shrink-0 text-saffron-text" />
-                  <p>
-                    <span className="font-semibold text-saffron-text">{t('home.suggestion')}</span>
-                    <br />
-                    {reflection.suggestion}
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="mt-3 text-muted">{t('home.reflection_empty')}</p>
-          )}
-        </section>
-
-        <section className="card" aria-labelledby="wk">
-          <div className="flex items-baseline justify-between gap-2">
-            <h2 id="wk" className="flex items-center gap-2 font-display text-2xl font-bold">
-              <Icon name="chart" size={22} className="text-saffron-text" />
-              {t('home.journey')}
-              <span className="font-sans text-sm font-normal text-muted">{t('home.last7')}</span>
-            </h2>
-            {!isNew && <span className="rounded-full bg-good/15 px-3 py-0.5 text-sm font-bold text-good">{lastNet > 0 ? '+' : ''}{num(lastNet)}</span>}
-          </div>
-          {isNew ? (
-            <p className="mt-3 text-muted">{t('home.chart_empty')}</p>
-          ) : (
-            <>
-              <div className="mt-2 h-56" role="img" aria-label={`${t('home.journey')}: ${series.map((s) => `${s.label} ${s.net}`).join(', ')}`}>
-                <Suspense fallback={<div className="h-full animate-pulse rounded-2xl bg-line/50" />}>
-                  <WeekChart data={series} names={{ net: t('home.legend_net'), punya: t('common.punya'), paap: t('common.paap') }} />
-                </Suspense>
               </div>
-              <p className={`mt-1 text-sm font-semibold ${delta < 0 ? 'text-indigo' : 'text-good'}`}>{t('home.vs_last_week', { delta: deltaText })}</p>
-            </>
+              <button type="button" className="btn-primary" onClick={analyse} disabled={busy || !text.trim()}>{t('talk.analyse')}</button>
+            </div>
+            {busy && <Spinner label={t('talk.analysing')} />}
+            {error && <p role="alert" className="rounded-xl bg-indigo-soft p-3 text-sm font-semibold text-indigo">{error}</p>}
+          </section>
+
+          {result?.safety_flag && (
+            <section role="alert" className="card border-saffron-text bg-saffron/10">
+              <h2 className="text-lg font-bold">{t('talk.safety.title')}</h2>
+              <p className="mt-2">{t('talk.safety.body')}</p>
+              <a href="tel:14416" className="btn-primary mt-3 w-full"><Icon name="phone" size={20} />{t('talk.safety.call')}</a>
+            </section>
           )}
-        </section>
 
-        <section className="card overflow-hidden !p-0" aria-labelledby="ins">
-          <div className="p-5 pb-3">
-            <h2 id="ins" className="flex items-center gap-2 font-display text-2xl font-bold">
-              <Icon name="sparkle" size={22} className="text-saffron-text" />
-              {t('home.daily_insight')}
+          {result && !result.safety_flag && result.actions.length === 0 && <p className="card text-muted">{t('talk.nothing_scored')}</p>}
+
+          {result && !result.safety_flag && teaching && result.reflection && (
+            <section className="card" aria-live="polite">
+              <h2 className="font-display text-2xl font-bold">{t('talk.reflection')}</h2>
+              <blockquote className="mt-2 border-l-4 border-saffron pl-3 font-display text-xl leading-relaxed">
+                {teaching.text[lang]}
+                <footer className="mt-1 font-sans text-sm text-muted">— {teaching.source}</footer>
+              </blockquote>
+              {result.reflection.suggestion && (
+                <p className="mt-3 rounded-2xl bg-saffron/15 p-3">
+                  <span className="font-semibold text-saffron-text">{t('home.suggestion')}: </span>
+                  {result.reflection.suggestion}
+                </p>
+              )}
+            </section>
+          )}
+
+          {/* What each act was worth */}
+          <section aria-labelledby="acts">
+            <h2 id="acts" className="mb-2 font-display text-2xl font-bold">
+              {t('talk.today_entries')} <span className="font-sans text-base font-normal text-muted">({num(todays.length)})</span>
             </h2>
-          </div>
-          <InsightArt className="h-32 w-full" />
-          <p className="space-y-0.5 p-5 pt-3 text-[0.98rem] leading-relaxed">
-            {t('home.insight_1')}<br />{t('home.insight_2')}<br />{t('home.insight_3')}
-          </p>
-        </section>
+            {todays.length === 0 ? (
+              <p className="text-muted">{t('talk.no_entries')}</p>
+            ) : (
+              <ul className="space-y-3">
+                {todays.map((a) => (
+                  <ActionCard key={a.id} a={a}>
+                    <Disagree actionId={a.id} />
+                  </ActionCard>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
-
-      {/* Phones: the sidebar pages live here */}
-      <section className="lg:hidden" aria-label={t('home.explore')}>
-        <LotusDivider className="mb-4" />
-        <ul className="grid grid-cols-2 gap-3">
-          {[
-            ['/wisdom/gita', 'nav.gita', 'book'],
-            ['/wisdom/jain', 'nav.jain', 'lotus'],
-            ['/goals', 'nav.goals', 'goal'],
-            ['/awards', 'nav.awards', 'trophy'],
-            ['/journal', 'nav.journal', 'pen'],
-          ].map(([to, key, icon]) => (
-            <li key={to}>
-              <Link to={to} className="card flex min-h-[56px] items-center gap-3 !p-3 font-semibold">
-                <Icon name={icon} className="text-saffron-text" />
-                {t(key)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 }

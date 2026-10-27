@@ -4,7 +4,7 @@ import gu from '../i18n/gu.json';
 import hi from '../i18n/hi.json';
 import { TEACHINGS } from '../lib/teachings';
 import { CATEGORIES } from '../lib/types';
-import rubric from '../../supabase/functions/_shared/rubric.v1.json';
+import rubric from '../../supabase/functions/_shared/rubric.v2.json';
 
 describe('teachings', () => {
   it('has 40+ entries with unique ids and all three languages', () => {
@@ -39,5 +39,25 @@ describe('i18n', () => {
   });
   it('has a label for every rubric category', () => {
     for (const c of Object.keys(rubric.categories)) expect(en).toHaveProperty(`cat.${c}`);
+  });
+});
+
+describe('dharma rubric v2', () => {
+  it('has unique principles with valid ranges, categories and sources', () => {
+    const ids = rubric.principles.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(rubric.principles.length).toBeGreaterThanOrEqual(20);
+    for (const p of rubric.principles) {
+      expect(p.range[0]).toBeGreaterThanOrEqual(1);
+      expect(p.range[1]).toBeLessThanOrEqual(50);
+      expect(p.range[0]).toBeLessThan(p.range[1]);
+      expect(['punya', 'paap']).toContain(p.type);
+      expect(Object.keys(rubric.categories)).toContain(p.category);
+      expect(p.source.length).toBeGreaterThan(5);
+    }
+  });
+  it('covers both merit and growth principles', () => {
+    expect(rubric.principles.filter((p) => p.type === 'punya').length).toBeGreaterThan(8);
+    expect(rubric.principles.filter((p) => p.type === 'paap').length).toBeGreaterThan(8);
   });
 });

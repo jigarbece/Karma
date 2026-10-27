@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'zod';
-import rubric from '../_shared/rubric.v1.json' with { type: 'json' };
+import rubric from '../_shared/rubric.v2.json' with { type: 'json' };
 import teachingIndex from '../_shared/teachings.index.json' with { type: 'json' };
 import { buildSystemPrompt, buildUserPrompt, detectSafety, finalize, localDateIn, parseAnalysis, type TeachingIndexEntry } from '../_shared/analysis.ts';
 import { callWithFallback, readAiConfigs } from '../_shared/providers.ts';
@@ -49,7 +49,8 @@ Deno.serve(async (req) => {
     if ((count ?? 0) >= LIMIT) return json({ error: 'rate_limited', limit: LIMIT }, 429, cors);
     await supabase.from('analysis_log').insert({ user_id: userId, local_date: today });
 
-    const ctx = { language, tradition: profile.tradition, goals: profile.goals ?? [] } as const;
+    // Scoring is grounded in Hindu dharma (rubric v2) for every user.
+    const ctx = { language, tradition: 'hindu_gita', goals: [] as string[] } as const;
     const index = teachingIndex as TeachingIndexEntry[];
     const configs = readAiConfigs((n) => Deno.env.get(n));
     const system = buildSystemPrompt(rubric as any, index, ctx as any);
@@ -66,7 +67,7 @@ Deno.serve(async (req) => {
     if (!result.ok) return json({ error: 'ai_invalid_output' }, 502, cors);
     if (result.value.safety_flag) return json({ safety_flag: true, actions: [], reflection: null, entry: null }, 200, cors);
 
-    const final = finalize(result.value, ctx as any, index, `${date}:${userId}`);
+    const final = finalize(result.value, ctx as any, index, `${date}:${userId}`, (rubric as any).principles);
 
     const { data: entry, error: entryErr } = await supabase
       .from('entries')

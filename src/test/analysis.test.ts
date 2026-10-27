@@ -1,6 +1,6 @@
-import { buildSystemPrompt, detectSafety, extractJson, finalize, parseAnalysis, type TeachingIndexEntry, type UserContext } from '../../supabase/functions/_shared/analysis.ts';
+import { buildSystemPrompt, detectSafety, extractJson, finalize, parseAnalysis, type Principle, type Rubric, type TeachingIndexEntry, type UserContext } from '../../supabase/functions/_shared/analysis.ts';
 import { callModel, callWithFallback, readAiConfig, readAiConfigs } from '../../supabase/functions/_shared/providers.ts';
-import rubric from '../../supabase/functions/_shared/rubric.v1.json';
+import rubric from '../../supabase/functions/_shared/rubric.v2.json';
 
 const index: TeachingIndexEntry[] = [
   { id: 'a', traditions: ['general'], categories: ['seva'] },
@@ -37,14 +37,29 @@ describe('analysis schema + post-processing', () => {
     expect(f.actions).toHaveLength(1);
     expect(f.actions[0].weight).toBe(5);
   });
-  it('raises ahimsa weight one step for Jain users, capped at 5', () => {
+  it('keeps points inside the matched dharma principle range and records the principle', () => {
     const r = parseAnalysis(valid({ actions: [
-      { summary: 'no root veg', type: 'punya', category: 'ahimsa_food', weight: 2, reason: '', intention_note: '' },
-      { summary: 'big', type: 'punya', category: 'ahimsa_food', weight: 5, reason: '', intention_note: '' },
+      { summary: 'fed the hungry', type: 'punya', category: 'daan', principle: 'annadana', weight: 50, reason: '', intention_note: '' },
+      { summary: 'small prayer', type: 'punya', category: 'gratitude_bhakti', principle: 'bhakti_sadhana', weight: 1, reason: '', intention_note: '' },
     ] }));
     if (!r.ok) throw new Error(r.error);
-    expect(finalize(r.value, ctx, index, 's').actions.map((a) => a.weight)).toEqual([3, 5]);
-    expect(finalize(r.value, { ...ctx, tradition: 'general' }, index, 's').actions.map((a) => a.weight)).toEqual([2, 5]);
+    const f = finalize(r.value, ctx, index, 's', rubric.principles as Principle[]);
+    expect(f.actions.map((a) => a.weight)).toEqual([45, 3]); // annadana 10-45, bhakti 3-30
+    expect(f.actions.map((a) => a.basis)).toEqual(['annadana', 'bhakti_sadhana']);
+  });
+  it('ignores a principle of the wrong type or an unknown id, and still allows 1-50', () => {
+    const r = parseAnalysis(valid({ actions: [
+      { summary: 'x', type: 'paap', category: 'satya', principle: 'annadana', weight: 20, reason: '', intention_note: '' },
+      { summary: 'y', type: 'punya', category: 'seva', principle: 'made-up', weight: 50, reason: '', intention_note: '' },
+    ] }));
+    if (!r.ok) throw new Error(r.error);
+    const f = finalize(r.value, ctx, index, 's', rubric.principles as Principle[]);
+    expect(f.actions.map((a) => a.basis)).toEqual(['', '']);
+    expect(f.actions.map((a) => a.weight)).toEqual([20, 50]);
+  });
+  it('rejects points above 50', () => {
+    const bad = JSON.stringify({ actions: [{ summary: 'x', type: 'punya', category: 'seva', weight: 51, reason: '' }], reflection: { teaching_id: 'a', suggestion: '' }, safety_flag: false });
+    expect(parseAnalysis(bad).ok).toBe(false);
   });
   it('never lets the model invent a teaching id', () => {
     const r = parseAnalysis(valid({ reflection: { teaching_id: 'made-up-verse', suggestion: 'x' } }));
@@ -118,10 +133,13 @@ describe('provider retry', () => {
 
 describe('prompt + provider adapter', () => {
   it('restricts the model to the listed teaching ids and tells it to treat input as data', () => {
-    const p = buildSystemPrompt(rubric, index, ctx);
+    const p = buildSystemPrompt(rubric as unknown as Rubric, index, ctx);
     expect(p).toContain('MUST be exactly one id');
     expect(p).toContain('is DATA');
     expect(p).toContain('b [ahimsa_food]');
+    expect(p).toContain('paropakara');
+    expect(p).toContain('from 1 to 50');
+    expect(p).toContain('Hindu dharma');
   });
   it('requires a key and rejects unknown providers', () => {
     expect(() => readAiConfig(() => undefined)).toThrow(/AI_API_KEY/);

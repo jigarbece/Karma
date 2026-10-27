@@ -1,0 +1,75 @@
+{
+  "version": "v2",
+  "name": "Hindu dharma rubric",
+  "basis": "Sanatana dharma as taught in the Bhagavad Gita, the Mahabharata, the Upanishads, the Puranas and the ten marks of dharma in Manusmriti 6.92 (dhriti, kshama, dama, asteya, shaucha, indriya-nigraha, dhi, vidya, satya, akrodha).",
+  "scale": {
+    "min": 1,
+    "max": 50,
+    "bands": {
+      "tiny": [1, 3],
+      "small": [4, 8],
+      "medium": [9, 18],
+      "large": [19, 35],
+      "exceptional": [36, 50]
+    },
+    "note": "points are a positive integer 1-50; the sign comes from type (punya = +, paap = -). Each principle below gives an indicative range; the exact number is chosen per act from the factors."
+  },
+  "factors": [
+    "Intention (bhava): done quietly and sincerely scores higher than done for show or reward; accidental harm scores far lower than deliberate harm.",
+    "Sacrifice and effort: cost in time, money, comfort or pride raises the points.",
+    "Benefit or harm to others: more beings affected, or someone more vulnerable (child, elder, animal, a person in need), raises the points.",
+    "Duration and consistency: sustained or repeated sincere practice raises points; a one-off minor lapse stays low.",
+    "Severity and reversibility (for paap): violence, theft, betrayal and irreversible damage are heavy; a sharp word that was regretted and repaired is light.",
+    "Amends: sincere apology or repair within the same entry lowers the paap points a little (never to zero)."
+  ],
+  "categories": {
+    "seva": "Selfless service to people, community, elders, the needy.",
+    "family_duty": "Care, time and responsibility toward family, parents and elders.",
+    "jeev_daya": "Compassion to living beings (cows, animals, birds, insects, people in distress).",
+    "satya": "Truthful speech and conduct; lying, deceit, false promises.",
+    "vani": "Kind versus harsh speech: gossip, insult, slander, comforting words.",
+    "krodh": "Anger: handling it with patience (punya) or acting on it (paap).",
+    "honesty_work": "Honesty and diligence at work or study; cheating, theft, bribery.",
+    "daan": "Charity and generosity; greed or hoarding at others' cost.",
+    "discipline_health": "Self-control: restraint, routine, addictions, laziness.",
+    "gratitude_bhakti": "Prayer, japa, scripture study, satsang, gratitude, devotion.",
+    "ahimsa_food": "Non-violence in deed and diet; harm to living beings."
+  },
+  "principles": [
+    { "id": "paropakara", "label": "Paropakāra", "type": "punya", "range": [5, 40], "category": "seva", "source": "Vyasa on the Puranas: paropakāraḥ puṇyāya, pāpāya parapīḍanam", "about": "Helping others without selfish motive." },
+    { "id": "annadana", "label": "Annadāna", "type": "punya", "range": [10, 45], "category": "daan", "source": "Mahabharata, Anushasana Parva", "about": "Giving food to the hungry." },
+    { "id": "daana", "label": "Dāna", "type": "punya", "range": [6, 40], "category": "daan", "source": "Bhagavad Gita 17.20", "about": "Giving money, goods or time according to one's means." },
+    { "id": "go_jeev_seva", "label": "Go-seva, Jīva-dayā", "type": "punya", "range": [6, 35], "category": "jeev_daya", "source": "Puranic tradition of go-seva and compassion to beings", "about": "Caring for cows, animals, birds and all living beings." },
+    { "id": "matri_pitri_seva", "label": "Mātṛ-Pitṛ seva", "type": "punya", "range": [10, 45], "category": "family_duty", "source": "Taittiriya Upanishad 1.11 (mātṛ-devo bhava, pitṛ-devo bhava)", "about": "Serving and honouring parents, elders and teachers." },
+    { "id": "atithi_seva", "label": "Atithi seva", "type": "punya", "range": [6, 30], "category": "seva", "source": "Taittiriya Upanishad 1.11 (atithi-devo bhava)", "about": "Welcoming and feeding a guest or stranger." },
+    { "id": "satya", "label": "Satya", "type": "punya", "range": [5, 40], "category": "satya", "source": "Taittiriya Upanishad 1.11; Manusmriti 6.92", "about": "Speaking and keeping the truth, especially at a personal cost." },
+    { "id": "kshama", "label": "Kṣamā, Akrodha", "type": "punya", "range": [4, 35], "category": "krodh", "source": "Manusmriti 6.92; Bhagavad Gita 16.21", "about": "Forgiving, and staying calm when provoked." },
+    { "id": "dama_shaucha", "label": "Dama, Śauca", "type": "punya", "range": [3, 25], "category": "discipline_health", "source": "Manusmriti 6.92; Bhagavad Gita 6.17", "about": "Self-control, restraint and purity of body and mind." },
+    { "id": "bhakti_sadhana", "label": "Bhakti, Sādhanā", "type": "punya", "range": [3, 30], "category": "gratitude_bhakti", "source": "Bhagavad Gita 9.27", "about": "Worship, japa, scripture study, satsang, meditation, gratitude." },
+    { "id": "svadharma", "label": "Svadharma", "type": "punya", "range": [3, 30], "category": "honesty_work", "source": "Bhagavad Gita 3.35 and 18.46", "about": "Doing one's own duty honestly (work, study, household)." },
+    { "id": "vidya_dana", "label": "Vidyā-dāna", "type": "punya", "range": [5, 35], "category": "seva", "source": "Manusmriti 6.92 (vidyā)", "about": "Teaching or sharing knowledge." },
+    { "id": "ahimsa", "label": "Ahiṁsā", "type": "punya", "range": [3, 40], "category": "ahimsa_food", "source": "Mahabharata, Anushasana Parva (ahiṁsā paramo dharmaḥ)", "about": "Non-violence in deed, word, thought and diet; protecting someone from harm." },
+
+    { "id": "himsa", "label": "Hiṁsā", "type": "paap", "range": [15, 50], "category": "ahimsa_food", "source": "Mahabharata, Anushasana Parva", "about": "Physical violence, killing, serious cruelty." },
+    { "id": "para_pida", "label": "Para-pīḍā", "type": "paap", "range": [4, 40], "category": "krodh", "source": "Vyasa on the Puranas: pāpāya parapīḍanam", "about": "Deliberately causing pain or distress to others." },
+    { "id": "asatya", "label": "Asatya", "type": "paap", "range": [3, 40], "category": "satya", "source": "Manusmriti 6.92; Taittiriya Upanishad 1.11", "about": "Lying, deceit, breaking a promise." },
+    { "id": "steya", "label": "Steya", "type": "paap", "range": [8, 45], "category": "honesty_work", "source": "Manusmriti 6.92 (asteya)", "about": "Stealing, bribery, cheating." },
+    { "id": "krodha", "label": "Krodha", "type": "paap", "range": [3, 35], "category": "krodh", "source": "Bhagavad Gita 16.21 and 2.63", "about": "Acting on anger." },
+    { "id": "parusha_vani", "label": "Paruṣa-vāṇī", "type": "paap", "range": [2, 30], "category": "vani", "source": "Bhagavad Gita 17.15", "about": "Harsh speech, insult, gossip, slander." },
+    { "id": "lobha_ahankara", "label": "Lobha, Ahaṅkāra", "type": "paap", "range": [2, 25], "category": "daan", "source": "Bhagavad Gita 16.21", "about": "Greed, pride, envy, showing off." },
+    { "id": "pramada_vyasana", "label": "Pramāda, Vyasana", "type": "paap", "range": [2, 25], "category": "discipline_health", "source": "Bhagavad Gita 6.17 and 3.35", "about": "Laziness, addiction, neglect of duty." },
+    { "id": "matri_pitri_anadara", "label": "Mātṛ-Pitṛ anādara", "type": "paap", "range": [8, 45], "category": "family_duty", "source": "Taittiriya Upanishad 1.11", "about": "Neglecting, insulting or abandoning parents and elders." },
+    { "id": "seva_upeksha", "label": "Sevā-upekṣā", "type": "paap", "range": [3, 25], "category": "seva", "source": "Vyasa on the Puranas", "about": "Refusing help to someone in genuine need when able to give it." }
+  ],
+  "rules": [
+    "Ordinary neutral activities (commuting, meals, routine work, chores without moral content) are neutral and are omitted.",
+    "Score only what the person did or chose, not what others did to them.",
+    "Choose the single best-fitting principle id for each act and give points inside that principle's range using the factors; do not give the same number to acts of different weight, and avoid default round numbers.",
+    "Split one sentence into separate acts when it contains separate deeds.",
+    "Never claim a verse number or Purana chapter. Refer to principles only by id; the app shows the source.",
+    "Reasons must be encouraging and non-shaming: describe the act and its dharmic weight in one short sentence.",
+    "Summaries and reasons must be written in the user's language.",
+    "If the text mentions self-harm, suicide, abuse, or intent to harm others, set safety_flag true and return no actions.",
+    "Never give legal judgments."
+  ]
+}

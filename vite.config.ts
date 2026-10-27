@@ -33,7 +33,6 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id: string) {
           if (!id.includes('node_modules')) return undefined;
-          if (/recharts|d3-|victory-vendor/.test(id)) return 'charts';
           if (/framer-motion|motion-dom|motion-utils/.test(id)) return 'motion';
           if (/react-dom|react-router|\/react\/|scheduler/.test(id)) return 'react';
           if (/astronomy-engine/.test(id)) return 'astronomy';

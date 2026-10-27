@@ -42,14 +42,14 @@ const byDate = new Map<string, string>();
 for (const s of sampleHistory(today)) {
   let entryId = byDate.get(s.date);
   if (!entryId) {
-    const { data: e, error: ee } = await admin.from('entries').insert({ user_id: userId, entry_date: s.date, language: 'en', rubric_version: 'v1', ai_provider: 'seed' }).select('id').single();
+    const { data: e, error: ee } = await admin.from('entries').insert({ user_id: userId, entry_date: s.date, language: 'en', rubric_version: 'v2', ai_provider: 'seed' }).select('id').single();
     if (ee) throw ee;
     entryId = e.id as string;
     byDate.set(s.date, entryId);
   }
   const { error: ae } = await admin.from('actions').insert({
     user_id: userId, entry_id: entryId, entry_date: s.date, summary: s.summary, type: s.type, category: s.category,
-    weight: s.weight, reason: s.reason, intention_note: '',
+    weight: s.weight, basis: s.basis, reason: s.reason, intention_note: '',
   });
   if (ae) throw ae;
 }

@@ -1,29 +1,15 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Icon } from './Icon';
-import { TopBar } from './TopBar';
+import { LotusMark } from './Brand';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { useI18n } from '../lib/i18n';
 import { useApp } from '../lib/app';
-import { dailyTeaching } from '../lib/teachings';
 
-const SIDE_ITEMS = [
+const ITEMS = [
   { to: '/', key: 'nav.home', icon: 'home', end: true },
-  { to: '/talk', key: 'nav.talk_log', icon: 'mic' },
-  { to: '/insights', key: 'nav.insights', icon: 'chart' },
-  { to: '/wisdom/gita', key: 'nav.gita', icon: 'book' },
-  { to: '/wisdom/jain', key: 'nav.jain', icon: 'lotus' },
-  { to: '/pratikraman', key: 'nav.pratikraman', icon: 'bhakti' },
-  { to: '/goals', key: 'nav.goals', icon: 'goal' },
-  { to: '/awards', key: 'nav.awards', icon: 'trophy' },
-  { to: '/journal', key: 'nav.journal', icon: 'pen' },
-];
-
-const BOTTOM_ITEMS = [
-  { to: '/', key: 'nav.home', icon: 'home', end: true },
-  { to: '/talk', key: 'nav.talk', icon: 'mic' },
-  { to: '/insights', key: 'nav.insights', icon: 'chart' },
-  { to: '/pratikraman', key: 'nav.pratikraman', icon: 'lotus' },
+  { to: '/history', key: 'nav.history', icon: 'pen' },
   { to: '/profile', key: 'nav.profile', icon: 'user' },
 ];
 
@@ -42,77 +28,72 @@ function useOnline() {
   return online;
 }
 
+/** Deliberately small: brand, three destinations, language, sign out. */
 export function Shell() {
-  const { t, lang } = useI18n();
-  const { profile, today } = useApp();
+  const { t } = useI18n();
+  const { signOut } = useApp();
+  const navigate = useNavigate();
   const online = useOnline();
   const { pathname } = useLocation();
   const reduce = useReducedMotion();
-  const quote = dailyTeaching(today, profile?.tradition ?? 'general');
 
   return (
     <div className="min-h-dvh">
       <a href="#main" className="sr-only-focusable fixed left-2 top-2 z-50 rounded bg-card px-3 py-2">Skip to content</a>
-      {!online && (
-        <div role="status" className="bg-night px-4 py-2 text-center text-sm text-cream">{t('offline.banner')}</div>
-      )}
-      <TopBar />
+      {!online && <div role="status" className="bg-night px-4 py-2 text-center text-sm text-cream">{t('offline.banner')}</div>}
 
-      <div className="mx-auto flex max-w-[1500px]">
-        {/* Desktop sidebar */}
-        <aside className="sticky top-[72px] hidden h-[calc(100dvh-72px)] w-[17rem] shrink-0 flex-col gap-4 overflow-y-auto px-4 py-5 lg:flex">
-          <nav aria-label={`${t('nav.label')} (side)`}>
-            <ul className="space-y-1">
-              {SIDE_ITEMS.map((i) => (
+      <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/85 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-3 sm:px-5">
+          <Link to="/" className="flex items-center gap-2" aria-label="Karma">
+            <LotusMark size={36} />
+            <span className="font-display text-3xl font-bold leading-none text-saffron-text">Karma</span>
+          </Link>
+
+          <nav aria-label={`${t('nav.label')} (top)`} className="ml-6 hidden md:block">
+            <ul className="flex gap-1">
+              {ITEMS.map((i) => (
                 <li key={i.to}>
                   <NavLink
                     to={i.to}
                     end={i.end}
                     className={({ isActive }) =>
-                      `flex min-h-[50px] items-center gap-4 rounded-2xl px-4 text-[1.05rem] font-medium transition ${
-                        isActive ? 'bg-sand font-semibold text-ink shadow-soft' : 'text-ink/80 hover:bg-sand/60'
-                      }`
+                      `inline-flex min-h-[44px] items-center rounded-full px-4 font-semibold ${isActive ? 'bg-sand text-ink' : 'text-muted hover:bg-sand/60'}`
                     }
                   >
-                    {({ isActive }) => (
-                      <>
-                        <Icon name={i.icon} size={22} className={isActive ? 'text-saffron-text' : 'text-muted'} />
-                        {t(i.key)}
-                      </>
-                    )}
+                    {t(i.key)}
                   </NavLink>
                 </li>
               ))}
             </ul>
           </nav>
 
-          <figure className="mt-auto rounded-2xl border border-line/80 bg-card/70 p-4">
-            <Icon name="ahimsa" size={26} className="text-good" />
-            <blockquote className="mt-2 font-display text-lg leading-snug">“{quote.text[lang]}”</blockquote>
-            <figcaption className="mt-2 text-sm text-muted">— {quote.source}</figcaption>
-          </figure>
-        </aside>
+          <div className="ml-auto flex items-center gap-1">
+            <LanguageSwitcher compact />
+            <button
+              type="button" aria-label={t('auth.signout')} title={t('auth.signout')}
+              onClick={() => signOut().then(() => navigate('/welcome', { replace: true }))}
+              className="grid h-11 w-11 place-items-center rounded-full text-muted hover:bg-indigo-soft hover:text-ink"
+            >
+              <Icon name="logout" size={22} />
+            </button>
+          </div>
+        </div>
+      </header>
 
-        <main id="main" className="min-w-0 flex-1 px-3 pb-32 pt-4 sm:px-5 lg:pb-12 lg:pl-2 lg:pr-6">
-          <motion.div
-            key={pathname}
-            initial={reduce ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-          >
-            <Outlet />
-          </motion.div>
-        </main>
-      </div>
+      <main id="main" className="mx-auto w-full max-w-5xl px-3 pb-32 pt-5 sm:px-5 md:pb-12">
+        <motion.div key={pathname} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: 'easeOut' }}>
+          <Outlet />
+        </motion.div>
+      </main>
 
-      {/* Mobile: floating pill navigation */}
+      {/* Phones: floating pill navigation */}
       <nav
         aria-label={t('nav.label')}
-        className="fixed inset-x-3 bottom-3 z-40 rounded-[2rem] border border-gold-light/30 pb-[env(safe-area-inset-bottom)] shadow-lift backdrop-blur-md lg:hidden"
+        className="fixed inset-x-6 bottom-3 z-40 rounded-[2rem] border border-gold-light/30 pb-[env(safe-area-inset-bottom)] shadow-lift backdrop-blur-md md:hidden"
         style={{ background: 'linear-gradient(160deg, rgb(var(--night) / 0.96), rgb(var(--night-2) / 0.96))' }}
       >
-        <ul className="mx-auto flex max-w-md justify-between px-2 py-1">
-          {BOTTOM_ITEMS.map((i) => (
+        <ul className="flex justify-between px-2 py-1">
+          {ITEMS.map((i) => (
             <li key={i.to} className="flex-1">
               <NavLink
                 to={i.to}
@@ -123,7 +104,7 @@ export function Shell() {
               >
                 {({ isActive }) => (
                   <>
-                    <span className={`grid h-8 w-12 place-items-center rounded-full transition ${isActive ? 'bg-white/15 ring-1 ring-gold-light/40' : ''}`}>
+                    <span className={`grid h-8 w-12 place-items-center rounded-full ${isActive ? 'bg-white/15 ring-1 ring-gold-light/40' : ''}`}>
                       <Icon name={i.icon} size={22} />
                     </span>
                     <span>{t(i.key)}</span>

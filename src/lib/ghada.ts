@@ -1,6 +1,7 @@
 import type { DaySummary, KarmaAction, Range } from './types';
 
-export const DAILY_CAP = Number(import.meta.env?.VITE_GHADA_DAILY_CAP ?? 50);
+/** Points that fill a pot for one day. Acts score 1-50 each, so a full day of sincere acts is around 100. */
+export const DAILY_CAP = Number(import.meta.env?.VITE_GHADA_DAILY_CAP ?? 100);
 
 export function rangeDays(range: Range): number {
   return range === 'today' ? 1 : range === 'week' ? 7 : range === 'month' ? 30 : 0;
