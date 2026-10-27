@@ -9,6 +9,7 @@ declare const Deno: { env: { get(name: string): string | undefined }; serve(h: (
 // the app promises every user that their entries are private to their own account.
 const Body = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }),
+  z.object({ action: z.literal('detail'), id: z.string().uuid() }),
   z.object({ action: z.literal('block'), id: z.string().uuid() }),
   z.object({ action: z.literal('unblock'), id: z.string().uuid() }),
   z.object({ action: z.literal('delete'), id: z.string().uuid() }),
@@ -84,6 +85,34 @@ Deno.serve(async (req) => {
             paap_acts: paap.get(u.id) ?? 0,
           }))
           .sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
+      }, 200, cors);
+    }
+
+    if (body.action === 'detail') {
+      const { data: t, error: tErr } = await admin.auth.admin.getUserById(body.id);
+      if (tErr || !t.user) return json({ error: 'not_found' }, 404, cors);
+      const { data: prof } = await admin.from('profiles').select('name, language, onboarding_done').eq('id', body.id).maybeSingle();
+      // Aggregated per day, type, category and mode: points and counts only. The wording of acts, their reasons and the
+      // diary text are never selected into the response.
+      const { data: rows } = await admin.from('actions').select('*').eq('user_id', body.id).limit(20000);
+      const groups = new Map<string, any>();
+      for (const r of rows ?? []) {
+        const mode = r.mode ?? 'done';
+        const key = `${r.entry_date}|${r.type}|${r.category}|${mode}`;
+        const g = groups.get(key) ?? { date: r.entry_date, type: r.type, category: r.category, mode, points: 0, count: 0 };
+        g.points += Number(r.weight) || 0;
+        g.count += 1;
+        groups.set(key, g);
+      }
+      const { count: days } = await admin.from('entries').select('id', { count: 'exact', head: true }).eq('user_id', body.id);
+      return json({
+        user: {
+          id: t.user.id, email: t.user.email ?? '', name: prof?.name ?? '', language: prof?.language ?? '', onboarded: Boolean(prof?.onboarding_done),
+          created_at: t.user.created_at, last_sign_in_at: t.user.last_sign_in_at ?? null,
+          blocked: Boolean((t.user as any).banned_until && new Date((t.user as any).banned_until).getTime() > Date.now()),
+          admin: adminEmails.has(String(t.user.email ?? '').toLowerCase()), days_analysed: days ?? 0,
+        },
+        groups: [...groups.values()],
       }, 200, cors);
     }
 
