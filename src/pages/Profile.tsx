@@ -18,11 +18,16 @@ export default function Profile() {
   const [err, setErr] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [word, setWord] = useState('');
+  const [custom, setCustom] = useState(profile?.custom_greeting ?? '');
+  const [customOpen, setCustomOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setName(profile?.name ?? '');
   }, [profile?.name]);
+  useEffect(() => {
+    setCustom(profile?.custom_greeting ?? '');
+  }, [profile?.custom_greeting]);
 
   if (!profile) return null;
 
@@ -91,7 +96,16 @@ export default function Profile() {
             {GREETINGS.map((x) => (
               <button key={x} type="button" role="radio" aria-checked={profile.greeting === x} className="chip" onClick={() => save({ greeting: x })}>{t(`greeting.${x}`)}</button>
             ))}
+            <button type="button" role="radio" aria-checked={profile.greeting === 'custom'} className="chip" onClick={() => { setCustomOpen(true); if (profile.custom_greeting?.trim()) void save({ greeting: 'custom' }); }}>{t('greeting.custom')}</button>
           </div>
+          {(customOpen || profile.greeting === 'custom') && (
+            <div className="mt-3 flex flex-wrap items-end gap-2">
+              <label htmlFor="cg" className="min-w-0 flex-1 basis-48 text-sm font-semibold">{t('profile.greeting_custom')}
+                <input id="cg" className="field mt-1" value={custom} maxLength={40} placeholder={t('profile.greeting_custom_ph')} onChange={(e) => setCustom(e.target.value)} />
+              </label>
+              <button type="button" className="btn-primary" disabled={!custom.trim()} onClick={() => save({ greeting: 'custom', custom_greeting: custom.trim() })}>{t('profile.greeting_save')}</button>
+            </div>
+          )}
         </fieldset>
       </section>
 

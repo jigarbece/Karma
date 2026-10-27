@@ -84,6 +84,25 @@ describe('Karma app (demo mode)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('lets the user set their own greeting in Profile and shows it on Home', async () => {
+    bootDemo('/profile');
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole('radio', { name: 'My own' }));
+    const save = screen.getByRole('button', { name: 'Save greeting' });
+    expect(save).toBeDisabled();
+    await user.type(screen.getByLabelText('Your own greeting'), 'Jai Mataji');
+    await user.click(save);
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'My own' })).toHaveAttribute('aria-checked', 'true'));
+    await user.click(within(screen.getByRole('navigation', { name: 'Main navigation' })).getByRole('link', { name: 'Home' }));
+    expect(await screen.findByRole('heading', { level: 1, name: /Jai Mataji/ })).toBeInTheDocument();
+    // choosing a ready-made greeting goes back to it
+    await user.click(within(screen.getByRole('navigation', { name: 'Main navigation' })).getByRole('link', { name: 'Profile' }));
+    await user.click(await screen.findByRole('radio', { name: 'Namaste' }));
+    await user.click(within(screen.getByRole('navigation', { name: 'Main navigation' })).getByRole('link', { name: 'Home' }));
+    expect(await screen.findByRole('heading', { level: 1, name: /Namaste/ })).toBeInTheDocument();
+  });
+
   it('shows the common punya ghada and a half-masked leaderboard that asks you to beat the leader', async () => {
     bootDemo('/');
     const user = userEvent.setup();

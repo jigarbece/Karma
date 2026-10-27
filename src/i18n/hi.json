@@ -397,5 +397,9 @@
   "weekly.change_none": "यह आपका पहला पूरा सप्ताह है।",
   "weekly.strongest": "सबसे मज़बूत क्षेत्र: {cat}",
   "weekly.grow": "बढ़ने के लिए एक बात: {cat}",
-  "weekly.days": "७ में से {n} दिन चिंतन किया"
+  "weekly.days": "७ में से {n} दिन चिंतन किया",
+  "greeting.custom": "मेरा अपना",
+  "profile.greeting_custom": "आपका अपना अभिवादन",
+  "profile.greeting_custom_ph": "जैसे जय माताजी",
+  "profile.greeting_save": "अभिवादन सहेजें"
 }

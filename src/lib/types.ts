@@ -1,6 +1,6 @@
 export type Lang = 'gu' | 'hi' | 'en';
 export type Tradition = 'hindu_gita' | 'jain' | 'swaminarayan' | 'general';
-export type Greeting = 'jsk' | 'jj' | 'jsw' | 'namaste' | 'radhe';
+export type Greeting = 'jsk' | 'jj' | 'jsw' | 'namaste' | 'radhe' | 'custom';
 export type KarmaType = 'punya' | 'paap' | 'neutral';
 export type Range = 'today' | 'week' | 'month' | 'lifetime';
 
@@ -39,6 +39,8 @@ export interface Profile {
   language: Lang;
   tradition: Tradition;
   greeting: Greeting;
+  /** the user's own greeting, shown when greeting is 'custom' */
+  custom_greeting?: string;
   goals: Goal[];
   timezone: string;
   city: string;

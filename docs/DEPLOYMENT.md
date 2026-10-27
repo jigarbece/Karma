@@ -94,6 +94,19 @@ Run the files from `supabase/migrations/` in the SQL Editor:
 
 The owner area is at `/admin`: Overview, Users (search, filters, CSV, block, delete), each user's ghadas and entries, Feedback, Announcements, Settings, Admins and System health. Deploy the functions again (step 5) so `admin-users` has the new actions.
 
+### 3e. Custom greeting (run once)
+
+Adds the user's own greeting (Profile, Greeting, My own). Until it is run, saving a custom greeting fails with an error.
+
+```sql
+alter table public.profiles add column if not exists custom_greeting text not null default '';
+alter table public.profiles drop constraint if exists profiles_custom_greeting_len;
+alter table public.profiles add constraint profiles_custom_greeting_len check (char_length(custom_greeting) <= 40);
+alter table public.profiles drop constraint if exists profiles_greeting_check;
+alter table public.profiles add constraint profiles_greeting_check check (greeting in ('jsk', 'jj', 'jsw', 'namaste', 'radhe', 'custom'));
+notify pgrst, 'reload schema';
+```
+
 ## 4. Edge Function secrets (terminal, in the project folder)
 
 ```bash

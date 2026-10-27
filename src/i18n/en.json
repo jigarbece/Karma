@@ -397,5 +397,9 @@
   "weekly.change_none": "This is your first full week.",
   "weekly.strongest": "Strongest area: {cat}",
   "weekly.grow": "One thing to grow: {cat}",
-  "weekly.days": "{n} of 7 days reflected"
+  "weekly.days": "{n} of 7 days reflected",
+  "greeting.custom": "My own",
+  "profile.greeting_custom": "Your own greeting",
+  "profile.greeting_custom_ph": "for example Jai Mataji",
+  "profile.greeting_save": "Save greeting"
 }

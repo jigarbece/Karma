@@ -110,7 +110,8 @@ export default function Home() {
   const prev = days ? totalsForRange(actions, range, addDays(today, -days)) : null;
   const trend = prev ? totals.net - prev.net : totals.net;
   const todays = actions.filter((a) => a.date === today && a.type !== 'neutral').sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
-  const greeting = t(`greeting.${profile?.greeting ?? 'namaste'}`);
+  const customGreeting = profile?.greeting === 'custom' ? profile.custom_greeting?.trim() : '';
+  const greeting = customGreeting || t(`greeting.${profile?.greeting && profile.greeting !== 'custom' ? profile.greeting : 'namaste'}`);
   const teaching = getTeaching(result?.reflection?.teaching_id);
   const net = totals.net;
   const up = net > 0 || (net === 0 && trend >= 0);
