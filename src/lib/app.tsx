@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { supabase, supabaseConfigured } from './supabase';
 import { defaultProfile, localRepo, makeSupabaseRepo, seedDemo, type Repo } from './repo';
 import { localDate } from './ghada';
-import { I18nProvider } from './i18n';
+import { I18nProvider, translate } from './i18n';
 import type { KarmaAction, Lang, Profile } from './types';
 
 interface AppUser {
@@ -123,6 +123,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const theme = profile?.theme ?? 'light';
     document.documentElement.dataset.theme = theme;
     document.documentElement.lang = lang;
+    document.title = translate(lang, 'app.name');
     const meta = document.querySelector('meta[name="theme-color"]');
     meta?.setAttribute('content', theme === 'dark' ? '#12102E' : '#1E1B4B');
   }, [profile?.theme, lang]);

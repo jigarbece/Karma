@@ -74,6 +74,48 @@ describe('analysis schema + post-processing', () => {
   });
 });
 
+describe('multilingual output', () => {
+  const multi = (over: object = {}) =>
+    JSON.stringify({
+      actions: [{
+        summary: 'Helped', type: 'punya', category: 'seva', principle: 'paropakara', weight: 12, reason: 'kind', intention_note: '',
+        i18n: { en: { summary: 'Helped a neighbour', reason: 'Quiet help' }, gu: { summary: 'પાડોશીને મદદ કરી', reason: 'શાંતિથી મદદ' }, hi: { summary: 'पड़ोसी की मदद की', reason: 'चुपचाप मदद' } },
+      }],
+      reflection: { teaching_id: 'a', suggestion: 'Be kind', suggestion_i18n: { en: 'Be kind', gu: 'દયાળુ બનો', hi: 'दयालु बनें' } },
+      safety_flag: false,
+      ...over,
+    });
+
+  it('accepts and keeps English, Gujarati and Hindi text for each act and the suggestion', () => {
+    const r = parseAnalysis(multi());
+    if (!r.ok) throw new Error(r.error);
+    const f = finalize(r.value, ctx, index, 's', rubric.principles as Principle[]);
+    expect(Object.keys(f.actions[0].translations).sort()).toEqual(['en', 'gu', 'hi']);
+    expect(f.actions[0].translations.gu.summary).toBe('પાડોશીને મદદ કરી');
+    expect(f.actions[0].translations.hi.reason).toBe('चुपचाप मदद');
+    expect(f.reflection.suggestion_i18n).toEqual({ en: 'Be kind', gu: 'દયાળુ બનો', hi: 'दयालु बनें' });
+  });
+
+  it('still works when the model omits translations or returns only some languages', () => {
+    const r = parseAnalysis(multi({ actions: [{ summary: 'x', type: 'punya', category: 'seva', weight: 5, reason: '', i18n: { en: { summary: 'only english', reason: '' } } }] }));
+    if (!r.ok) throw new Error(r.error);
+    const f = finalize(r.value, ctx, index, 's', rubric.principles as Principle[]);
+    expect(Object.keys(f.actions[0].translations)).toEqual(['en']);
+    const none = parseAnalysis(valid());
+    if (!none.ok) throw new Error(none.error);
+    expect(finalize(none.value, ctx, index, 's').actions[0].translations).toEqual({});
+  });
+
+  it('asks the model for all three languages', () => {
+    const p = buildSystemPrompt(rubric as unknown as Rubric, index, ctx);
+    expect(p).toContain('"i18n"');
+    expect(p).toContain('Gujarati');
+    expect(p).toContain('Hindi');
+    expect(p).toContain('suggestion_i18n');
+    expect(p).toContain('never print principle ids');
+  });
+});
+
 describe('safety', () => {
   it('flags self-harm in English, Hindi and Gujarati', () => {
     expect(detectSafety('I want to die')).toBe(true);

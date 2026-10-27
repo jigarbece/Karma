@@ -21,6 +21,7 @@ The Home hero uses an illustrated sunrise scene. To use a photo instead, add a l
 - [Operations: release, observability, runbook, backlog, retrospective](docs/aidlc/03-operations.md)
 - [Iteration 2: simplify and score by Hindu dharma](docs/aidlc/04-iteration-2-simplify.md)
 - [Iteration 3: masked acts, glossy ghadas, shloka and panchang](docs/aidlc/05-iteration-3-privacy-and-ghada.md)
+- [Iteration 4: everything in the selected language](docs/aidlc/06-iteration-4-multilingual.md)
 
 ## Try it in 30 seconds (no backend)
 

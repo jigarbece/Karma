@@ -127,6 +127,8 @@ const SUGGEST = {
   },
 } satisfies Record<'paap' | 'punya', Record<Lang, string>>;
 
+const LANGS: Lang[] = ['en', 'gu', 'hi'];
+
 const SAFETY_RE = /(suicide|kill myself|end my life|self[- ]harm|hurt myself|want to die|આત્મહત્યા|મરી જવું|आत्महत्या|मर जाना)/i;
 
 export function mockAnalyze(transcript: string, profile: Pick<Profile, 'tradition' | 'language'>, seed: string): AnalysisResult {
@@ -142,13 +144,14 @@ export function mockAnalyze(transcript: string, profile: Pick<Profile, 'traditio
     basis: r.basis,
     reason: REASON[r.type][lang],
     intention_note: '',
+    translations: Object.fromEntries(LANGS.map((l) => [l, { summary: r.text[l], reason: REASON[r.type][l] }])) as Record<Lang, { summary: string; reason: string }>,
   }));
   const cats = actions.map((a) => a.category);
   const teaching = pickTeaching(cats, profile.tradition, seed);
   const hasPaap = actions.some((a) => a.type === 'paap');
   return {
     actions,
-    reflection: { teaching_id: teaching.id, suggestion: SUGGEST[hasPaap ? 'paap' : 'punya'][lang] },
+    reflection: { teaching_id: teaching.id, suggestion: SUGGEST[hasPaap ? 'paap' : 'punya'][lang], suggestion_i18n: SUGGEST[hasPaap ? 'paap' : 'punya'] },
     safety_flag: false,
   };
 }

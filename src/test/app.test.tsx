@@ -62,6 +62,36 @@ describe('Karma app (demo mode)', () => {
     expect(within(card).queryByText('Gave in charity')).not.toBeInTheDocument();
   });
 
+  it('shows the act text and its dharma principle in whichever language is selected', async () => {
+    bootDemo('/history');
+    const user = userEvent.setup();
+    render(<App />);
+    const first = (await screen.findAllByTestId('masked-act'))[0].closest('li') as HTMLElement;
+    await user.click(within(first).getByRole('button', { name: 'Show' }));
+    expect(within(first).getByTestId('act-text').textContent).not.toMatch(/[\u0900-\u0AFF]/); // English: no Devanagari or Gujarati
+
+    // switch to Gujarati: the same act now reads in Gujarati, principle name and source too
+    await user.click(screen.getByRole('button', { name: 'ગુજરાતી' }));
+    expect(within(first).getByTestId('act-text').textContent).toMatch(/[\u0A80-\u0AFF]/);
+    expect(within(first).getByTestId('basis').textContent).toMatch(/[\u0A80-\u0AFF]/);
+
+    // and Hindi
+    await user.click(screen.getByRole('button', { name: 'हिंदी' }));
+    expect(within(first).getByTestId('act-text').textContent).toMatch(/[\u0900-\u097F]/);
+    expect(within(first).getByTestId('basis').textContent).toMatch(/[\u0900-\u097F]/);
+  });
+
+  it('switches the whole page language, including the brand and the document title', async () => {
+    bootDemo('/');
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: 'ગુજરાતી' }));
+    expect(await screen.findByRole('heading', { level: 2, name: 'આજે તમે શું કર્યું?' })).toBeInTheDocument();
+    expect(document.title).toBe('કર્મ');
+    expect(document.documentElement.lang).toBe('gu');
+    expect(screen.queryByText('Tell me about your day')).not.toBeInTheDocument();
+  });
+
   it('masks seeded acts on History too', async () => {
     bootDemo('/history');
     render(<App />);

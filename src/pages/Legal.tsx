@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useI18n } from '../lib/i18n';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { LEGAL_UPDATED, PRIVACY, TERMS, type Section } from '../content/legal';
-import { DHARMA_VERSION, PRINCIPLES } from '../lib/dharma';
+import { DHARMA_VERSION, PRINCIPLES, localizedPrinciple } from '../lib/dharma';
 
 function Doc({ title, sections }: { title: string; sections: Section[] }) {
   const { t, lang } = useI18n();
@@ -38,7 +38,7 @@ export function Terms() {
 }
 
 export function About() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const navigate = useNavigate();
   return (
     <article className="mx-auto max-w-prose px-4 pb-16 pt-6">
@@ -52,7 +52,7 @@ export function About() {
       </div>
       <h2 className="mt-6 font-display text-2xl font-bold">{t('about.rubric')} ({DHARMA_VERSION})</h2>
       <ul className="mt-2 space-y-2">
-        {PRINCIPLES.map((p) => (
+        {PRINCIPLES.map((base) => localizedPrinciple(base, lang)).map((p) => (
           <li key={p.id} className="card !p-3">
             <div className="flex items-baseline justify-between gap-3">
               <span className="font-display text-xl font-bold">{p.label}</span>

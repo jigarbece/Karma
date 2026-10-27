@@ -50,6 +50,7 @@ for (const s of sampleHistory(today)) {
   const { error: ae } = await admin.from('actions').insert({
     user_id: userId, entry_id: entryId, entry_date: s.date, summary: s.summary, type: s.type, category: s.category,
     weight: s.weight, basis: s.basis, reason: s.reason, intention_note: '',
+    translations: { en: { summary: s.summary, reason: s.reason }, ...s.i18n },
   });
   if (ae) throw ae;
 }

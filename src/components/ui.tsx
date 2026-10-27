@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Icon, CATEGORY_ICON } from './Icon';
 import { useI18n } from '../lib/i18n';
 import { signedWeight } from '../lib/ghada';
-import { getPrinciple } from '../lib/dharma';
+import { getPrinciple, localizedPrinciple } from '../lib/dharma';
 import type { KarmaAction } from '../lib/types';
 
 export function Segmented<T extends string>({
@@ -56,11 +56,16 @@ export function PageTitle({ children, sub }: { children: ReactNode; sub?: ReactN
  * and the dharma principle it was weighed against (with its source).
  */
 export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNode }) {
-  const { t, num } = useI18n();
+  const { t, num, lang } = useI18n();
   const w = signedWeight(a);
   const punya = a.type === 'punya';
   const neutral = a.type === 'neutral';
-  const principle = getPrinciple(a.basis);
+  const base = getPrinciple(a.basis);
+  const principle = base ? localizedPrinciple(base, lang) : undefined;
+  // text in the selected language; older entries without translations keep their original wording
+  const tr = a.translations?.[lang];
+  const summary = tr?.summary || a.summary;
+  const reason = tr?.reason || a.reason;
   // What the person did is private: hidden by default, shown only on a deliberate tap, then hidden again.
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -80,7 +85,7 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           {shown ? (
-            <p className="font-semibold leading-snug" data-testid="act-text">{a.summary}</p>
+            <p className="font-semibold leading-snug" data-testid="act-text">{summary}</p>
           ) : (
             <p className="flex items-center gap-2 font-semibold leading-snug" data-testid="masked-act">
               <Icon name="lock" size={16} className="shrink-0 text-saffron-text" />
@@ -109,7 +114,7 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
           )}
         </div>
         {shown ? (
-          a.reason ? <p className="mt-1 text-sm">{a.reason}</p> : null
+          reason ? <p className="mt-1 text-sm">{reason}</p> : null
         ) : (
           <p className="mt-1 text-sm text-muted">{t('act.masked_hint')}</p>
         )}

@@ -121,7 +121,7 @@ export default function Home() {
           <h2 className="font-display text-2xl font-bold">{t('talk.reflection')}</h2>
           <p className="mt-2 rounded-2xl bg-saffron/15 p-3">
             <span className="font-semibold text-saffron-text">{t('home.suggestion')}: </span>
-            {result.reflection.suggestion}
+            {result.reflection.suggestion_i18n?.[lang] ?? result.reflection.suggestion}
           </p>
         </section>
       )}

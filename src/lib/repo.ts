@@ -4,12 +4,12 @@ import { mockAnalyze } from './mockAnalyze';
 import { sampleHistory } from './sample';
 import { sealLocal } from './seal';
 import { getTeaching } from './teachings';
-import type { AnalysisResult, Entry, KarmaAction, PratikramanRecord, Profile } from './types';
+import type { AnalysisResult, Entry, KarmaAction, Lang, PratikramanRecord, Profile } from './types';
 
 export interface AnalyzeResponse {
   entry: Entry | null;
   actions: KarmaAction[];
-  reflection: { teaching_id: string; suggestion: string } | null;
+  reflection: { teaching_id: string; suggestion: string; suggestion_i18n?: Partial<Record<Lang, string>> } | null;
   safety_flag: boolean;
 }
 
@@ -146,6 +146,7 @@ export function seedDemo(withSample: boolean): void {
       }
       db.actions.push({
         id: uid(), entry_id: entryId, summary: s.summary, type: s.type, category: s.category, weight: s.weight, basis: s.basis,
+        translations: { en: { summary: s.summary, reason: s.reason }, ...s.i18n },
         reason: s.reason, intention_note: '', date: s.date, created_at: `${s.date}T18:00:00.000Z`,
       });
     }
@@ -247,6 +248,7 @@ function mapAction(r: Row): KarmaAction {
     category: r.category as KarmaAction['category'],
     weight: r.weight as number,
     basis: (r.basis as string) ?? '',
+    translations: (r.translations as KarmaAction['translations']) ?? {},
     reason: (r.reason as string) ?? '',
     intention_note: (r.intention_note as string) ?? '',
     date: r.entry_date as string,

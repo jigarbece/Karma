@@ -30,7 +30,7 @@ export default function Landing() {
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2">
           <img src="/favicon.svg" alt="" className="h-9 w-9 rounded-xl shadow-soft" />
-          <span className="font-display text-3xl font-bold text-saffron-text">Karma</span>
+          <span className="font-display text-3xl font-bold text-saffron-text">{t('app.name')}</span>
         </span>
         <LanguageSwitcher />
       </div>
@@ -40,13 +40,13 @@ export default function Landing() {
         <Mandala className="pointer-events-none absolute -right-32 -top-32 h-[28rem] w-[28rem] text-gold-light opacity-[0.13]" />
         <div className="relative lg:order-2">
           <div className="mx-auto grid max-w-sm grid-cols-2 gap-2 lg:max-w-md lg:gap-5">
-            <Ghada kind="punya" fraction={0.72} label="Punya ghada" className="w-full" />
-            <Ghada kind="paap" fraction={0.28} label="Paap ghada" className="w-full" />
+            <Ghada kind="punya" fraction={0.72} label={t('home.punya_ghada')} className="w-full" />
+            <Ghada kind="paap" fraction={0.28} label={t('home.paap_ghada')} className="w-full" />
           </div>
         </div>
 
         <div className="relative mt-6 text-center lg:order-1 lg:mt-0 lg:text-left">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-gold-light/90">Punya · Paap · Pratikraman</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-gold-light/90">{t('landing.eyebrow')}</p>
           <h1 className="mt-3 text-5xl leading-[1.05] text-cream lg:text-7xl">{t('landing.promise')}</h1>
           <p className="mx-auto mt-4 max-w-prose text-lg text-cream/85 lg:mx-0">{t('landing.sub')}</p>
 

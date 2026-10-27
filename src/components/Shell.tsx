@@ -39,14 +39,14 @@ export function Shell() {
 
   return (
     <div className="min-h-dvh">
-      <a href="#main" className="sr-only-focusable fixed left-2 top-2 z-50 rounded bg-card px-3 py-2">Skip to content</a>
+      <a href="#main" className="sr-only-focusable fixed left-2 top-2 z-50 rounded bg-card px-3 py-2">{t('nav.skip')}</a>
       {!online && <div role="status" className="bg-night px-4 py-2 text-center text-sm text-cream">{t('offline.banner')}</div>}
 
       <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-2 px-3 sm:gap-3 sm:px-5">
-          <Link to="/" className="flex items-center gap-2" aria-label="Karma">
+          <Link to="/" className="flex items-center gap-2" aria-label={t('app.name')}>
             <LotusMark size={36} />
-            <span className="hidden font-display text-3xl font-bold leading-none text-saffron-text min-[380px]:inline">Karma</span>
+            <span className="hidden font-display text-3xl font-bold leading-none text-saffron-text min-[380px]:inline">{t('app.name')}</span>
           </Link>
 
           <nav aria-label={`${t('nav.label')} (top)`} className="ml-6 hidden md:block">

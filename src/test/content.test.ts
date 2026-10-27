@@ -4,6 +4,7 @@ import gu from '../i18n/gu.json';
 import hi from '../i18n/hi.json';
 import { TEACHINGS } from '../lib/teachings';
 import { CATEGORIES } from '../lib/types';
+import { PRINCIPLE_TEXT } from '../content/principleText';
 import rubric from '../../supabase/functions/_shared/rubric.v2.json';
 
 describe('teachings', () => {
@@ -59,5 +60,21 @@ describe('dharma rubric v2', () => {
   it('covers both merit and growth principles', () => {
     expect(rubric.principles.filter((p) => p.type === 'punya').length).toBeGreaterThan(8);
     expect(rubric.principles.filter((p) => p.type === 'paap').length).toBeGreaterThan(8);
+  });
+});
+
+describe('dharma principle translations', () => {
+  it('has a Gujarati and Hindi name, description and source for every principle', () => {
+    for (const p of rubric.principles) {
+      for (const l of ['gu', 'hi'] as const) {
+        const t = PRINCIPLE_TEXT[p.id]?.[l];
+        expect(t, `${p.id} ${l}`).toBeDefined();
+        expect(t!.label.length).toBeGreaterThan(1);
+        expect(t!.about.length).toBeGreaterThan(5);
+        expect(t!.source.length).toBeGreaterThan(5);
+      }
+      expect(PRINCIPLE_TEXT[p.id].gu.label).toMatch(/[\u0A80-\u0AFF]/); // Gujarati script
+      expect(PRINCIPLE_TEXT[p.id].hi.label).toMatch(/[\u0900-\u097F]/); // Devanagari
+    }
   });
 });

@@ -84,7 +84,7 @@ export async function callModel(cfg: AiConfig, system: string, user: string, f: 
         {
           systemInstruction: { parts: [{ text: system }] },
           contents: [{ role: 'user', parts: [{ text: user }] }],
-          generationConfig: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 2048 },
+          generationConfig: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 6144 },
         },
       )) as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
       return data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? '';
@@ -103,7 +103,7 @@ export async function callModel(cfg: AiConfig, system: string, user: string, f: 
     case 'anthropic': {
       const data = (await send('https://api.anthropic.com/v1/messages', { 'x-api-key': cfg.apiKey, 'anthropic-version': '2023-06-01' }, {
         model: cfg.model,
-        max_tokens: 2048,
+        max_tokens: 6144,
         temperature: 0,
         system,
         messages: [{ role: 'user', content: user }],

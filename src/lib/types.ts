@@ -57,6 +57,8 @@ export interface KarmaAction {
   category: Category;
   weight: number; // points: positive integer 1-50; sign derived from type
   basis: string; // dharma principle id (rubric v2), '' when unknown
+  /** summary + reason in each app language; older rows have none and fall back to `summary` */
+  translations?: Partial<Record<Lang, { summary: string; reason: string }>>;
   reason: string;
   intention_note: string;
   date: string; // entry_date (YYYY-MM-DD)
@@ -88,8 +90,9 @@ export interface AnalysisResult {
     basis?: string;
     reason: string;
     intention_note: string;
+    translations?: Partial<Record<Lang, { summary: string; reason: string }>>;
   }>;
-  reflection: { teaching_id: string; suggestion: string };
+  reflection: { teaching_id: string; suggestion: string; suggestion_i18n?: Partial<Record<Lang, string>> };
   safety_flag: boolean;
 }
 
