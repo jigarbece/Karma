@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { supabase, supabaseConfigured } from './supabase';
 import { defaultProfile, localRepo, makeSupabaseRepo, seedDemo, type Repo } from './repo';
 import { localDate } from './ghada';
@@ -117,8 +117,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refresh().catch(() => setProfile(defaultProfile(user?.id ?? 'demo-user')));
   }, [repo, refresh, user]);
 
+  // The language on screen is local state, so switching is instant: it never waits for the profile to save.
+  // A signed-in user's saved language is adopted once when their profile first loads (for a new device).
+  const lang: Lang = previewLang;
+  const adoptedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!profile || adoptedFor.current === profile.id) return;
+    adoptedFor.current = profile.id;
+    let local: string | null = null;
+    try {
+      local = localStorage.getItem(LANG_KEY);
+    } catch {
+      /* ignore */
+    }
+    // a language chosen on this device wins; otherwise take the one saved with the account
+    if (!local && profile.language) setPreviewLang(profile.language);
+  }, [profile]);
+
   // Theme + html lang
-  const lang: Lang = profile?.language ?? previewLang;
   useEffect(() => {
     const theme = profile?.theme ?? 'light';
     document.documentElement.dataset.theme = theme;

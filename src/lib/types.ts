@@ -49,6 +49,12 @@ export interface Profile {
   theme: 'light' | 'dark';
 }
 
+/**
+ * What the person did with it: actually did or said it (done), held back from wrong (refrained), regrets a wrong (regret),
+ * means to do it (intended) or only thought it (thought). A thought or plan scores less than a deed.
+ */
+export type ActionMode = 'done' | 'refrained' | 'regret' | 'intended' | 'thought';
+
 export interface KarmaAction {
   id: string;
   entry_id: string;
@@ -56,7 +62,9 @@ export interface KarmaAction {
   type: KarmaType;
   category: Category;
   weight: number; // points: positive integer 1-50; sign derived from type
-  basis: string; // dharma principle id (rubric v2), '' when unknown
+  basis: string; // dharma principle id (rubric v3), '' when unknown
+  /** older rows have none and count as a deed */
+  mode?: ActionMode;
   /** summary + reason in each app language; older rows have none and fall back to `summary` */
   translations?: Partial<Record<Lang, { summary: string; reason: string }>>;
   reason: string;
@@ -88,6 +96,7 @@ export interface AnalysisResult {
     category: Category;
     weight: number;
     basis?: string;
+    mode?: ActionMode;
     reason: string;
     intention_note: string;
     translations?: Partial<Record<Lang, { summary: string; reason: string }>>;

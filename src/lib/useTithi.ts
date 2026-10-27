@@ -1,16 +1,20 @@
 import { useMemo } from 'react';
-import { formatTithi, tithiForNow } from './panchang';
+import { formatTithi, tithiForNow, type Tithi } from './panchang';
 import type { Lang } from './types';
 
-/** Today's tithi line (e.g. "આસો સુદ ૧૫"), recomputed when the language or local date changes. */
+/**
+ * Today's tithi line (e.g. "આસો સુદ ૧૫"). The astronomy runs once per local date; changing the language only
+ * re-formats the result, so switching language stays instant.
+ */
 export function useTithi(lang: Lang, today: string): string {
-  return useMemo(() => {
+  const tithi = useMemo<Tithi | null>(() => {
     try {
-      return formatTithi(tithiForNow(new Date()), lang);
+      return tithiForNow(new Date());
     } catch {
-      return '';
+      return null;
     }
     // `today` re-computes the tithi after midnight in a long-lived session
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang, today]);
+  }, [today]);
+  return useMemo(() => (tithi ? formatTithi(tithi, lang) : ''), [tithi, lang]);
 }

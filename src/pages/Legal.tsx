@@ -50,6 +50,8 @@ export function About() {
       <div className="mt-4 space-y-3 leading-relaxed">
         {['about.p1', 'about.p2', 'about.p3', 'about.p4', 'about.p5'].map((k) => <p key={k}>{t(k)}</p>)}
       </div>
+      <h2 className="mt-6 font-display text-2xl font-bold">{t('about.how_title')}</h2>
+      <p className="mt-2 leading-relaxed">{t('about.how_body')}</p>
       <h2 className="mt-6 font-display text-2xl font-bold">{t('about.rubric')} ({DHARMA_VERSION})</h2>
       <ul className="mt-2 space-y-2">
         {PRINCIPLES.map((base) => localizedPrinciple(base, lang)).map((p) => (

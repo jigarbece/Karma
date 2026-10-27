@@ -51,6 +51,17 @@ export function PageTitle({ children, sub }: { children: ReactNode; sub?: ReactN
   );
 }
 
+/** i18n key for how an item was meant (a thought, only an intention, held back, repentance); null for an ordinary deed. */
+export function modeKey(a: Pick<KarmaAction, 'mode' | 'type'>): string | null {
+  switch (a.mode) {
+    case 'thought': return a.type === 'punya' ? 'mode.thought_punya' : 'mode.thought_paap';
+    case 'intended': return 'mode.intended';
+    case 'refrained': return 'mode.refrained';
+    case 'regret': return 'mode.regret';
+    default: return null;
+  }
+}
+
 /**
  * One scored act as a compact row: icon, the act (masked), its points and an eye button.
  * The text is hidden by default; the eye reveals the act, its reason and the dharma principle behind the points
@@ -99,6 +110,7 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
           <p className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${punya ? 'text-saffron-text' : neutral ? 'text-muted' : 'text-indigo'}`}>
             <Icon name={punya ? 'up' : neutral ? 'flat' : 'down'} size={12} />
             {t(punya ? 'talk.type_punya' : neutral ? 'talk.type_neutral' : 'talk.type_paap')}
+            {modeKey(a) && <span className="font-normal" data-testid="mode-tag">· {t(modeKey(a)!)}</span>}
             {shown && <span className="font-normal text-muted">· {t(`cat.${a.category}`)}</span>}
           </p>
         </div>

@@ -74,6 +74,17 @@ grant execute on function public.visitor_count() to anon, authenticated;
 notify pgrst, 'reload schema';
 ```
 
+### 3c. Deed versus thought (rubric v3, run once in the SQL Editor)
+
+Every scored item now records whether the person did it, held back, regrets it, means to do it, or only thought it. Until this is applied the app still saves (without the mode) and shows everything as a deed.
+
+```sql
+alter table public.actions add column if not exists mode text not null default 'done';
+alter table public.actions drop constraint if exists actions_mode_check;
+alter table public.actions add constraint actions_mode_check check (mode in ('done', 'refrained', 'regret', 'intended', 'thought'));
+notify pgrst, 'reload schema';
+```
+
 ## 4. Edge Function secrets (terminal, in the project folder)
 
 ```bash
@@ -125,7 +136,7 @@ git push -u origin main
 
 - Rotate every key pasted in chat: Groq, Gemini, Google client secret.
 - Replace `privacy@karma.example` in `src/content/legal.ts` and `src/i18n/*.json` with a real address.
-- Scholar review of `rubric.v2.json` ranges and the shloka text; lawyer review of the privacy policy and terms.
+- Scholar review of `rubric.v3.json` ranges and the shloka text; lawyer review of the privacy policy and terms.
 
 ## Troubleshooting
 

@@ -9,11 +9,9 @@
 import { readFileSync } from 'node:fs';
 import type { IncomingMessage } from 'node:http';
 import type { Plugin } from 'vite';
-import {
-  buildSystemPrompt, buildUserPrompt, detectSafety, finalize, parseAnalysis,
-  type Rubric, type TeachingIndexEntry, type UserContext,
-} from './supabase/functions/_shared/analysis.ts';
-import { callWithFallback, readAiConfigs } from './supabase/functions/_shared/providers.ts';
+import { detectSafety, type Rubric, type TeachingIndexEntry, type UserContext } from './supabase/functions/_shared/analysis.ts';
+import { AiInvalidOutput, runAnalysis } from './supabase/functions/_shared/pipeline.ts';
+import { readAiConfigs } from './supabase/functions/_shared/providers.ts';
 import { base64ToBytes, DEFAULT_TRANSCRIBE_MODEL, MAX_AUDIO_BYTES, pickTranscribeKey, transcribeAudio } from './supabase/functions/_shared/transcribe.ts';
 
 function readBody(req: IncomingMessage, max = 20_000): Promise<string> {
@@ -70,10 +68,10 @@ export function devAi(env: Record<string, string>): Plugin {
           const body = JSON.parse(await readBody(req)) as { transcript?: string; date?: string; language?: UserContext['language'] };
           const transcript = (body.transcript ?? '').trim().slice(0, 4000);
           if (!transcript) return send(400, { error: 'bad_request' });
-          // Scoring is grounded in Hindu dharma (rubric v2) for every user.
+          // Scoring is grounded in Hindu dharma (rubric v3) for every user.
           const ctx: UserContext = { language: body.language ?? 'en', tradition: 'hindu_gita', goals: [] };
-
-          if (detectSafety(transcript)) return send(200, { safety_flag: true, actions: [], reflection: { teaching_id: '', suggestion: '' } });
+          const safe = () => send(200, { safety_flag: true, actions: [], reflection: { teaching_id: '', suggestion: '' } });
+          if (detectSafety(transcript)) return safe();
 
           let configs;
           try {
@@ -81,21 +79,19 @@ export function devAi(env: Record<string, string>): Plugin {
           } catch (e) {
             return send(501, { error: 'ai_not_configured', message: e instanceof Error ? e.message : '' });
           }
-          const rubric = JSON.parse(readFileSync('supabase/functions/_shared/rubric.v2.json', 'utf8')) as Rubric;
+          const rubric = JSON.parse(readFileSync('supabase/functions/_shared/rubric.v3.json', 'utf8')) as Rubric;
           const index = JSON.parse(readFileSync('supabase/functions/_shared/teachings.index.json', 'utf8')) as TeachingIndexEntry[];
-          const system = buildSystemPrompt(rubric, index, ctx);
 
-          let out = await callWithFallback(configs, system, buildUserPrompt(transcript));
-          let parsed = parseAnalysis(out.text);
-          if (!parsed.ok) {
-            out = await callWithFallback(configs, system, `${buildUserPrompt(transcript)}\n\nYour previous reply was invalid (${parsed.error}). Reply again with ONLY the JSON object in the exact shape.`);
-            parsed = parseAnalysis(out.text);
+          let outcome;
+          try {
+            outcome = await runAnalysis({ transcript, ctx, rubric, index, configs, seed: `${body.date ?? ''}:${transcript}` });
+          } catch (e) {
+            if (e instanceof AiInvalidOutput) return send(502, { error: 'ai_invalid_output', message: e.message });
+            throw e;
           }
-          if (!parsed.ok) return send(502, { error: 'ai_invalid_output', message: parsed.error.slice(0, 200) });
-          if (parsed.value.safety_flag) return send(200, { safety_flag: true, actions: [], reflection: { teaching_id: '', suggestion: '' } });
-
-          const final = finalize(parsed.value, ctx, index, `${body.date ?? ''}:${transcript}`, rubric.principles);
-          return send(200, { safety_flag: false, actions: final.actions.map((a) => ({ ...a })), reflection: final.reflection, provider: out.cfg.provider, model: out.cfg.model });
+          if (outcome.safety) return safe();
+          const { final, cfg, dropped } = outcome;
+          return send(200, { safety_flag: false, actions: final.actions.map((a) => ({ ...a })), reflection: final.reflection, provider: cfg.provider, model: cfg.model, dropped });
         } catch (e) {
           const raw = e instanceof Error ? e.message : String(e);
           const message = raw.replace(/gsk_[\w-]+|AIza[\w-]+|AQ\.[\w.-]+|sk-[\w-]+/g, '[key]').slice(0, 300);

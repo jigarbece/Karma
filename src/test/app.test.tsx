@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
-import { seedDemo } from '../lib/repo';
+import { localRepo, seedDemo } from '../lib/repo';
 
 function bootDemo(path: string) {
   localStorage.clear();
@@ -80,6 +80,22 @@ describe('Karma app (demo mode)', () => {
     expect(within(dialog).getByText('Gave in charity')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'See my ghadas' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('switches language at once, without waiting for the profile to save', async () => {
+    bootDemo('/');
+    // a profile save that never finishes, like a very slow network
+    const slow = vi.spyOn(localRepo, 'saveProfile').mockImplementation(() => new Promise(() => {}));
+    const user = userEvent.setup();
+    render(<App />);
+    expect(await screen.findByRole('button', { name: 'Analyse' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'ગુજરાતી' }));
+    expect(screen.getByRole('button', { name: 'વિશ્લેષણ કરો' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'हिंदी' }));
+    expect(screen.queryByRole('button', { name: 'Analyse' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'English' }));
+    expect(screen.getByRole('button', { name: 'Analyse' })).toBeInTheDocument();
+    slow.mockRestore();
   });
 
   it('shows the act text and its dharma principle in whichever language is selected', async () => {

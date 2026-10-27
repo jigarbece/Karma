@@ -1,4 +1,4 @@
-import rubric from '../../supabase/functions/_shared/rubric.v2.json';
+import rubric from '../../supabase/functions/_shared/rubric.v3.json';
 import { principleText } from '../content/principleText';
 import type { Lang } from './types';
 

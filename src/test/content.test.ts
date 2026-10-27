@@ -6,7 +6,7 @@ import { TEACHINGS } from '../lib/teachings';
 import { CATEGORIES } from '../lib/types';
 import { PRINCIPLE_TEXT } from '../content/principleText';
 import { SHLOKAS, devanagariToGujarati } from '../content/shlokas';
-import rubric from '../../supabase/functions/_shared/rubric.v2.json';
+import rubric from '../../supabase/functions/_shared/rubric.v3.json';
 
 describe('teachings', () => {
   it('has 40+ entries with unique ids and all three languages', () => {

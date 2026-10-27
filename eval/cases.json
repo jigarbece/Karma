@@ -1,0 +1,37 @@
+{
+  "about": "Gold cases for the scoring pipeline. Each case says what a careful reader should conclude: expect = items that must be found (type, allowed modes, optional allowed principles, optional maxPoints), forbid = items that must NOT appear, none = nothing at all should be scored. pairs compare total points: `more` must beat `less`.",
+  "cases": [
+    { "id": "en-done-charity", "lang": "en", "text": "I gave my lunch to a hungry man outside my office today.", "expect": [{ "type": "punya", "modes": ["done"] }], "forbid": [{ "type": "paap" }] },
+    { "id": "en-intend-donate", "lang": "en", "text": "I really want to donate to the temple this weekend, I just have not done it yet.", "expect": [{ "type": "punya", "modes": ["intended"] }], "forbid": [{ "modes": ["done"] }, { "type": "paap" }] },
+    { "id": "en-refrain-anger", "lang": "en", "text": "My brother provoked me badly and I wanted to slap him, but I stayed calm and walked away.", "expect": [{ "type": "punya", "modes": ["refrained"] }], "forbid": [{ "type": "paap" }] },
+    { "id": "en-thought-envy", "lang": "en", "text": "I felt so jealous when my colleague got promoted. I kept thinking about it all evening.", "expect": [{ "type": "paap", "modes": ["thought"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "en-thought-goodwill", "lang": "en", "text": "While walking I silently wished that my neighbour's sick child gets well soon. I only thought it, I did nothing.", "expect": [{ "type": "punya", "modes": ["thought", "intended"] }], "forbid": [{ "type": "paap" }, { "modes": ["done"] }] },
+    { "id": "en-thought-revenge", "lang": "en", "text": "I spent the whole afternoon imagining how to take revenge on my neighbour.", "expect": [{ "type": "paap", "modes": ["thought"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "en-thought-wish-harm", "lang": "en", "text": "I secretly hoped my friend would fail his exam.", "expect": [{ "type": "paap", "modes": ["thought"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "en-done-shout", "lang": "en", "text": "I shouted at my wife in front of the kids over a small thing.", "expect": [{ "type": "paap", "modes": ["done"] }] },
+    { "id": "en-done-lie", "lang": "en", "text": "I lied to my manager that I was sick so I could skip work.", "expect": [{ "type": "paap", "modes": ["done"] }] },
+    { "id": "en-deed-and-regret", "lang": "en", "text": "I snapped at my mother this morning. I feel really guilty and I apologised to her.", "expect": [{ "type": "paap", "modes": ["done"] }, { "type": "punya", "modes": ["regret"] }] },
+    { "id": "en-received-only", "lang": "en", "text": "My boss insulted me in the meeting and I felt humiliated.", "none": true },
+    { "id": "en-neutral", "lang": "en", "text": "I went to the office, had lunch and came back home.", "none": true },
+    { "id": "en-quiet-day", "lang": "en", "text": "Had a quiet day today.", "none": true },
+    { "id": "en-plan-parents", "lang": "en", "text": "Tomorrow I plan to visit my parents and spend the whole day with them.", "expect": [{ "type": "punya", "modes": ["intended"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "en-done-scroll", "lang": "en", "text": "I wasted four hours scrolling on my phone instead of studying.", "expect": [{ "type": "paap", "modes": ["done"] }] },
+    { "id": "en-show-off-donation", "lang": "en", "text": "I donated money to the school but mostly so that people would praise me.", "expect": [{ "type": "punya", "modes": ["done"], "maxPoints": 24 }] },
+    { "id": "en-gave-500", "lang": "en", "text": "I gave 500 rupees to a poor family today.", "expect": [{ "type": "punya", "modes": ["done"] }] },
+    { "id": "en-thought-500", "lang": "en", "text": "I thought about giving 500 rupees to a poor family today but I did not.", "expect": [{ "type": "punya", "modes": ["intended", "thought"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "en-multi", "lang": "en", "text": "I helped an old lady cross the road, then I lied to my teacher about my homework, and I felt envious of a friend's new bike.", "expect": [{ "type": "punya", "modes": ["done"] }, { "type": "paap", "modes": ["done"] }, { "type": "paap", "modes": ["thought"] }] },
+    { "id": "gu-done-feed", "lang": "gu", "text": "આજે મેં એક ભૂખ્યા માણસને જમાડ્યો.", "expect": [{ "type": "punya", "modes": ["done"] }], "forbid": [{ "type": "paap" }] },
+    { "id": "gu-thought-envy", "lang": "gu", "text": "મને મારા પાડોશીની પ્રગતિ જોઈને બહુ ઈર્ષ્યા થઈ, આખો દિવસ એ જ વિચાર આવ્યા કર્યો.", "expect": [{ "type": "paap", "modes": ["thought"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "gu-refrain-anger", "lang": "gu", "text": "મને ગુસ્સો ખૂબ આવ્યો પણ મેં કંઈ બોલ્યા વગર શાંત રહેવાનું પસંદ કર્યું.", "expect": [{ "type": "punya", "modes": ["refrained"] }], "forbid": [{ "type": "paap" }] },
+    { "id": "gu-intend-temple", "lang": "gu", "text": "કાલે હું મંદિર જઈશ અને ગરીબોને દાન કરીશ એવું મેં વિચાર્યું છે.", "expect": [{ "type": "punya", "modes": ["intended"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "hi-done-abuse", "lang": "hi", "text": "मैंने गुस्से में अपने भाई को गाली दी।", "expect": [{ "type": "paap", "modes": ["done"] }] },
+    { "id": "hi-thought-greed", "lang": "hi", "text": "मेरे मन में बार-बार लालच आया कि दोस्त का पैसा रख लूँ, पर मैंने सिर्फ सोचा, किया नहीं।", "expect": [{ "type": "paap", "modes": ["thought"] }], "forbid": [{ "modes": ["done"] }] },
+    { "id": "hi-done-seva", "lang": "hi", "text": "आज मैंने बीमार पड़ोसी की रात भर सेवा की।", "expect": [{ "type": "punya", "modes": ["done"] }], "forbid": [{ "type": "paap" }] },
+    { "id": "hi-intend-seva", "lang": "hi", "text": "मैं सोच रहा हूँ कि अगले महीने से वृद्धाश्रम में सेवा शुरू करूँगा।", "expect": [{ "type": "punya", "modes": ["intended"] }], "forbid": [{ "modes": ["done"] }] }
+  ],
+  "pairs": [
+    { "more": "en-gave-500", "less": "en-thought-500", "why": "giving 500 rupees counts for more than only thinking of it" },
+    { "more": "en-done-charity", "less": "en-intend-donate", "why": "a deed counts for more than an intention" },
+    { "more": "en-gave-500", "less": "en-show-off-donation", "why": "a sincere gift outscores one given for praise" }
+  ]
+}

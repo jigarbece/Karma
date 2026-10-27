@@ -49,7 +49,10 @@ async function post(f: Fetch, url: string, headers: Record<string, string>, body
     const res = await f(url, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
     if (res.ok) return res.json();
     if (RETRYABLE.has(res.status) && attempt < 2) {
-      await new Promise((r) => setTimeout(r, retryDelayMs * (attempt + 1)));
+      // a rate limit says how long to wait; honour it (up to 10 s) instead of guessing
+      const advised = res.status === 429 ? Number(res.headers.get('retry-after')) * 1000 : 0;
+      const wait = Number.isFinite(advised) && advised > 0 ? Math.min(advised, 10_000) : retryDelayMs * (attempt + 1);
+      await new Promise((r) => setTimeout(r, wait));
       continue;
     }
     const detail = (await res.text()).slice(0, 300);
@@ -96,6 +99,8 @@ export async function callModel(cfg: AiConfig, system: string, user: string, f: 
         model: cfg.model,
         temperature: 0,
         response_format: { type: 'json_object' },
+        // gpt-oss thinks before it answers; low effort is plenty for classification and is much faster and cheaper in tokens
+        ...(cfg.provider === 'groq' && /gpt-oss/i.test(cfg.model) ? { reasoning_effort: 'low' } : {}),
         messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
       })) as { choices?: Array<{ message?: { content?: string } }> };
       return data.choices?.[0]?.message?.content ?? '';

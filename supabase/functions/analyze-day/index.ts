@@ -1,10 +1,11 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'zod';
-import rubric from '../_shared/rubric.v2.json' with { type: 'json' };
+import rubric from '../_shared/rubric.v3.json' with { type: 'json' };
 import teachingIndex from '../_shared/teachings.index.json' with { type: 'json' };
-import { buildSystemPrompt, buildUserPrompt, detectSafety, finalize, localDateIn, parseAnalysis, type TeachingIndexEntry } from '../_shared/analysis.ts';
-import { callWithFallback, readAiConfigs } from '../_shared/providers.ts';
+import { detectSafety, localDateIn, type TeachingIndexEntry } from '../_shared/analysis.ts';
+import { AiInvalidOutput, runAnalysis } from '../_shared/pipeline.ts';
+import { readAiConfigs } from '../_shared/providers.ts';
 import { corsHeaders, json } from '../_shared/cors.ts';
 import { encryptText } from '../_shared/crypto.ts';
 
@@ -50,25 +51,22 @@ Deno.serve(async (req) => {
     if ((count ?? 0) >= LIMIT) return json({ error: 'rate_limited', limit: LIMIT }, 429, cors);
     await supabase.from('analysis_log').insert({ user_id: userId, local_date: today });
 
-    // Scoring is grounded in Hindu dharma (rubric v2) for every user.
+    // Scoring is grounded in Hindu dharma (rubric v3) for every user: the model describes each deed or thought,
+    // this code checks it against what was written and computes the points.
     const ctx = { language, tradition: 'hindu_gita', goals: [] as string[] } as const;
     const index = teachingIndex as TeachingIndexEntry[];
-    const configs = readAiConfigs((n) => Deno.env.get(n));
-    const system = buildSystemPrompt(rubric as any, index, ctx as any);
-
-    const first = await callWithFallback(configs, system, buildUserPrompt(transcript));
-    let cfg = first.cfg;
-    let result = parseAnalysis(first.text);
-    if (!result.ok) {
-      const retryUser = `${buildUserPrompt(transcript)}\n\nYour previous reply was invalid (${result.error}). Reply again with ONLY the JSON object in the exact shape.`;
-      const second = await callWithFallback(configs, system, retryUser);
-      cfg = second.cfg;
-      result = parseAnalysis(second.text);
+    let outcome;
+    try {
+      outcome = await runAnalysis({
+        transcript, ctx: ctx as any, rubric: rubric as any, index, seed: `${date}:${userId}`,
+        configs: readAiConfigs((n) => Deno.env.get(n)),
+      });
+    } catch (e) {
+      if (e instanceof AiInvalidOutput) return json({ error: 'ai_invalid_output' }, 502, cors);
+      throw e;
     }
-    if (!result.ok) return json({ error: 'ai_invalid_output' }, 502, cors);
-    if (result.value.safety_flag) return json({ safety_flag: true, actions: [], reflection: null, entry: null }, 200, cors);
-
-    const final = finalize(result.value, ctx as any, index, `${date}:${userId}`, (rubric as any).principles);
+    if (outcome.safety) return json({ safety_flag: true, actions: [], reflection: null, entry: null }, 200, cors);
+    const { final, cfg } = outcome;
 
     // The message is stored only encrypted (AES-256-GCM, key in the TRANSCRIPT_KEY secret) and is never shown
     // in the app. Without a key we store nothing rather than store plain text.
@@ -91,12 +89,14 @@ Deno.serve(async (req) => {
 
     let actions: any[] = [];
     if (final.actions.length) {
-      const { data, error } = await supabase
-        .from('actions')
-        .insert(final.actions.map((a) => ({ ...a, user_id: userId, entry_id: entry.id, entry_date: date })))
-        .select('*');
+      const rows = final.actions.map((a) => ({ ...a, user_id: userId, entry_id: entry.id, entry_date: date }));
+      let { data, error } = await supabase.from('actions').insert(rows).select('*');
+      // the `mode` column comes from the 20261028 migration; until it is applied, save without it rather than fail
+      if (error && /'mode' column|column "?mode"?/i.test(error.message)) {
+        ({ data, error } = await supabase.from('actions').insert(rows.map(({ mode: _mode, ...rest }) => rest)).select('*'));
+      }
       if (error) throw error;
-      actions = data;
+      actions = data ?? [];
     }
     await supabase.from('reflections').insert({ user_id: userId, date, teaching_id: final.reflection.teaching_id, suggestion: final.reflection.suggestion });
 

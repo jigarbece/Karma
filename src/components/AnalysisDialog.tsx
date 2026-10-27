@@ -4,6 +4,7 @@ import { Icon, CATEGORY_ICON } from './Icon';
 import { useI18n } from '../lib/i18n';
 import { signedWeight } from '../lib/ghada';
 import { getPrinciple, localizedPrinciple } from '../lib/dharma';
+import { modeKey } from './ui';
 import type { KarmaAction } from '../lib/types';
 
 /**
@@ -118,6 +119,7 @@ export function AnalysisDialog({ actions, onClose }: { actions: KarmaAction[]; o
                     <p className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${isPunya ? 'text-saffron-text' : 'text-indigo'}`}>
                       <Icon name={isPunya ? 'up' : 'down'} size={12} />
                       {t(isPunya ? 'talk.type_punya' : 'talk.type_paap')}
+                      {modeKey(a) && <span className="font-normal" data-testid="dlg-mode">· {t(modeKey(a)!)}</span>}
                     </p>
                   </div>
                   <span className={`shrink-0 font-display text-2xl font-bold leading-none ${isPunya ? 'text-good' : 'text-paapred'}`}>

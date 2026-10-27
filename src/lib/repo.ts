@@ -274,6 +274,7 @@ function mapAction(r: Row): KarmaAction {
     category: r.category as KarmaAction['category'],
     weight: r.weight as number,
     basis: (r.basis as string) ?? '',
+    mode: ((r.mode as KarmaAction['mode']) ?? 'done'),
     translations: (r.translations as KarmaAction['translations']) ?? {},
     reason: (r.reason as string) ?? '',
     intention_note: (r.intention_note as string) ?? '',
@@ -356,8 +357,10 @@ export function makeSupabaseRepo(userId: string): Repo {
         if (entryErr) throw new AnalyzeError('save_failed', entryErr.message);
         let rows: Row[] = [];
         if (local.actions.length) {
-          const { data, error } = await sb.from('actions')
-            .insert(local.actions.map((a) => ({ ...a, user_id: userId, entry_id: entry.id, entry_date: input.date }))).select('*');
+          const toRows = (withMode: boolean) => local.actions.map(({ mode, ...a }) => ({ ...a, ...(withMode ? { mode } : {}), user_id: userId, entry_id: entry.id, entry_date: input.date }));
+          let { data, error } = await sb.from('actions').insert(toRows(true)).select('*');
+          // the `mode` column comes from the 20261028 migration; until it is applied, save without it rather than fail
+          if (error && /'mode' column|column "?mode"?/i.test(error.message)) ({ data, error } = await sb.from('actions').insert(toRows(false)).select('*'));
           if (error) throw new AnalyzeError('save_failed', error.message);
           rows = data as Row[];
         }
