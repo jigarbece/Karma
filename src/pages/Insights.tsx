@@ -6,6 +6,7 @@ import { categoryTotals, growthCategory, hasActivity, strongestCategory, trendPo
 import type { Category } from '../lib/types';
 import { CategoryBars, CategoryRadar, HighlightTile, TrendChart } from '../components/charts';
 import { Icon } from '../components/Icon';
+import { WeeklySummaryCard } from '../components/WeeklySummaryCard';
 import { PageTitle, Segmented } from '../components/ui';
 
 /** Graphics only: where you did well, where to grow, and how net karma moves. */
@@ -38,6 +39,8 @@ export default function Insights() {
   return (
     <div className="space-y-5">
       <PageTitle>{t('insights.title')}</PageTitle>
+
+      <WeeklySummaryCard actions={actions} today={today} />
 
       <div className="max-w-md">
         <Segmented

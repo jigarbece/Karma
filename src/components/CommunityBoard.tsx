@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Ghada } from './Ghada';
+import { Icon } from './Icon';
 import { useI18n } from '../lib/i18n';
+import { shareInvite, SITE_URL } from '../lib/shareCard';
 import { chase, type Board } from '../lib/community';
 
 /**
@@ -8,6 +11,7 @@ import { chase, type Board } from '../lib/community';
  */
 export function CommunityBoard({ board, onCta }: { board: Board; onCta: () => void }) {
   const { t, num } = useI18n();
+  const [invited, setInvited] = useState<'shared' | 'copied' | 'cancelled' | null>(null);
   const fraction = board.week_total > 0 ? Math.max(0.07, Math.min(1, board.week_total / Math.max(1, board.goal))) : 0;
   const reached = board.week_total >= board.goal;
   const c = chase(board);
@@ -73,6 +77,16 @@ export function CommunityBoard({ board, onCta }: { board: Board; onCta: () => vo
           </div>
         )}
         {c.state === 'empty' && <button type="button" className="btn-primary mt-3 w-full sm:w-auto" onClick={onCta}>{t('community.cta')}</button>}
+
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button" className="btn-ghost"
+            onClick={async () => setInvited(await shareInvite(t('share.invite_text'), SITE_URL))}
+          >
+            <Icon name="heart" size={18} />{t('share.invite')}
+          </button>
+          <span role="status" className="text-sm text-muted">{invited === 'copied' ? t('share.copied') : ''}</span>
+        </div>
       </div>
     </section>
   );

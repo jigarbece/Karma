@@ -1,6 +1,8 @@
 import { useI18n } from '../lib/i18n';
 import { shlokaMeaning, shlokaOfTheDay, shlokaVerse, type Shloka } from '../content/shlokas';
 import { OmChakra } from './SacredArt';
+import { ShareButton } from './ShareButton';
+import { renderShareCard, SITE_URL } from '../lib/shareCard';
 
 /**
  * Shloka of the day on a deep indigo and gold panel: the verse in the reader's script (Gujarati script for Gujarati,
@@ -43,6 +45,24 @@ export function ShlokaCard({ date, shloka }: { date: string; shloka?: Shloka }) 
         <div className="mt-4">
           <p className="text-xs font-semibold tracking-wide text-gold-light/80">{t('shloka.meaning')}</p>
           <p className="mt-1 font-display text-xl leading-relaxed text-cream">{shlokaMeaning(s, lang)}</p>
+        </div>
+
+        <div className="mt-4">
+          <ShareButton
+            className="btn-ghost !border-gold-light/40 !bg-white/10 !text-gold-light"
+            label={t('share.shloka')}
+            filename="karma-shloka.png"
+            url={SITE_URL}
+            text={t('share.text_shloka')}
+            build={() => renderShareCard({
+              kicker: t('shloka.title'),
+              title: s.ref.replace('Bhagavad Gita', t('shloka.gita')),
+              lines,
+              note: shlokaMeaning(s, lang),
+              footer: SITE_URL.replace('https://', ''),
+              font: lang === 'gu' ? '"Hind Vadodara", sans-serif' : '"Noto Sans Devanagari", sans-serif',
+            })}
+          />
         </div>
       </div>
     </section>

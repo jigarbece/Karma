@@ -6,7 +6,9 @@ import { RateLimitError, AnalyzeError, type AnalyzeResponse } from '../lib/repo'
 import { getTeaching } from '../lib/teachings';
 import { totalsForRange, addDays, rangeDays } from '../lib/ghada';
 import { useSpeech } from '../lib/useSpeech';
-import { useTithi } from '../lib/useTithi';
+import { useTithi, useTithiValue } from '../lib/useTithi';
+import { DEFAULT_SETTINGS, type Announcement, type AppSettings } from '../lib/community';
+import { HabitStrip } from '../components/HabitStrip';
 import type { Lang, Range } from '../lib/types';
 import { GhadaPair } from '../components/GhadaPair';
 import { ShlokaCard } from '../components/ShlokaCard';
@@ -31,6 +33,15 @@ export default function Home() {
   const stageRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
   const tithi = useTithi(lang, today);
+  const tithiValue = useTithiValue(today);
+  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  useEffect(() => {
+    let live = true;
+    repo?.announcement().then((a) => live && setAnnouncement(a)).catch(() => undefined);
+    repo?.settings().then((s) => live && setSettings(s)).catch(() => undefined);
+    return () => { live = false; };
+  }, [repo]);
 
   const setBoth = useCallback((v: string) => {
     textRef.current = v;
@@ -172,6 +183,9 @@ export default function Home() {
           </p>
         </section>
       )}
+
+      {/* Reasons to come back: owner's message, streak, weekly goal, festival challenge */}
+      <HabitStrip actions={actions} today={today} goal={settings.personal_goal} tithi={tithiValue} announcement={announcement} />
 
       {/* 2. The two glossy ghadas */}
       <section ref={stageRef} className="stage-card" aria-labelledby="stage-title">
