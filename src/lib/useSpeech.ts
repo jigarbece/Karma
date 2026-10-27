@@ -93,7 +93,9 @@ export function useSpeech(lang: Lang, getBase: () => string, onText: (text: stri
       };
       rec.onerror = (e) => {
         if (recRef.current !== rec) return;
-        if (e.error === 'language-not-supported' && attempt + 1 < tags.length) {
+        // "service-not-allowed" is what Chrome reports when the speech service has no model for this language
+        // (the microphone permission itself is fine, English works): try the bare code before giving up
+        if ((e.error === 'language-not-supported' || e.error === 'service-not-allowed') && attempt + 1 < tags.length) {
           recRef.current = null;
           begin(attempt + 1);
           return;

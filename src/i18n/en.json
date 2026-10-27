@@ -136,7 +136,7 @@
   "dlg.hide": "Hide details",
   "dlg.cta": "See my ghadas",
   "talk.voice_denied": "Microphone is blocked. Allow the microphone for this site in your browser settings, then tap the mic again.",
-  "talk.voice_lang": "This phone cannot listen in this language. Use the mic on your keyboard (Gboard) or type.",
+  "talk.voice_lang": "Microphone permission is fine, but voice recognition is not enabled for this language on this phone. In the Google app go to Settings > Voice > Languages and add it, or speak using your keyboard's mic (Gboard), or type.",
   "talk.voice_network": "Voice needs an internet connection. Check your network and try again.",
   "talk.voice_nomic": "No microphone found. Please check your device or type.",
   "talk.edit_hint": "You can edit the text before analysing.",

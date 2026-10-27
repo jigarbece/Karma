@@ -77,6 +77,16 @@ describe('useSpeech', () => {
     expect(result.current.listening).toBe(true);
   });
 
+  it('treats service-not-allowed (no speech model for the language) like an unsupported language, and reports it if the retry fails too', () => {
+    const { result } = setup('gu');
+    act(() => result.current.start());
+    act(() => FakeRecognition.instances[0].onerror?.({ error: 'service-not-allowed' }));
+    expect(FakeRecognition.instances[1].lang).toBe('gu');
+    act(() => FakeRecognition.instances[1].onerror?.({ error: 'service-not-allowed' }));
+    expect(result.current.error).toBe('service-not-allowed');
+    expect(result.current.listening).toBe(false);
+  });
+
   it('puts what was heard into the text once, without doubling', () => {
     const { result, onText } = setup('hi');
     act(() => result.current.start());

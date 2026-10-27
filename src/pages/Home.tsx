@@ -87,8 +87,8 @@ export default function Home() {
   const up = net > 0 || (net === 0 && trend >= 0);
   const voiceProblem = speech.error
     ? speech.error === 'unsupported' ? t('talk.voice_unsupported')
-      : speech.error === 'not-allowed' || speech.error === 'service-not-allowed' ? t('talk.voice_denied')
-        : speech.error === 'language-not-supported' ? t('talk.voice_lang')
+      : speech.error === 'not-allowed' ? t('talk.voice_denied')
+        : speech.error === 'language-not-supported' || speech.error === 'service-not-allowed' ? t('talk.voice_lang')
           : speech.error === 'network' ? t('talk.voice_network')
             : speech.error === 'audio-capture' ? t('talk.voice_nomic')
               : t('talk.voice_error')
