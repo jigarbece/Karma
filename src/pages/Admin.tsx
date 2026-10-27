@@ -44,6 +44,7 @@ function DailyBars({ title, days, pick, color }: { title: string; days: Day[]; p
 interface AdminUser {
   id: string; email: string; name: string; language: string; onboarded: boolean;
   created_at: string; last_sign_in_at: string | null; blocked: boolean; admin: boolean; days_analysed: number;
+  analysed_7d: number; last_analysed_at: string | null; punya_acts: number; paap_acts: number;
 }
 
 const day = (iso: string | null) => (iso ? iso.slice(0, 10) : 'never');
@@ -98,7 +99,11 @@ function Users() {
               <div className="min-w-0 flex-1 basis-56">
                 <p className="truncate font-semibold">{u.name || '(no name)'} <span className="font-normal text-muted">{u.email}</span></p>
                 <p className="text-xs text-muted">
-                  Joined {day(u.created_at)} · last seen {day(u.last_sign_in_at)} · {fmt(u.days_analysed)} days analysed · {u.language ? (LANG_NAME[u.language] ?? u.language) : 'no language'}{u.onboarded ? '' : ' · setup not finished'}
+                  Joined {day(u.created_at)} · last seen {day(u.last_sign_in_at)} · {u.language ? (LANG_NAME[u.language] ?? u.language) : 'no language'}{u.onboarded ? '' : ' · setup not finished'}
+                </p>
+                <p className="text-xs" data-testid="admin-activity">
+                  <span className="font-semibold">{fmt(u.days_analysed)}</span> days analysed ({fmt(u.analysed_7d)} in 7 days, last {day(u.last_analysed_at)}) ·{' '}
+                  <span className="font-semibold text-good">{fmt(u.punya_acts)}</span> punya acts · <span className="font-semibold text-paapred">{fmt(u.paap_acts)}</span> to reflect on
                 </p>
               </div>
               {u.admin && <span className="rounded-full bg-gold/25 px-2 py-0.5 text-xs font-semibold text-saffron-text">Admin</span>}

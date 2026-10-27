@@ -45,11 +45,26 @@ Deno.serve(async (req) => {
         if (data.users.length < 200) break;
       }
       const { data: profiles } = await admin.from('profiles').select('id, name, language, onboarding_done');
-      const { data: entries } = await admin.from('entries').select('user_id').limit(100000);
+      // counts and dates only: never the text, the acts' wording or their points
+      const { data: entries } = await admin.from('entries').select('user_id, created_at').limit(100000);
+      const { data: acts } = await admin.from('actions').select('user_id, type').limit(200000);
       const profileOf = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-      const entryCount = new Map<string, number>();
-      for (const e of entries ?? []) entryCount.set(e.user_id, (entryCount.get(e.user_id) ?? 0) + 1);
       const now = Date.now();
+      const weekAgo = now - 7 * 86400000;
+      const entryCount = new Map<string, number>();
+      const week = new Map<string, number>();
+      const last = new Map<string, string>();
+      for (const e of entries ?? []) {
+        entryCount.set(e.user_id, (entryCount.get(e.user_id) ?? 0) + 1);
+        if (new Date(e.created_at).getTime() > weekAgo) week.set(e.user_id, (week.get(e.user_id) ?? 0) + 1);
+        if (!last.has(e.user_id) || e.created_at > last.get(e.user_id)!) last.set(e.user_id, e.created_at);
+      }
+      const punya = new Map<string, number>();
+      const paap = new Map<string, number>();
+      for (const a of acts ?? []) {
+        const m = a.type === 'punya' ? punya : a.type === 'paap' ? paap : null;
+        if (m) m.set(a.user_id, (m.get(a.user_id) ?? 0) + 1);
+      }
       return json({
         users: users
           .map((u) => ({
@@ -63,6 +78,10 @@ Deno.serve(async (req) => {
             blocked: Boolean(u.banned_until && new Date(u.banned_until).getTime() > now),
             admin: adminEmails.has(String(u.email ?? '').toLowerCase()),
             days_analysed: entryCount.get(u.id) ?? 0,
+            analysed_7d: week.get(u.id) ?? 0,
+            last_analysed_at: last.get(u.id) ?? null,
+            punya_acts: punya.get(u.id) ?? 0,
+            paap_acts: paap.get(u.id) ?? 0,
           }))
           .sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
       }, 200, cors);
