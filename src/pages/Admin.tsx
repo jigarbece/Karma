@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useI18n } from '../lib/i18n';
 import { addDays, localDate, totalsForRange } from '../lib/ghada';
 import { categoryTotals } from '../lib/insights';
+import { getPrinciple } from '../lib/dharma';
 import type { Category, KarmaAction, Range } from '../lib/types';
 import { GhadaPair } from '../components/GhadaPair';
 import { CategoryBars } from '../components/charts';
@@ -11,8 +12,7 @@ import { Segmented, Spinner } from '../components/ui';
 
 /* ------------------------------------------------------------------------------------------------
  * Admin area: numbers, users, and one user's progress and ghadas.
- * It shows counts, dates and points. Diary messages and the wording of acts are never loaded here:
- * the app promises every user that what they write is private to their own account.
+ * Super admin: numbers, users, and one user's ghadas, entries (the message as written) and every scored act.
  * --------------------------------------------------------------------------------------------- */
 
 const LANG_NAME: Record<string, string> = { gu: 'Gujarati', hi: 'Hindi', en: 'English' };
@@ -168,6 +168,56 @@ function UsersPage() {
   );
 }
 
+/* ----------------------------------------------------------------------------- One user's entries */
+
+interface EntryAct { id: string; type: 'punya' | 'paap'; mode: string; category: string; points: number; principle: string; summary: string; reason: string; translations: Record<string, { summary?: string; reason?: string }> }
+interface AdminEntry { id: string; date: string; created_at: string; language: string; message: string | null; acts: EntryAct[] }
+
+/** Everything the user entered: the message as written and each scored act. */
+function Entries({ id }: { id: string }) {
+  const [entries, setEntries] = useState<AdminEntry[] | null>(null);
+  const [problem, setProblem] = useState('');
+  useEffect(() => {
+    adminCall<{ entries: AdminEntry[] }>({ action: 'entries', id }).then((d) => setEntries(d.entries)).catch((e) => setProblem(`Could not load entries: ${e.message}`));
+  }, [id]);
+
+  if (problem) return <p role="alert" className="card text-muted">{problem}</p>;
+  if (!entries) return <Spinner label="Loading entries" />;
+  if (entries.length === 0) return <p className="card text-muted">No entries yet.</p>;
+  return (
+    <ul className="space-y-3" data-testid="admin-entries">
+      {entries.map((e) => (
+        <li key={e.id} className="card !p-4">
+          <p className="text-sm font-semibold text-muted">{e.date} · {LANG_NAME[e.language] ?? e.language}</p>
+          {e.message
+            ? <p className="mt-2 whitespace-pre-wrap rounded-xl bg-sand/60 p-3 text-sm [overflow-wrap:anywhere]" data-testid="admin-message">{e.message}</p>
+            : <p className="mt-2 text-sm text-muted">Message not saved (the user turned off "Keep my words", or no key was set).</p>}
+          {e.acts.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {e.acts.map((a) => {
+                const p = getPrinciple(a.principle);
+                return (
+                  <li key={a.id} className="flex items-start gap-3 text-sm" data-testid="admin-act">
+                    <span className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${a.type === 'punya' ? 'bg-gold/25 text-saffron-text' : 'bg-indigo-soft text-indigo'}`}>
+                      {a.type === 'punya' ? 'Punya' : 'Reflect'}
+                    </span>
+                    <div className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+                      <p className="font-semibold">{a.translations?.en?.summary || a.summary}</p>
+                      <p className="text-muted">{a.translations?.en?.reason || a.reason}</p>
+                      <p className="text-xs text-muted">{MODE_LABEL[a.mode] ?? a.mode}{p ? ` · ${p.label} (${p.source})` : ''}</p>
+                    </div>
+                    <span className={`shrink-0 font-display text-xl font-bold ${a.type === 'punya' ? 'text-good' : 'text-paapred'}`}>{a.type === 'punya' ? '+' : '−'}{a.points}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /* ----------------------------------------------------------------------------- One user */
 
 const MODE_LABEL: Record<string, string> = { done: 'Deeds', refrained: 'Held back', regret: 'Repentance', intended: 'Intentions', thought: 'Thoughts' };
@@ -294,6 +344,11 @@ function UserDetail() {
         <DailyBars title="Punya points per day" days={days} pick={(d) => d.punya} color="bg-good" />
         <DailyBars title="Points to reflect on per day" days={days} pick={(d) => d.paap} color="bg-paapred" />
       </div>
+
+      <section aria-labelledby="u-entries" className="space-y-3">
+        <h2 id="u-entries" className="font-display text-2xl font-bold">Entries</h2>
+        <Entries id={id} />
+      </section>
     </div>
   );
 }
@@ -310,7 +365,7 @@ export default function Admin() {
         <p className="hidden px-4 pb-1 font-display text-xl font-bold lg:block">Admin</p>
         <NavLink to="/admin" end className={link}>Overview</NavLink>
         <NavLink to="/admin/users" className={link}>Users</NavLink>
-        <p className="hidden px-4 pt-3 text-xs text-muted lg:block">Counts, dates and points only. Diary messages and the wording of acts stay private to each user.</p>
+        <p className="hidden px-4 pt-3 text-xs text-muted lg:block">Super admin: you can read every user's entries.</p>
       </nav>
       <div className="min-w-0">
         <Routes>

@@ -2,14 +2,16 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'zod';
 import { corsHeaders, json } from '../_shared/cors.ts';
+import { decryptText, isEncrypted } from '../_shared/crypto.ts';
 
 declare const Deno: { env: { get(name: string): string | undefined }; serve(h: (req: Request) => Response | Promise<Response>): void };
 
-// Admin user management. Only emails in public.admins may call it. It never returns diary text, acts or points:
-// the app promises every user that their entries are private to their own account.
+// Admin user management. Only emails in public.admins may call it. `list` and `detail` return counts and points only;
+// `entries` returns the decrypted diary text and acts.
 const Body = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }),
   z.object({ action: z.literal('detail'), id: z.string().uuid() }),
+  z.object({ action: z.literal('entries'), id: z.string().uuid() }),
   z.object({ action: z.literal('block'), id: z.string().uuid() }),
   z.object({ action: z.literal('unblock'), id: z.string().uuid() }),
   z.object({ action: z.literal('delete'), id: z.string().uuid() }),
@@ -114,6 +116,30 @@ Deno.serve(async (req) => {
         },
         groups: [...groups.values()],
       }, 200, cors);
+    }
+
+    if (body.action === 'entries') {
+      // The owner (super admin) reads a user's entries: the decrypted message and every scored act.
+      const { data: entries, error: eErr } = await admin.from('entries').select('*').eq('user_id', body.id).order('created_at', { ascending: false }).limit(200);
+      if (eErr) throw eErr;
+      const { data: acts, error: aErr } = await admin.from('actions').select('*').eq('user_id', body.id).limit(5000);
+      if (aErr) throw aErr;
+      const key = Deno.env.get('TRANSCRIPT_KEY');
+      const out = [];
+      for (const e of entries ?? []) {
+        let message: string | null = null;
+        if (e.transcript) {
+          try { message = key && isEncrypted(e.transcript) ? await decryptText(e.transcript, key) : e.transcript; } catch { message = null; }
+        }
+        out.push({
+          id: e.id, date: e.entry_date, created_at: e.created_at, language: e.language, message,
+          acts: (acts ?? []).filter((a: any) => a.entry_id === e.id).map((a: any) => ({
+            id: a.id, type: a.type, mode: a.mode ?? 'done', category: a.category, points: a.weight, principle: a.basis ?? '',
+            summary: a.summary, reason: a.reason ?? '', translations: a.translations ?? {},
+          })),
+        });
+      }
+      return json({ entries: out }, 200, cors);
     }
 
     // block / unblock / delete: never on yourself or on another admin
