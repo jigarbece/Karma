@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       return json({
         ai: has('AI_API_KEY'), ai_provider: Deno.env.get('AI_PROVIDER') ?? 'gemini', ai_model: Deno.env.get('AI_MODEL') ?? '(default)',
         ai_fallback: has('AI_FALLBACK_API_KEY'), voice: has('TRANSCRIBE_API_KEY') || (Deno.env.get('AI_PROVIDER') === 'groq' && has('AI_API_KEY')) || (Deno.env.get('AI_FALLBACK_PROVIDER') === 'groq' && has('AI_FALLBACK_API_KEY')),
-        message_key: has('TRANSCRIPT_KEY'), allowed_origin: Deno.env.get('ALLOWED_ORIGIN') ?? '(any)', daily_limit: Number(Deno.env.get('DAILY_ANALYSIS_LIMIT') ?? 10),
+        message_key: has('TRANSCRIPT_KEY'), allowed_origin: Deno.env.get('ALLOWED_ORIGIN') ?? '(any)', daily_limit: Number(Deno.env.get('DAILY_ANALYSIS_LIMIT') ?? 0),
       }, 200, cors);
     }
 

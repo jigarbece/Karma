@@ -245,7 +245,7 @@ export function SystemPage() {
             <div className="min-w-0"><p className="font-semibold">{label} <span className="font-normal text-muted">{ok ? 'OK' : 'Needs attention'}</span></p><p className="text-sm text-muted">{detail}</p></div>
           </li>
         ))}
-        <li className="card !p-3 text-sm"><span className="font-semibold">Analyses per user per day:</span> {h.daily_limit} · <span className="font-semibold">Allowed sites:</span> <span className="[overflow-wrap:anywhere]">{h.allowed_origin}</span></li>
+        <li className="card !p-3 text-sm"><span className="font-semibold">Analyses per user per day:</span> {h.daily_limit > 0 ? h.daily_limit : 'unlimited'} · <span className="font-semibold">Allowed sites:</span> <span className="[overflow-wrap:anywhere]">{h.allowed_origin}</span></li>
       </ul>
     </div>
   );

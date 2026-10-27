@@ -57,7 +57,7 @@ export interface Repo {
   deleteAll(): Promise<void>;
 }
 
-export const DAILY_ANALYSIS_LIMIT = Number(import.meta.env?.VITE_DAILY_ANALYSIS_LIMIT ?? 10);
+export const DAILY_ANALYSIS_LIMIT = Number(import.meta.env?.VITE_DAILY_ANALYSIS_LIMIT ?? 0); // 0 = unlimited
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
 type DevAnalysis = AnalysisResult & { provider?: string; model?: string };
@@ -226,7 +226,7 @@ export const localRepo: Repo = {
     const profile = db.profile ?? defaultProfile('demo-user');
     // 'a-' ids mark entries created through analyze (seeded history does not count)
     const used = db.entries.filter((e) => e.entry_date === date && e.id.startsWith('a-')).length;
-    if (used >= DAILY_ANALYSIS_LIMIT) throw new RateLimitError(DAILY_ANALYSIS_LIMIT);
+    if (DAILY_ANALYSIS_LIMIT > 0 && used >= DAILY_ANALYSIS_LIMIT) throw new RateLimitError(DAILY_ANALYSIS_LIMIT);
     // Dev only: real AI through the local endpoint; falls back to the keyword mock without AI keys.
     let result: AnalysisResult | null = await devAnalyze({ transcript, date, language, tradition: profile.tradition, goals: profile.goals });
     if (!result) {

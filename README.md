@@ -85,7 +85,7 @@ Create `supabase/.env.secrets` (it is git-ignored; see `.env.example` for the na
 AI_PROVIDER=gemini
 AI_API_KEY=your-provider-key
 AI_MODEL=
-DAILY_ANALYSIS_LIMIT=10
+DAILY_ANALYSIS_LIMIT=0   # 0 = unlimited
 ALLOWED_ORIGIN=https://your-domain
 ```
 Then:

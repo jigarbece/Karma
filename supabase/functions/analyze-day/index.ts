@@ -17,7 +17,8 @@ const Body = z.object({
   language: z.enum(['gu', 'hi', 'en']),
 });
 
-const LIMIT = Number(Deno.env.get('DAILY_ANALYSIS_LIMIT') ?? 10);
+// 0 (the default) means unlimited; set DAILY_ANALYSIS_LIMIT to a number to cap analyses per user per day
+const LIMIT = Number(Deno.env.get('DAILY_ANALYSIS_LIMIT') ?? 0);
 
 Deno.serve(async (req) => {
   const cors = corsHeaders(req.headers.get('origin'), Deno.env.get('ALLOWED_ORIGIN'));
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
     const today = localDateIn(profile.timezone ?? 'Asia/Kolkata');
     const { count } = await supabase
       .from('analysis_log').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('local_date', today);
-    if ((count ?? 0) >= LIMIT) return json({ error: 'rate_limited', limit: LIMIT }, 429, cors);
+    if (LIMIT > 0 && (count ?? 0) >= LIMIT) return json({ error: 'rate_limited', limit: LIMIT }, 429, cors);
     await supabase.from('analysis_log').insert({ user_id: userId, local_date: today });
 
     // Scoring is grounded in Hindu dharma (rubric v3) for every user: the model describes each deed or thought,
