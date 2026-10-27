@@ -2,7 +2,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'zod';
 import { corsHeaders, json } from '../_shared/cors.ts';
-import { base64ToBytes, DEFAULT_TRANSCRIBE_MODEL, MAX_AUDIO_BYTES, pickTranscribeKey, transcribeAudio } from '../_shared/transcribe.ts';
+import { base64ToBytes, DEFAULT_TRANSCRIBE_MODEL, MAX_AUDIO_BYTES, pickTranscribeKeys, transcribeAudio } from '../_shared/transcribe.ts';
 
 declare const Deno: { env: { get(name: string): string | undefined }; serve(h: (req: Request) => Response | Promise<Response>): void };
 
@@ -29,8 +29,8 @@ Deno.serve(async (req) => {
     if (!parsed.success) return json({ error: 'bad_request' }, 400, cors);
     const { audio, mime, language } = parsed.data;
 
-    const apiKey = pickTranscribeKey((n) => Deno.env.get(n));
-    if (!apiKey) return json({ error: 'transcribe_not_configured' }, 501, cors);
+    const apiKey = pickTranscribeKeys((n) => Deno.env.get(n));
+    if (apiKey.length === 0) return json({ error: 'transcribe_not_configured' }, 501, cors);
 
     const bytes = base64ToBytes(audio);
     if (bytes.length > MAX_AUDIO_BYTES) return json({ error: 'audio_too_large' }, 413, cors);

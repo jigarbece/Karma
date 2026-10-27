@@ -34,6 +34,14 @@ export function pickTranscribeKey(get: (name: string) => string | undefined): st
   return undefined;
 }
 
+/** Every Groq key available, in order: the single key above plus any extra AI_API_KEYS. They are tried in turn on a rate limit. */
+export function pickTranscribeKeys(get: (name: string) => string | undefined): string[] {
+  const first = pickTranscribeKey(get);
+  if (!first) return [];
+  const extra = get('TRANSCRIBE_API_KEY') || get('AI_PROVIDER')?.toLowerCase() !== 'groq' ? [] : (get('AI_API_KEYS') ?? '').split(',').map((k) => k.trim()).filter(Boolean);
+  return [...new Set([first, ...extra])];
+}
+
 export function base64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
   const bytes = new Uint8Array(bin.length);
@@ -63,16 +71,20 @@ export async function transcribeAudio(opts: {
   bytes: Uint8Array;
   mime: string;
   language: VoiceLang;
-  apiKey: string;
+  /** one key, or several: a key that is rate limited is skipped for the next */
+  apiKey: string | string[];
   model?: string;
   f?: typeof fetch;
   retryDelayMs?: number;
 }): Promise<string> {
-  const { bytes, mime, language, apiKey, model = DEFAULT_TRANSCRIBE_MODEL, f = fetch, retryDelayMs = 800 } = opts;
+  const { bytes, mime, language, model = DEFAULT_TRANSCRIBE_MODEL, f = fetch, retryDelayMs = 800 } = opts;
+  const keys = Array.isArray(opts.apiKey) ? opts.apiKey : [opts.apiKey];
   if (bytes.length === 0) return '';
   if (bytes.length > MAX_AUDIO_BYTES) throw new Error('audio_too_large');
 
+  let keyIndex = 0;
   for (let attempt = 0; ; attempt++) {
+    const apiKey = keys[keyIndex];
     // a fresh form each time: a body can only be read once
     const form = new FormData();
     form.append('file', new Blob([bytes as unknown as BlobPart], { type: mime.split(';')[0] }), `voice.${audioExtension(mime)}`);
@@ -87,6 +99,11 @@ export async function transcribeAudio(opts: {
       body: form,
     });
     if (res.ok) return speechText((await res.json()) as WhisperReply);
+    if (res.status === 429 && keyIndex < keys.length - 1) {
+      keyIndex++; // quota used up on this key: hand over to the next one at once
+      attempt--;
+      continue;
+    }
     if ([429, 500, 502, 503, 504].includes(res.status) && attempt < 1) {
       await new Promise((r) => setTimeout(r, retryDelayMs));
       continue;

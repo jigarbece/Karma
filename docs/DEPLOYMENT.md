@@ -102,6 +102,8 @@ npx supabase link --project-ref qdkqsdaloamhbshtcqxi
 npx supabase secrets set AI_PROVIDER=groq AI_MODEL=openai/gpt-oss-120b AI_API_KEY=<new Groq key>
 npx supabase secrets set TRANSCRIPT_KEY=<output of: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))">
 npx supabase secrets set "ALLOWED_ORIGIN=https://karma.jigarpandya.info,https://karma-828u.vercel.app,http://localhost:5173"
+# more Groq keys (comma separated): used in rotation; a key at its quota is skipped at once
+npx supabase secrets set "AI_API_KEYS=<key2>,<key3>"
 # optional fallback provider
 npx supabase secrets set AI_FALLBACK_PROVIDER=gemini AI_FALLBACK_API_KEY=<Gemini key> AI_FALLBACK_MODEL=gemini-3.8-flash
 ```

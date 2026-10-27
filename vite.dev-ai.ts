@@ -12,7 +12,7 @@ import type { Plugin } from 'vite';
 import { detectSafety, type Rubric, type TeachingIndexEntry, type UserContext } from './supabase/functions/_shared/analysis.ts';
 import { AiInvalidOutput, runAnalysis } from './supabase/functions/_shared/pipeline.ts';
 import { readAiConfigs } from './supabase/functions/_shared/providers.ts';
-import { base64ToBytes, DEFAULT_TRANSCRIBE_MODEL, MAX_AUDIO_BYTES, pickTranscribeKey, transcribeAudio } from './supabase/functions/_shared/transcribe.ts';
+import { base64ToBytes, DEFAULT_TRANSCRIBE_MODEL, MAX_AUDIO_BYTES, pickTranscribeKeys, transcribeAudio } from './supabase/functions/_shared/transcribe.ts';
 
 function readBody(req: IncomingMessage, max = 20_000): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -41,8 +41,8 @@ export function devAi(env: Record<string, string>): Plugin {
         if (req.method !== 'POST') return send(405, { error: 'method_not_allowed' });
         try {
           const body = JSON.parse(await readBody(req, Math.ceil(MAX_AUDIO_BYTES * 1.4) + 1000)) as { audio?: string; mime?: string; language?: 'gu' | 'hi' | 'en' };
-          const apiKey = pickTranscribeKey((n) => env[n]);
-          if (!apiKey) return send(501, { error: 'transcribe_not_configured' });
+          const apiKey = pickTranscribeKeys((n) => env[n]);
+          if (apiKey.length === 0) return send(501, { error: 'transcribe_not_configured' });
           if (!body.audio || !body.language) return send(400, { error: 'bad_request' });
           const text = await transcribeAudio({
             bytes: base64ToBytes(body.audio), mime: body.mime ?? 'audio/webm', language: body.language, apiKey,

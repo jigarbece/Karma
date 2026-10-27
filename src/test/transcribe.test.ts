@@ -1,4 +1,4 @@
-import { audioExtension, base64ToBytes, pickTranscribeKey, speechText, transcribeAudio } from '../../supabase/functions/_shared/transcribe';
+import { audioExtension, base64ToBytes, pickTranscribeKey, pickTranscribeKeys, speechText, transcribeAudio } from '../../supabase/functions/_shared/transcribe';
 
 const ok = (text: string) => new Response(JSON.stringify({ text }), { status: 200 });
 
@@ -27,6 +27,21 @@ describe('speech to text (Gujarati voice for any phone)', () => {
       { text: 'અને મદદ કરી', no_speech_prob: 0.1, avg_logprob: -0.4 },
     ] })).toBe('મેં દાન કર્યું અને મદદ કરી');
     expect(speechText({ text: ' plain ' })).toBe('plain');
+  });
+
+  it('lists every Groq key for voice, and skips one whose quota is used up', async () => {
+    const env: Record<string, string> = { AI_PROVIDER: 'groq', AI_API_KEY: 'a', AI_API_KEYS: 'b,c' };
+    expect(pickTranscribeKeys((n) => env[n])).toEqual(['a', 'b', 'c']);
+    expect(pickTranscribeKeys((n) => ({ TRANSCRIBE_API_KEY: 'own', ...env })[n])).toEqual(['own']);
+    expect(pickTranscribeKeys(() => undefined)).toEqual([]);
+    const used: string[] = [];
+    const f = vi.fn(async (_u: string, init: RequestInit) => {
+      const key = (init.headers as Record<string, string>).authorization.replace('Bearer ', '');
+      used.push(key);
+      return key === 'c' ? ok('hello') : new Response('limit', { status: 429 });
+    });
+    expect(await transcribeAudio({ bytes: new Uint8Array([1]), mime: 'audio/webm', language: 'en', apiKey: ['a', 'b', 'c'], f: f as unknown as typeof fetch })).toBe('hello');
+    expect(used).toEqual(['a', 'b', 'c']);
   });
 
   it('decodes base64 audio', () => {

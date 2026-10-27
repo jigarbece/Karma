@@ -1,5 +1,5 @@
 import { buildSystemPrompt, detectSafety, extractJson, finalize, parseAnalysis, type Principle, type Rubric, type TeachingIndexEntry, type UserContext } from '../../supabase/functions/_shared/analysis.ts';
-import { callModel, callWithFallback, readAiConfig, readAiConfigs } from '../../supabase/functions/_shared/providers.ts';
+import { callModel, callWithFallback, orderConfigs, readAiConfig, readAiConfigs } from '../../supabase/functions/_shared/providers.ts';
 import rubric from '../../supabase/functions/_shared/rubric.v3.json';
 
 const index: TeachingIndexEntry[] = [
@@ -149,6 +149,51 @@ describe('provider fallback', () => {
   it('throws when every provider fails', async () => {
     const f = (async () => new Response('down', { status: 500 })) as unknown as typeof fetch;
     await expect(callWithFallback(readAiConfigs((n) => env[n]), 's', 'u', f, 1)).rejects.toThrow(/500/);
+  });
+});
+
+describe('several keys for one provider', () => {
+  const env = { AI_PROVIDER: 'groq', AI_MODEL: 'm', AI_API_KEY: 'k1', AI_API_KEYS: ' k2 , k3,k1 ', AI_FALLBACK_PROVIDER: 'gemini', AI_FALLBACK_API_KEY: 'g' } as Record<string, string>;
+  const ok = (text: string) => new Response(JSON.stringify({ choices: [{ message: { content: text } }] }), { status: 200 });
+
+  it('reads the extra keys once each, then the fallback provider', () => {
+    const cfgs = readAiConfigs((n) => env[n]);
+    expect(cfgs.map((c) => `${c.provider}:${c.apiKey}`)).toEqual(['groq:k1', 'groq:k2', 'groq:k3', 'gemini:g']);
+    expect(cfgs[1].model).toBe('m');
+  });
+
+  it('takes turns, and keeps the other provider last', () => {
+    const cfgs = readAiConfigs((n) => env[n]);
+    expect(orderConfigs(cfgs, 0).map((c) => c.apiKey)).toEqual(['k1', 'k2', 'k3', 'g']);
+    expect(orderConfigs(cfgs, 1).map((c) => c.apiKey)).toEqual(['k2', 'k3', 'k1', 'g']);
+    expect(orderConfigs(cfgs, 5).map((c) => c.apiKey)).toEqual(['k3', 'k1', 'k2', 'g']);
+  });
+
+  it('moves to the next key at once when one hits its quota, without waiting', async () => {
+    const used: string[] = [];
+    const f = (async (_url: string, init: RequestInit) => {
+      const key = (init.headers as Record<string, string>).authorization.replace('Bearer ', '');
+      used.push(key);
+      return key === 'k1' || key === 'k2'
+        ? new Response('{"error":"rate limit"}', { status: 429, headers: { 'retry-after': '30' } })
+        : ok('FROM_K3');
+    }) as unknown as typeof fetch;
+    const started = Date.now();
+    const cfgs = readAiConfigs((n) => env[n]).filter((c) => c.provider === 'groq');
+    // three calls: whichever key the rotation starts on, the answer comes from the key with quota left
+    for (let i = 0; i < 3; i++) {
+      const out = await callWithFallback([cfgs[0], cfgs[1], cfgs[2]], 's', 'u', f, 1);
+      expect(out.text).toBe('FROM_K3');
+      expect(out.cfg.apiKey).toBe('k3');
+    }
+    expect(used).toEqual(expect.arrayContaining(['k1', 'k2', 'k3']));
+    expect(Date.now() - started).toBeLessThan(2000); // a 30 s retry-after was not sat out
+  });
+
+  it('never prints a key in an error', async () => {
+    const f = (async () => new Response('nope', { status: 401 })) as unknown as typeof fetch;
+    await expect(callWithFallback(readAiConfigs((n) => env[n]), 's', 'u', f, 1)).rejects.toThrow(/401/);
+    await callWithFallback(readAiConfigs((n) => env[n]), 's', 'u', f, 1).catch((e: Error) => expect(e.message).not.toMatch(/k1|k2|k3/));
   });
 });
 

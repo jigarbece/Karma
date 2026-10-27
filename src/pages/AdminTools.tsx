@@ -219,7 +219,7 @@ export function AdminsPage() {
 
 /* ------------------------------------------------------------------ System health */
 
-interface Health { ai: boolean; ai_provider: string; ai_model: string; ai_fallback: boolean; voice: boolean; message_key: boolean; allowed_origin: string; daily_limit: number }
+interface Health { ai: boolean; ai_keys?: number; ai_provider: string; ai_model: string; ai_fallback: boolean; voice: boolean; message_key: boolean; allowed_origin: string; daily_limit: number }
 
 export function SystemPage() {
   const [h, setH] = useState<Health | null>(null);
@@ -230,7 +230,7 @@ export function SystemPage() {
   if (problem) return <Problem text={problem} />;
   if (!h) return <Spinner label="Checking" />;
   const rows: Array<[string, boolean, string]> = [
-    ['AI scoring', h.ai, h.ai ? `${h.ai_provider} / ${h.ai_model}` : 'AI_API_KEY is not set: analysis will fail'],
+    ['AI scoring', h.ai, h.ai ? `${h.ai_provider} / ${h.ai_model} · ${h.ai_keys ?? 1} key${(h.ai_keys ?? 1) === 1 ? '' : 's'} in rotation` : 'AI_API_KEY is not set: analysis will fail'],
     ['AI fallback provider', h.ai_fallback, h.ai_fallback ? 'Set: used if the main one is busy or limited' : 'Not set: on a free tier this is your safety net for busy minutes'],
     ['Voice to text (Gujarati and others)', h.voice, h.voice ? 'A Groq key is available' : 'No Groq key: Gujarati voice will not work'],
     ['Message encryption key', h.message_key, h.message_key ? 'TRANSCRIPT_KEY is set' : 'Not set: no message text is saved'],

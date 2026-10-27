@@ -29,7 +29,13 @@ export function readAiConfig(get: (name: string) => string | undefined): AiConfi
  * The fallback is used only when the primary fails (overload, retired model, quota).
  */
 export function readAiConfigs(get: (name: string) => string | undefined): AiConfig[] {
-  const configs = [readAiConfig(get)];
+  const primary = readAiConfig(get);
+  const configs = [primary];
+  // AI_API_KEYS: more keys for the same provider and model, comma separated. They share the load in turn, and a key whose
+  // quota is used up is skipped at once in favour of the next one.
+  for (const key of (get('AI_API_KEYS') ?? '').split(',').map((k) => k.trim()).filter(Boolean)) {
+    if (!configs.some((c) => c.apiKey === key)) configs.push({ ...primary, apiKey: key });
+  }
   const fbProvider = get('AI_FALLBACK_PROVIDER')?.toLowerCase() as Provider | undefined;
   const fbKey = get('AI_FALLBACK_API_KEY');
   if (fbProvider && fbKey) {
@@ -44,10 +50,12 @@ type Fetch = typeof fetch;
 const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 
 /** POST with up to 2 retries (0.8s, 1.6s) for temporary provider overload. */
-async function post(f: Fetch, url: string, headers: Record<string, string>, body: unknown, retryDelayMs = 800): Promise<unknown> {
+async function post(f: Fetch, url: string, headers: Record<string, string>, body: unknown, retryDelayMs = 800, switchOn429 = false): Promise<unknown> {
   for (let attempt = 0; ; attempt++) {
     const res = await f(url, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
     if (res.ok) return res.json();
+    // another key or provider is waiting: do not sit out a rate limit, hand over at once
+    if (res.status === 429 && switchOn429) throw new Error(`AI provider error 429: ${(await res.text()).slice(0, 200)}`);
     if (RETRYABLE.has(res.status) && attempt < 2) {
       // a rate limit says how long to wait; honour it (up to 10 s) instead of guessing
       const advised = res.status === 429 ? Number(res.headers.get('retry-after')) * 1000 : 0;
@@ -60,14 +68,30 @@ async function post(f: Fetch, url: string, headers: Record<string, string>, body
   }
 }
 
-/** Tries each config in order; returns the first reply and which config produced it. Throws the last error. */
+let rotation = 0;
+
+/**
+ * Keys for the same provider and model as the first config share the load in turn; other providers stay behind them
+ * as the fallback. With three Groq keys, calls start on key 1, 2, 3, 1... and a key that is rate limited is skipped.
+ */
+export function orderConfigs(configs: AiConfig[], turn: number): AiConfig[] {
+  if (configs.length < 2) return configs;
+  const head = configs[0];
+  const pool = configs.filter((c) => c.provider === head.provider && c.model === head.model);
+  const rest = configs.filter((c) => !pool.includes(c));
+  const start = turn % pool.length;
+  return [...pool.slice(start), ...pool.slice(0, start), ...rest];
+}
+
+/** Tries each config in turn; returns the first reply and which config produced it. Throws the last error. */
 export async function callWithFallback(
   configs: AiConfig[], system: string, user: string, f: Fetch = fetch, retryDelayMs = 800,
 ): Promise<{ text: string; cfg: AiConfig }> {
   let lastErr: unknown = new Error('no AI provider configured');
-  for (const cfg of configs) {
+  const ordered = orderConfigs(configs, rotation++);
+  for (const [i, cfg] of ordered.entries()) {
     try {
-      return { text: await callModel(cfg, system, user, f, retryDelayMs), cfg };
+      return { text: await callModel(cfg, system, user, f, retryDelayMs, i < ordered.length - 1), cfg };
     } catch (e) {
       lastErr = e;
       console.error(`AI provider ${cfg.provider}/${cfg.model} failed`, e instanceof Error ? e.message.slice(0, 200) : e);
@@ -77,8 +101,8 @@ export async function callWithFallback(
 }
 
 /** Returns the raw text of the model's reply. Temperature is always 0. */
-export async function callModel(cfg: AiConfig, system: string, user: string, f: Fetch = fetch, retryDelayMs = 800): Promise<string> {
-  const send = (url: string, headers: Record<string, string>, body: unknown) => post(f, url, headers, body, retryDelayMs);
+export async function callModel(cfg: AiConfig, system: string, user: string, f: Fetch = fetch, retryDelayMs = 800, switchOn429 = false): Promise<string> {
+  const send = (url: string, headers: Record<string, string>, body: unknown) => post(f, url, headers, body, retryDelayMs, switchOn429);
   switch (cfg.provider) {
     case 'gemini': {
       const data = (await send(
