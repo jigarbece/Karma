@@ -19,8 +19,13 @@ test('2. user says their day and each act gets its own points with a dharma prin
   await page.getByRole('button', { name: 'Try the demo' }).click();
   await page.getByRole('textbox', { name: 'Tell me about your day' }).fill('I donated food and helped a friend, but I lied to my boss.');
   await page.getByRole('button', { name: 'Analyse' }).click();
-  await expect(page.getByText('Gave in charity').first()).toBeVisible();
-  await expect(page.getByText('Was untruthful').first()).toBeVisible();
+  // acts are masked by default; points are visible
+  await expect(page.getByTestId('masked-act').first()).toBeVisible();
+  await expect(page.getByText('Gave in charity')).toHaveCount(0);
+  await expect(page.getByLabel('+26 points').first()).toBeVisible();
+  // a deliberate tap reveals the act and the dharma principle behind its points
+  await page.getByRole('button', { name: 'Show' }).first().click();
+  await expect(page.getByTestId('act-text').first()).toBeVisible();
   await expect(page.getByTestId('basis').first()).toBeVisible();
   await page.getByRole('button', { name: 'I disagree' }).first().click();
   await page.getByRole('textbox', { name: /Tell us what you think/ }).fill('The lie was small');

@@ -26,6 +26,9 @@ describe('Karma app (demo mode)', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { level: 1, name: /Jai Shri Krishna/ })).toBeInTheDocument();
     expect(screen.getByTestId('tithi').textContent).toMatch(/Sud|Vad/);
+    expect(screen.getByText('Nakshatra · pada')).toBeInTheDocument();
+    expect(screen.getByText(/Traditional guidance/)).toBeInTheDocument();
+    expect(screen.getByTestId('shloka')).toHaveTextContent('Bhagavad Gita');
     expect(screen.getByRole('img', { name: /Punya ghada/ })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Paap ghada/ })).toBeInTheDocument();
     expect(screen.getByTestId('net-pill')).toBeInTheDocument();
@@ -35,20 +38,39 @@ describe('Karma app (demo mode)', () => {
     expect(within(nav).getAllByRole('link')).toHaveLength(3);
   });
 
-  it('scores each act with its own points and shows the dharma principle behind it', async () => {
+  it('scores each act with its own points, masks what was done, and reveals the principle only on request', async () => {
     bootDemo('/');
     const user = userEvent.setup();
     render(<App />);
     await user.type(await screen.findByRole('textbox', { name: 'Tell me about your day' }), 'I donated food and I shouted at my brother');
     await user.click(screen.getByRole('button', { name: 'Analyse' }));
-    expect((await screen.findAllByText('Gave in charity', {}, { timeout: 8000 })).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Acted out of anger').length).toBeGreaterThan(0);
-    // different acts, different points (+26 for annadana, -14 for anger in the mock) and the principle is shown
-    expect(screen.getByLabelText('+26 points')).toBeInTheDocument();
+    // different acts, different points (+26 for annadana, -14 for anger in the mock)
+    expect(await screen.findByLabelText('+26 points', {}, { timeout: 8000 })).toBeInTheDocument();
     expect(screen.getByLabelText('−14 points')).toBeInTheDocument();
-    const basis = screen.getAllByTestId('basis').map((n) => n.textContent ?? '');
-    expect(basis.some((b) => b.includes('Annadāna'))).toBe(true);
-    expect(basis.some((b) => b.includes('Krodha'))).toBe(true);
+
+    // what was done is NOT shown by default: no summary, no reason, no category, no principle
+    expect(screen.queryByText('Gave in charity')).not.toBeInTheDocument();
+    expect(screen.queryByText('Acted out of anger')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('basis')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('masked-act').length).toBeGreaterThan(1);
+
+    // a deliberate tap on Show reveals one act and its dharma principle
+    const card = screen.getByLabelText('+26 points').closest('li') as HTMLElement;
+    await user.click(within(card).getByRole('button', { name: 'Show' }));
+    expect(within(card).getByText('Gave in charity')).toBeInTheDocument();
+    expect(within(card).getByTestId('basis')).toHaveTextContent('Annadāna');
+    expect(screen.queryByText('Acted out of anger')).not.toBeInTheDocument();
+    await user.click(within(card).getByRole('button', { name: 'Hide' }));
+    expect(within(card).queryByText('Gave in charity')).not.toBeInTheDocument();
+  });
+
+  it('masks seeded acts on History too', async () => {
+    bootDemo('/history');
+    render(<App />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'History' })).toBeInTheDocument();
+    expect((await screen.findAllByTestId('masked-act')).length).toBeGreaterThan(3);
+    expect(screen.queryByText('Snapped at a family member')).not.toBeInTheDocument();
+    expect(screen.queryByText('Helped a neighbour carry groceries')).not.toBeInTheDocument();
   });
 
   it('encrypts the saved message and never shows it again, only a masked notice', async () => {
@@ -58,7 +80,7 @@ describe('Karma app (demo mode)', () => {
     expect(await screen.findByTestId('privacy-note')).toHaveTextContent('encrypted');
     await user.type(await screen.findByRole('textbox', { name: 'Tell me about your day' }), 'UNIQUE-PRIVATE-PHRASE I donated food');
     await user.click(screen.getByRole('button', { name: 'Analyse' }));
-    await screen.findAllByText('Gave in charity', {}, { timeout: 8000 });
+    await screen.findByLabelText('+26 points', {}, { timeout: 8000 });
 
     // nothing the user wrote is shown back, and it is not stored in the clear
     expect(screen.queryByText(/UNIQUE-PRIVATE-PHRASE/)).not.toBeInTheDocument();

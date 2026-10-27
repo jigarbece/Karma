@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Icon, CATEGORY_ICON } from './Icon';
 import { useI18n } from '../lib/i18n';
 import { signedWeight } from '../lib/ghada';
@@ -61,6 +61,13 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
   const punya = a.type === 'punya';
   const neutral = a.type === 'neutral';
   const principle = getPrinciple(a.basis);
+  // What the person did is private: hidden by default, shown only on a deliberate tap, then hidden again.
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!shown) return;
+    const timer = setTimeout(() => setShown(false), 8000);
+    return () => clearTimeout(timer);
+  }, [shown]);
   return (
     <li className="card flex gap-3 !p-4">
       <span
@@ -68,11 +75,19 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
           neutral ? 'bg-line text-muted' : punya ? 'bg-gold/25 text-saffron-text' : 'bg-indigo-soft text-indigo'
         }`}
       >
-        <Icon name={CATEGORY_ICON[a.category]} />
+        <Icon name={shown ? CATEGORY_ICON[a.category] : 'lotus'} />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
-          <p className="font-semibold leading-snug">{a.summary}</p>
+          {shown ? (
+            <p className="font-semibold leading-snug" data-testid="act-text">{a.summary}</p>
+          ) : (
+            <p className="flex items-center gap-2 font-semibold leading-snug" data-testid="masked-act">
+              <Icon name="lock" size={16} className="shrink-0 text-saffron-text" />
+              <span aria-hidden="true" className="tracking-[0.25em] text-muted">••••••••••••</span>
+              <span className="sr-only">{t('act.masked')}</span>
+            </p>
+          )}
           <span
             className={`shrink-0 font-display text-3xl font-bold leading-none ${neutral ? 'text-muted' : punya ? 'text-good' : 'text-indigo'}`}
             aria-label={`${w > 0 ? '+' : '−'}${Math.abs(w)} ${t('common.points')}`}
@@ -86,16 +101,31 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
             <Icon name={punya ? 'up' : neutral ? 'flat' : 'down'} size={14} />
             {t(punya ? 'talk.type_punya' : neutral ? 'talk.type_neutral' : 'talk.type_paap')}
           </span>
-          <span aria-hidden="true">·</span>
-          <span>{t(`cat.${a.category}`)}</span>
+          {shown && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{t(`cat.${a.category}`)}</span>
+            </>
+          )}
         </div>
-        {a.reason ? <p className="mt-1 text-sm">{a.reason}</p> : null}
-        {principle && (
+        {shown ? (
+          a.reason ? <p className="mt-1 text-sm">{a.reason}</p> : null
+        ) : (
+          <p className="mt-1 text-sm text-muted">{t('act.masked_hint')}</p>
+        )}
+        {shown && principle && (
           <p className="mt-2 inline-flex flex-wrap items-baseline gap-x-2 rounded-xl bg-sand/60 px-3 py-1.5 text-sm" data-testid="basis">
             <span className="font-display text-base font-bold">{principle.label}</span>
             <span className="text-muted">{principle.source}</span>
           </p>
         )}
+        <button
+          type="button" aria-pressed={shown} onClick={() => setShown((s) => !s)}
+          className="mt-1 mr-3 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-saffron-text"
+        >
+          <Icon name={shown ? 'eyeoff' : 'eye'} size={16} />
+          {shown ? t('act.hide') : t('act.show')}
+        </button>
         {children}
       </div>
     </li>

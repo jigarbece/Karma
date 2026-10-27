@@ -24,7 +24,8 @@
   --cream: 255 246 224;
   --gold-light: 255 217 138;
   --lavender: 205 201 255;
-  --good: 28 118 74;
+  --good: 16 124 67;
+  --paapred: 157 47 60;
   --sand: 251 235 181;
   --hero-ink: 62 36 12;
   --scrim: 255 247 230;
@@ -47,6 +48,7 @@
   --night: 36 30 92;
   --night-2: 78 48 140;
   --good: 112 214 150;
+  --paapred: 255 138 150;
   --sand: 62 50 112;
   --hero-ink: 255 246 224;
   --scrim: 20 17 52;
@@ -135,6 +137,62 @@ body::before {
     background: linear-gradient(150deg, rgb(70 48 22), rgb(112 66 22));
     color: rgb(var(--cream));
   }
+  /* The stage that holds the two ghadas (design demo) */
+  .stage-card {
+    @apply relative overflow-hidden rounded-[32px] p-4 sm:p-9;
+    background: linear-gradient(180deg, rgb(var(--card) / 0.97), rgb(var(--card) / 0.9));
+    border: 1px solid rgb(126 91 31 / 0.12);
+    box-shadow: 0 28px 90px rgb(var(--shadow) / 0.16);
+  }
+  .stage-card::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -20%;
+    width: 800px;
+    max-width: 120%;
+    height: 500px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse, rgb(255 214 119 / 0.28), transparent 66%);
+    pointer-events: none;
+  }
+  .net-bar {
+    @apply relative mt-6 grid items-center gap-3 rounded-[21px] px-5 py-4 sm:grid-cols-[1fr_auto];
+    background: rgb(var(--card) / 0.8);
+    border: 1px solid rgb(var(--gold) / 0.35);
+  }
+
+  /* Glossy ghada cards (design demo): soft glass card with a coloured halo behind the pot */
+  .ghada-card {
+    @apply relative overflow-hidden rounded-[30px] px-3 pb-5 pt-5 text-center sm:px-5;
+    background: linear-gradient(145deg, rgb(var(--card) / 0.97), rgb(var(--card) / 0.86));
+    border: 1px solid rgb(255 255 255 / 0.9);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 20px 50px rgb(var(--shadow) / 0.12);
+  }
+  :root[data-theme='dark'] .ghada-card {
+    border-color: rgb(var(--line));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 20px 50px rgb(0 0 0 / 0.35);
+  }
+  .ghada-card::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 48%;
+    width: 78%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 9999px;
+    filter: blur(32px);
+    opacity: 0.26;
+    pointer-events: none;
+    background: var(--halo);
+  }
+  .ghada-card[data-kind='punya'] { --halo: #ffd43b; }
+  .ghada-card[data-kind='paap'] { --halo: #5867ff; }
+  .ghada-pot {
+    filter: drop-shadow(0 28px 22px rgb(38 27 13 / 0.23));
+  }
+
   /* Soft sunrise behind the pots */
   .sunrise-card {
     @apply relative overflow-hidden rounded-4xl shadow-lift;
@@ -202,6 +260,63 @@ body::before {
   .chip[aria-pressed='true'],
   .chip[aria-checked='true'] {
     @apply border-saffron-text bg-saffron/20 font-semibold;
+  }
+}
+
+/* Glossy ghada motion (from the design demo): rippling surface, rising bubbles, twinkling sparkles */
+.gh-surface {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gh-wave 2.5s ease-in-out infinite;
+}
+@keyframes gh-wave {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.945);
+  }
+}
+.gh-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gh-twinkle 3.2s ease-in-out infinite;
+}
+.gh-t1 { animation-delay: 0.9s; }
+.gh-t2 { animation-delay: 1.7s; }
+.gh-t3 { animation-delay: 2.4s; }
+@keyframes gh-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+.gh-bubble {
+  opacity: 0.6;
+  animation: gh-float 4s linear infinite;
+}
+.gh-b1 { animation-delay: 1.1s; }
+.gh-b2 { animation-delay: 2.2s; }
+@keyframes gh-float {
+  0% {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.55;
+  }
+  85% {
+    opacity: 0.42;
+  }
+  100% {
+    transform: translateY(-70px);
+    opacity: 0;
   }
 }
 

@@ -5,16 +5,16 @@ import { RateLimitError, AnalyzeError, type AnalyzeResponse } from '../lib/repo'
 import { getTeaching } from '../lib/teachings';
 import { totalsForRange, addDays, rangeDays } from '../lib/ghada';
 import { useSpeech } from '../lib/useSpeech';
-import { useTithi } from '../lib/useTithi';
 import type { Range } from '../lib/types';
 import { GhadaPair } from '../components/GhadaPair';
-import { NetPill } from '../components/NetPill';
+import { PanchangStrip } from '../components/PanchangStrip';
+import { ShlokaCard } from '../components/ShlokaCard';
 import { MicButton } from '../components/MicButton';
 import { Disagree } from '../components/Disagree';
 import { Icon } from '../components/Icon';
 import { ActionCard, Segmented, Spinner } from '../components/ui';
 
-/** The whole product on one screen: say your day, see two pots, read what each act was worth. */
+/** Say your day, watch two glossy ghadas fill, read what each act was worth (act text stays masked). */
 export default function Home() {
   const { t, num, date, lang } = useI18n();
   const { profile, actions, today, repo, refresh, demo } = useApp();
@@ -24,7 +24,6 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState('');
-  const tithi = useTithi(lang, today);
 
   const setBoth = useCallback((v: string) => {
     textRef.current = v;
@@ -66,25 +65,29 @@ export default function Home() {
   const todays = actions.filter((a) => a.date === today && a.type !== 'neutral').sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   const greeting = t(`greeting.${profile?.greeting ?? 'namaste'}`);
   const teaching = getTeaching(result?.reflection?.teaching_id);
+  const net = totals.net;
+  const up = net > 0 || (net === 0 && trend >= 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {demo && <p className="rounded-2xl bg-indigo-soft px-4 py-2 text-sm text-indigo">{t('common.demo')}</p>}
 
       <header>
         <h1 className="text-4xl leading-tight lg:text-5xl">
           {t('home.greeting', { greeting, name: profile?.name || '' }).replace(/, $/, '')} 🙏
         </h1>
-        <p className="mt-1 text-lg text-muted">
-          {tithi && <span className="font-display text-xl font-semibold text-saffron-text" data-testid="tithi">{tithi}</span>}
-          {tithi && <span className="mx-3 opacity-50">|</span>}
-          {date(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
+        <p className="mt-1 text-lg text-muted">{date(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr] lg:items-start lg:gap-6">
-        {/* The two pots */}
-        <section className="sunrise-card space-y-4 p-4 sm:p-6 lg:sticky lg:top-24" aria-label="Ghadas">
+      <PanchangStrip />
+
+      {/* The two glossy ghadas */}
+      <section className="stage-card" aria-labelledby="stage-title">
+        <div className="relative mb-5 text-center">
+          <h2 id="stage-title" className="font-display text-3xl font-bold sm:text-4xl">{t('home.stage_title')}</h2>
+          <p className="mt-1 text-muted">{t('home.net_summary_sub')}</p>
+        </div>
+        <div className="relative mx-auto mb-5 max-w-xl">
           <Segmented
             label={t('home.range_label')}
             value={range}
@@ -96,10 +99,22 @@ export default function Home() {
               { value: 'lifetime', label: t('common.lifetime') },
             ]}
           />
-          <GhadaPair punya={totals.punya} paap={totals.paap} range={range} />
-          <NetPill net={totals.net} label={range === 'today' ? t('home.net_today') : t('home.net_range')} trend={trend} />
-        </section>
+        </div>
+        <GhadaPair punya={totals.punya} paap={totals.paap} range={range} />
+        <div className="net-bar" data-testid="net-pill">
+          <div>
+            <strong className="font-display text-2xl">{range === 'today' ? t('home.net_today') : t('home.net_range')}</strong>
+            <p className="text-sm text-muted">{up ? t('home.positive_step') : t('home.growth_step')}</p>
+          </div>
+          <div className={`flex items-center gap-2 text-4xl font-black ${net < 0 ? 'text-paapred' : 'text-good'}`}>
+            {net > 0 ? '+' : net < 0 ? '−' : ''}{num(Math.abs(net))}
+            <Icon name={net === 0 ? 'flat' : up ? 'trend' : 'trenddown'} size={30} />
+            <span className="sr-only">{trend > 0 ? t('home.trend_up') : trend < 0 ? t('home.trend_down') : t('home.trend_flat')}</span>
+          </div>
+        </div>
+      </section>
 
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
         <div className="space-y-5">
           {/* Say your day */}
           <section className="card space-y-3" aria-labelledby="say">
@@ -138,19 +153,13 @@ export default function Home() {
 
           {result && !result.safety_flag && result.actions.length === 0 && <p className="card text-muted">{t('talk.nothing_scored')}</p>}
 
-          {result && !result.safety_flag && teaching && result.reflection && (
+          {result && !result.safety_flag && teaching && result.reflection?.suggestion && (
             <section className="card" aria-live="polite">
               <h2 className="font-display text-2xl font-bold">{t('talk.reflection')}</h2>
-              <blockquote className="mt-2 border-l-4 border-saffron pl-3 font-display text-xl leading-relaxed">
-                {teaching.text[lang]}
-                <footer className="mt-1 font-sans text-sm text-muted">— {teaching.source}</footer>
-              </blockquote>
-              {result.reflection.suggestion && (
-                <p className="mt-3 rounded-2xl bg-saffron/15 p-3">
-                  <span className="font-semibold text-saffron-text">{t('home.suggestion')}: </span>
-                  {result.reflection.suggestion}
-                </p>
-              )}
+              <p className="mt-2 rounded-2xl bg-saffron/15 p-3">
+                <span className="font-semibold text-saffron-text">{t('home.suggestion')}: </span>
+                {result.reflection.suggestion}
+              </p>
             </section>
           )}
 
@@ -172,6 +181,10 @@ export default function Home() {
             )}
           </section>
         </div>
+
+        <aside className="lg:sticky lg:top-24">
+          <ShlokaCard date={today} />
+        </aside>
       </div>
     </div>
   );

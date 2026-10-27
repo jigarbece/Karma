@@ -4,6 +4,9 @@ import { Ghada } from '../components/Ghada';
 import { Icon } from '../components/Icon';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { LotusDivider, Mandala } from '../components/Mandala';
+import { OmChakra } from '../components/SacredArt';
+import { ShlokaCard } from '../components/ShlokaCard';
+import { localDate } from '../lib/ghada';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
 import { demoAllowed } from '../lib/supabase';
@@ -66,6 +69,14 @@ export default function Landing() {
       </section>
 
       <LotusDivider className="my-8" />
+
+      <section className="mb-8 grid gap-6 lg:grid-cols-[1fr_1.2fr] lg:items-center" aria-label={t('landing.shloka_intro')}>
+        <div className="text-center lg:text-left">
+          <OmChakra className="mx-auto h-52 w-52 lg:mx-0 lg:h-72 lg:w-72" />
+          <p className="mt-3 font-display text-3xl font-bold">{t('landing.shloka_intro')}</p>
+        </div>
+        <ShlokaCard date={localDate()} />
+      </section>
 
       <ul className="grid gap-4 sm:grid-cols-3">
         {[

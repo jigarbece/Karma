@@ -1,12 +1,112 @@
 import { useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
-/** Pot silhouette (belly centred at 100,150). */
-const POT =
-  'M72 40 C72 54 66 62 56 72 C30 94 20 128 26 162 C32 202 60 224 100 224 C140 224 168 202 174 162 C180 128 170 94 144 72 C134 62 128 54 128 40 Z';
-const WIN_CX = 100;
-const WIN_CY = 152;
-const WIN_R = 38;
+/*
+ * Ultra-glossy brass (Punya) and blackened-steel (Paap) kalash.
+ * Geometry, gradients and layering follow karma_ghada_ultra_glossy_contrast_demo.html.
+ * The liquid fills from y=390 (empty) to y=138 (full).
+ */
+const BODY = 'M125 118 C116 143 84 160 69 193 C39 258 59 356 116 391 C160 418 260 418 304 391 C361 356 381 258 351 193 C336 160 304 143 295 118 Z';
+const SHELL = 'M137 132 C126 153 101 169 88 199 C64 255 81 338 127 369 C165 395 255 395 293 369 C339 338 356 255 332 199 C319 169 294 153 283 132 Z';
+const TOP = 138;
+const BOTTOM = 390;
+
+type Stop = [number, string];
+
+interface Look {
+  metal: Stop[];
+  bodyGrad: Stop[];
+  liquid: Stop[];
+  shine: Stop[];
+  glass: string;
+  pattern: { stroke: string; opacity: number; width: number };
+  surface: string;
+  surfaceDark: { fill: string; opacity: number };
+  band: { fill: string; opacity: number };
+  backdrop: { fill: string; opacity: number };
+  topGlow: { fill: string; opacity: number };
+  shadow: { color: string; opacity: number };
+  shell: { fill: string; fillOpacity: number; stroke: string; strokeOpacity: number };
+  collar: { inner: string; deep: string; glint: string; glintOpacity: number };
+  bands: Array<{ d: string; stroke: string; width: number; opacity: number }>;
+  lotus: { stroke: string; width: number; opacity: number };
+  specular: { width: number; opacity: number };
+  glows: [number, number];
+  bubbles: Array<[number, number, number]>;
+  sparkles: Array<[number, number, number]>;
+  sparkle: string;
+  text: { shadow: string };
+}
+
+const BAND_PATHS = [
+  'M103 156 Q210 181 317 156',
+  'M100 166 Q210 192 320 166',
+  'M119 347 Q210 373 301 347',
+  'M126 358 Q210 380 294 358',
+];
+
+const GOLD: Look = {
+  metal: [[0, '#3c1d00'], [8, '#7d4303'], [19, '#f3bd38'], [27, '#fff3a9'], [36, '#b56707'], [50, '#f8c748'], [61, '#8a4d04'], [75, '#ffe38a'], [88, '#b56d0a'], [100, '#3a1d00']],
+  bodyGrad: [[0, '#fff8c9'], [14, '#ffe27e'], [34, '#c77a09'], [52, '#f7c64d'], [74, '#8b4b04'], [100, '#341700']],
+  liquid: [[0, '#fffbe0'], [24, '#ffd52f'], [60, '#e58d00'], [100, '#7f3f00']],
+  shine: [[0, '#fff'], [45, '#fff'], [60, '#fff'], [100, '#fff']],
+  glass: '#fff',
+  pattern: { stroke: '#ffe69d', opacity: 0.42, width: 1.4 },
+  surface: '#fff09a',
+  surfaceDark: { fill: '#9a5600', opacity: 0.3 },
+  band: { fill: '#fff6b5', opacity: 0.34 },
+  backdrop: { fill: '#f7ecd2', opacity: 0.34 },
+  topGlow: { fill: '#fff', opacity: 0.1 },
+  shadow: { color: '#3a1c00', opacity: 0.35 },
+  shell: { fill: '#fff8df', fillOpacity: 0.08, stroke: '#fff6c5', strokeOpacity: 0.42 },
+  collar: { inner: '#2b1500', deep: '#0d0600', glint: '#fff6c4', glintOpacity: 0.28 },
+  bands: [
+    { d: BAND_PATHS[0], stroke: '#ffe48f', width: 5, opacity: 0.82 },
+    { d: BAND_PATHS[1], stroke: '#7a4001', width: 3, opacity: 0.86 },
+    { d: BAND_PATHS[2], stroke: '#ffe799', width: 5, opacity: 0.64 },
+    { d: BAND_PATHS[3], stroke: '#6f3901', width: 3, opacity: 0.78 },
+  ],
+  lotus: { stroke: '#ffe9a7', width: 2.4, opacity: 0.5 },
+  specular: { width: 22, opacity: 0.58 },
+  glows: [0.38, 0.13],
+  bubbles: [[156, 272, 5], [237, 309, 4], [196, 348, 6]],
+  sparkles: [[126, 212, 3.5], [274, 244, 3], [223, 281, 2.7], [171, 311, 2.4]],
+  sparkle: '#fff9c8',
+  text: { shadow: 'drop-shadow(0 3px 4px rgba(0,0,0,.38))' },
+};
+
+const DARK: Look = {
+  metal: [[0, '#080914'], [10, '#242943'], [22, '#777b9f'], [34, '#2f3558'], [49, '#11152c'], [64, '#7a5d35'], [78, '#3f456b'], [90, '#1b1f39'], [100, '#060711']],
+  bodyGrad: [[0, '#8a90bd'], [16, '#4a507c'], [39, '#242946'], [61, '#191d38'], [80, '#292f53'], [100, '#090b1d']],
+  liquid: [[0, '#d9deff'], [22, '#6478ff'], [58, '#2637b6'], [100, '#0b1040']],
+  shine: [[0, '#dfe5ff'], [48, '#eef1ff'], [65, '#dfe5ff'], [100, '#dfe5ff']],
+  glass: '#e5eaff',
+  pattern: { stroke: '#9f87ad', opacity: 0.36, width: 1.3 },
+  surface: '#99a8ff',
+  surfaceDark: { fill: '#111b78', opacity: 0.36 },
+  band: { fill: '#b9c4ff', opacity: 0.26 },
+  backdrop: { fill: '#d9dced', opacity: 0.18 },
+  topGlow: { fill: '#dfe5ff', opacity: 0.06 },
+  shadow: { color: '#050713', opacity: 0.45 },
+  shell: { fill: '#c7cdfd', fillOpacity: 0.035, stroke: '#b3bdff', strokeOpacity: 0.2 },
+  collar: { inner: '#03040a', deep: '#000', glint: '#d4dbff', glintOpacity: 0.12 },
+  bands: [
+    { d: BAND_PATHS[0], stroke: '#8f7ca8', width: 5, opacity: 0.55 },
+    { d: BAND_PATHS[1], stroke: '#11142a', width: 3, opacity: 0.92 },
+    { d: BAND_PATHS[2], stroke: '#725f8f', width: 5, opacity: 0.52 },
+    { d: BAND_PATHS[3], stroke: '#101329', width: 3, opacity: 0.84 },
+  ],
+  lotus: { stroke: '#8c78a7', width: 2.3, opacity: 0.43 },
+  specular: { width: 20, opacity: 0.42 },
+  glows: [0.2, 0.07],
+  bubbles: [[159, 339, 5], [236, 358, 4]],
+  sparkles: [[130, 238, 3.3], [274, 265, 3], [222, 303, 2.6]],
+  sparkle: '#d5dcff',
+  text: { shadow: 'drop-shadow(0 3px 4px rgba(0,0,0,.45))' },
+};
+
+const stops = (list: Stop[], opacity?: (i: number) => number) =>
+  list.map(([o, c], i) => <stop key={`${o}-${i}`} offset={`${o}%`} stopColor={c} stopOpacity={opacity ? opacity(i) : undefined} />);
 
 interface Props {
   kind: 'punya' | 'paap';
@@ -14,106 +114,102 @@ interface Props {
   fraction: number;
   label: string;
   className?: string;
-  /** show the % on the medallion */
   showPercent?: boolean;
 }
 
-/**
- * Ornate brass (Punya) or blackened (Paap) kalash. A glass medallion on the belly shows the live liquid level
- * and the glowing surface shows at the mouth. Colour is never the only signal: callers add text + numbers.
- */
+/** Glossy ghada with a live liquid level. Colour is never the only signal: callers add text + numbers. */
 export function Ghada({ kind, fraction, label, className, showPercent = true }: Props) {
   const id = useId().replace(/:/g, '');
   const reduce = useReducedMotion();
-  const punya = kind === 'punya';
+  const L = kind === 'punya' ? GOLD : DARK;
   const f = Math.max(0, Math.min(1, fraction));
   const pct = Math.round(f * 100);
-  const bottom = WIN_CY + WIN_R;
-  const level = bottom - f * (WIN_R * 2);
+  const y = BOTTOM - f * (BOTTOM - TOP);
+  const h = BOTTOM - y;
+  const ease = reduce ? { duration: 0 } : { duration: 0.95, ease: [0.2, 0.72, 0.25, 1] as [number, number, number, number] };
+  const u = (name: string) => `${name}${id}`;
 
-  const body = punya
-    ? ['#6B430D', '#B98022', '#F4CE70', '#FFE9A6', '#D9A441', '#9A6618', '#5E3A0A']
-    : ['#0F0C26', '#262046', '#4E4783', '#6B63B0', '#383064', '#1E193E', '#0C0A20'];
-  const water = punya ? ['#FFE9A0', '#F2B233', '#C98312'] : ['#8C87F5', '#4B45C8', '#221D7A'];
-  const edge = punya ? '#7A4F10' : '#0A0820';
-  const glow = punya ? '#FFD36B' : '#7B76F0';
-  const emboss = punya ? '#FFF0B8' : '#9A94E8';
+  const dark = kind === 'paap';
+  const shineOps = dark ? [0, 0.72, 0.12, 0] : [0, 0.85, 0.18, 0];
 
   return (
-    <svg viewBox="0 0 200 250" role="img" aria-label={label} className={className}>
+    <svg viewBox="0 0 420 470" role="img" aria-label={label} className={className} style={{ overflow: 'visible' }}>
       <defs>
-        <linearGradient id={`b${id}`} x1="0" x2="1" y1="0" y2="0">
-          {body.map((c, i) => (
-            <stop key={c + i} offset={i / (body.length - 1)} stopColor={c} />
-          ))}
-        </linearGradient>
-        <linearGradient id={`w${id}`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor={water[0]} />
-          <stop offset="0.5" stopColor={water[1]} />
-          <stop offset="1" stopColor={water[2]} />
-        </linearGradient>
-        <radialGradient id={`g${id}`} cx="0.5" cy="0.62" r="0.62">
-          <stop offset="0" stopColor={glow} stopOpacity="0.45" />
-          <stop offset="1" stopColor={glow} stopOpacity="0" />
+        <clipPath id={u('inner')}><path d={BODY} /></clipPath>
+        <linearGradient id={u('metal')} x1="0" y1="0" x2="1" y2="0">{stops(L.metal)}</linearGradient>
+        <radialGradient id={u('body')} cx="32%" cy="24%" r="82%">{stops(L.bodyGrad)}</radialGradient>
+        <linearGradient id={u('liquid')} x1="0" y1="0" x2="0" y2="1">{stops(L.liquid)}</linearGradient>
+        <linearGradient id={u('shine')} x1="0" y1="0" x2="1" y2="0">{stops(L.shine, (i) => shineOps[i])}</linearGradient>
+        <radialGradient id={u('glass')}>
+          <stop offset="0%" stopColor={L.glass} stopOpacity={dark ? 0.7 : 0.9} />
+          <stop offset="100%" stopColor={L.glass} stopOpacity="0" />
         </radialGradient>
-        <radialGradient id={`s${id}`} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor={water[0]} />
-          <stop offset="1" stopColor={water[2]} />
-        </radialGradient>
-        <clipPath id={`c${id}`}>
-          <circle cx={WIN_CX} cy={WIN_CY} r={WIN_R - 3} />
-        </clipPath>
+        <pattern id={u('pat')} width="28" height="18" patternUnits="userSpaceOnUse">
+          <path d="M0 9 Q7 1 14 9 Q21 17 28 9" fill="none" stroke={L.pattern.stroke} strokeWidth={L.pattern.width} opacity={L.pattern.opacity} />
+        </pattern>
+        <filter id={u('glow')}>
+          <feGaussianBlur stdDeviation="9" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <filter id={u('shadow')}>
+          <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor={L.shadow.color} floodOpacity={L.shadow.opacity} />
+        </filter>
       </defs>
 
-      <ellipse cx="100" cy="138" rx="96" ry="98" fill={`url(#g${id})`} />
-      <ellipse cx="100" cy="240" rx="52" ry="7" fill="#000" opacity="0.2" />
-
-      {/* foot */}
-      <path d="M66 222 L74 238 H126 L134 222 Z" fill={`url(#b${id})`} stroke={edge} strokeWidth="1.5" />
-      <path d="M70 232 H130" stroke={emboss} strokeOpacity="0.5" strokeWidth="1" />
-
-      {/* body */}
-      <path d={POT} fill={`url(#b${id})`} stroke={edge} strokeWidth="2" />
-
-      {/* embossed lotus petals around the shoulder */}
-      <g fill="none" stroke={emboss} strokeOpacity="0.7" strokeWidth="1.2">
-        {[-60, -40, -20, 0, 20, 40, 60].map((r) => (
-          <path key={r} d="M100 80 C92 92 92 104 100 112 C108 104 108 92 100 80Z" transform={`rotate(${r} 100 150)`} />
+      {/* liquid inside the vessel */}
+      <g clipPath={`url(#${u('inner')})`}>
+        <rect x="58" y="126" width="304" height="264" fill={L.backdrop.fill} opacity={L.backdrop.opacity} />
+        <motion.rect x="58" width="304" fill={`url(#${u('liquid')})`} initial={false} animate={{ y, height: h }} transition={ease} />
+        <motion.ellipse className="gh-surface" cx="210" rx="142" ry="15" fill={L.surface} filter={`url(#${u('glow')})`} initial={false} animate={{ cy: y }} transition={ease} />
+        <motion.ellipse cx="210" rx="136" ry="11" fill={L.surfaceDark.fill} opacity={L.surfaceDark.opacity} initial={false} animate={{ cy: y + 3 }} transition={ease} />
+        <motion.rect x="64" width="292" height="34" fill={L.band.fill} opacity={L.band.opacity} initial={false} animate={{ y: y - 8 }} transition={ease} />
+        <ellipse cx="210" cy="154" rx="118" ry="38" fill={L.topGlow.fill} opacity={L.topGlow.opacity} />
+        {L.bubbles.map(([cx, cy, r], i) => (
+          <circle key={i} className={`gh-bubble gh-b${i}`} cx={cx} cy={cy} r={r} fill="#fff" />
         ))}
-        <path d="M44 100 C70 112 130 112 156 100" strokeDasharray="1.5 3.5" />
-        <path d="M30 188 C60 206 140 206 170 188" strokeDasharray="1.5 3.5" />
       </g>
 
-      {/* mouth: rim, inner cavity and the glowing surface */}
-      <ellipse cx="100" cy="40" rx="36" ry="9.5" fill={`url(#b${id})`} stroke={edge} strokeWidth="2" />
-      <ellipse cx="100" cy="40" rx="27" ry="6.2" fill={punya ? '#4A2C06' : '#08061A'} />
-      {f > 0.01 && <ellipse cx="100" cy="40.5" rx="25" ry="5" fill={`url(#s${id})`} opacity={0.45 + 0.55 * f} />}
+      {/* sculpted glossy body */}
+      <path d={BODY} fill={`url(#${u('body')})`} fillOpacity={dark ? 0.22 : 0.16} stroke={`url(#${u('metal')})`} strokeWidth="18" filter={`url(#${u('shadow')})`} />
+      {/* glassy inner shell */}
+      <path d={SHELL} fill={L.shell.fill} fillOpacity={L.shell.fillOpacity} stroke={L.shell.stroke} strokeOpacity={L.shell.strokeOpacity} strokeWidth="3" />
 
-      {/* medallion: ring, cavity, liquid and percent */}
-      <circle cx={WIN_CX} cy={WIN_CY} r={WIN_R} fill={`url(#b${id})`} stroke={edge} strokeWidth="2" />
-      <circle cx={WIN_CX} cy={WIN_CY} r={WIN_R - 3} fill={punya ? '#3B2406' : '#07051A'} />
-      <g clipPath={`url(#c${id})`}>
-        <motion.g initial={false} animate={{ y: level }} transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 60, damping: 16 }}>
-          <motion.path
-            d="M40 0 Q50 -5 60 0 T80 0 T100 0 T120 0 T140 0 T160 0 T180 0 V80 H40Z"
-            fill={`url(#w${id})`}
-            animate={reduce ? undefined : { x: [0, -40] }}
-            transition={reduce ? undefined : { duration: 3, repeat: Infinity, ease: 'linear' }}
-          />
-        </motion.g>
+      {/* ornamental metallic collar */}
+      <path d="M125 118 L140 60 L280 60 L295 118 Z" fill={`url(#${u('metal')})`} />
+      <rect x="137" y="78" width="146" height="20" fill={`url(#${u('pat')})`} opacity="0.9" />
+      <ellipse cx="210" cy="62" rx="98" ry="25" fill={`url(#${u('metal')})`} />
+      <ellipse cx="210" cy="61" rx="75" ry="14" fill={L.collar.inner} />
+      <ellipse cx="210" cy="61" rx="62" ry="9" fill={L.collar.deep} />
+      <ellipse cx="198" cy="57" rx="34" ry="5" fill={L.collar.glint} opacity={L.collar.glintOpacity} />
+
+      {/* engraved bands */}
+      {L.bands.map((b, i) => (
+        <path key={i} d={b.d} fill="none" stroke={b.stroke} strokeWidth={b.width} opacity={b.opacity} />
+      ))}
+
+      {/* lotus engraving */}
+      <g fill="none" stroke={L.lotus.stroke} strokeWidth={L.lotus.width} opacity={L.lotus.opacity}>
+        <path d="M158 326 Q176 295 194 326 Q176 356 158 326Z" />
+        <path d="M192 326 Q210 286 228 326 Q210 366 192 326Z" />
+        <path d="M226 326 Q244 295 262 326 Q244 356 226 326Z" />
+        <path d="M170 345 Q210 309 250 345" />
       </g>
-      <path d={`M${WIN_CX - 28} ${WIN_CY - 14} A32 32 0 0 1 ${WIN_CX - 8} ${WIN_CY - 30}`} stroke="#fff" strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" fill="none" />
+
+      {/* strong specular reflection */}
+      <path d="M114 162 C90 205 88 282 121 337 C136 362 149 373 160 381" fill="none" stroke={`url(#${u('shine')})`} strokeWidth={L.specular.width} strokeLinecap="round" opacity={L.specular.opacity} />
+      <ellipse cx="150" cy="235" rx="44" ry="124" fill={`url(#${u('glass')})`} transform="rotate(13 150 235)" opacity={L.glows[0]} />
+      <ellipse cx="283" cy="262" rx="20" ry="88" fill={`url(#${u('glass')})`} transform="rotate(-12 283 262)" opacity={L.glows[1]} />
+
+      {/* sparkles */}
+      {L.sparkles.map(([cx, cy, r], i) => (
+        <circle key={i} className={`gh-twinkle gh-t${i}`} cx={cx} cy={cy} r={r} fill={L.sparkle} />
+      ))}
+
       {showPercent && (
-        <text
-          x={WIN_CX} y={WIN_CY + 8} textAnchor="middle" fontSize="24" fontWeight="700" fill="#fff"
-          fontFamily="'Cormorant Garamond','Tiro Gujarati',Georgia,serif" stroke="#000" strokeOpacity="0.55" strokeWidth="3" paintOrder="stroke"
-        >
+        <text x="210" y="267" textAnchor="middle" fontSize="44" fontWeight="900" fill="#fff" style={{ filter: L.text.shadow }}>
           {pct}%
         </text>
       )}
-
-      {/* specular highlight */}
-      <path d="M38 96 C30 116 30 138 36 158" stroke="#fff" strokeOpacity="0.32" strokeWidth="5" strokeLinecap="round" fill="none" />
     </svg>
   );
 }

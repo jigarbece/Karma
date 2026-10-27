@@ -20,6 +20,7 @@ export default {
         punya: v('gold'),
         paap: v('indigo'),
         good: v('good'),
+        paapred: v('paapred'),
         sand: v('sand'),
         night: v('night'),
         'night-2': v('night-2'),
