@@ -19,6 +19,8 @@ export default {
         'indigo-soft': v('indigo-soft'),
         punya: v('gold'),
         paap: v('indigo'),
+        good: v('good'),
+        sand: v('sand'),
         night: v('night'),
         'night-2': v('night-2'),
         cream: v('cream'),

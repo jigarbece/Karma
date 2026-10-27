@@ -55,6 +55,38 @@ describe('Karma app (demo mode)', () => {
     expect(screen.getByRole('link', { name: /14416/ })).toHaveAttribute('href', 'tel:14416');
   });
 
+  it('shows the top bar with search, bell, avatar menu and a sign-out option', async () => {
+    bootDemo('/');
+    const user = userEvent.setup();
+    render(<App />);
+    expect(await screen.findByRole('search')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Demo' }));
+    expect(await screen.findByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+  });
+
+  it('lists Gita teachings and filters them by search word', async () => {
+    bootDemo('/wisdom/gita?q=anger');
+    render(<App />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Gita Wisdom' })).toBeInTheDocument();
+    expect(await screen.findAllByText(/Bhagavad Gita/)).not.toHaveLength(0);
+    expect(screen.queryByText(/Tattvartha/)).not.toBeInTheDocument();
+  });
+
+  it('unlocks badges from the sample history on Awards', async () => {
+    bootDemo('/awards');
+    render(<App />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Awards' })).toBeInTheDocument();
+    expect((await screen.findAllByText('Unlocked')).length).toBeGreaterThan(2);
+  });
+
+  it('prefills a starter sentence from a Home quick action', async () => {
+    bootDemo('/talk?topic=gratitude');
+    render(<App />);
+    const box = await screen.findByRole('textbox', { name: 'Tell me about your day' });
+    expect(box).toHaveValue('Today I am grateful for: ');
+  });
+
   it('requires typing DELETE before deleting everything', async () => {
     bootDemo('/profile');
     const user = userEvent.setup();

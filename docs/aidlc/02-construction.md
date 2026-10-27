@@ -46,6 +46,14 @@ Units of work (each independently testable): **UoW-1** domain maths (`ghada.ts`,
 - **Navigation:** floating night pill on phones; dark temple sidebar with a faint mandala on desktop.
 - **A11y:** contrast ≥ 4.5:1 (gold-light on night ≈ 10:1), 44–48 px targets, `aria-pressed` toggles, skip link, labelled charts.
 
+### Design iteration 2 (reference-led "Karma Ghada" layout)
+
+- **Shell:** sticky top bar (lotus mark, wordmark and tagline, search, language, bell with reminder status, avatar menu with Profile and Sign out) over a light sidebar: Home, Talk / Log Day, Insights, Gita Wisdom, Jain Teachings, Pratikraman, Goals & Sankalp, Awards, Journal, plus a daily teaching card. Phones keep the floating pill bar; the sidebar pages are reachable from an Explore grid on Home.
+- **Home:** sunrise hero (illustrated riverside temple, peacock feather, flute; optional licensed photo at `public/hero.jpg`) holding greeting, tithi, range toggle, the two ornate ghadas, exact-number cards and the Net Karma card; then the mic panel with waveform, Quick Actions, Today's Reflection, Karma Journey chart and Daily Insight.
+- **Ghada:** brass and blackened kalash with embossed lotus petals; a glass medallion on the belly shows the live level and percent, and the mouth glows when it holds liquid.
+- **New pages (data-driven, no new tables):** Wisdom (search and theme filters over the curated teachings), Goals & Sankalp (goal picker, weekly progress, Pratikraman commitments), Awards (badges computed from the user's own data), Journal (all entries by day).
+- **Tokens added:** `--good` (growth green for positive net, always paired with an arrow), `--sand` (active nav), `--hero-ink`, `--scrim`.
+
 ## 5. Threat model (STRIDE, abridged)
 
 | Threat | Vector | Control |

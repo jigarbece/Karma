@@ -66,6 +66,13 @@ export default function Talk() {
     repo?.listEntries(today).then(setEntries).catch(() => undefined);
   }, [repo, today, actions.length]);
 
+  // Quick actions on Home prefill a gentle starter sentence
+  useEffect(() => {
+    const topic = params.get('topic');
+    if (topic === 'good' || topic === 'mistake' || topic === 'gratitude') setBoth(t(`talk.starter_${topic}`));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (params.get('mic') === '1' && speech.supported) speech.start();
     // eslint-disable-next-line react-hooks/exhaustive-deps

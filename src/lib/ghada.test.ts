@@ -1,4 +1,4 @@
-import { addDays, fillFraction, localDate, netSeries, streak, totalsForRange } from './ghada';
+import { addDays, fillFraction, localDate, longestStreak, netSeries, streak, totalsForRange } from './ghada';
 import type { KarmaAction } from './types';
 
 const act = (date: string, type: 'punya' | 'paap', weight: number): KarmaAction => ({
@@ -38,6 +38,15 @@ describe('ghada math', () => {
     const acts = [act('2026-10-24', 'punya', 1), act('2026-10-25', 'punya', 1), act('2026-10-26', 'punya', 1)];
     expect(streak(acts, '2026-10-26')).toBe(3);
     expect(streak([act('2026-10-26', 'paap', 2)], '2026-10-26')).toBe(0);
+  });
+  it('finds the longest streak ever, not just the current one', () => {
+    const acts = [
+      act('2026-10-01', 'punya', 1), act('2026-10-02', 'punya', 1), act('2026-10-03', 'punya', 1), act('2026-10-04', 'punya', 1),
+      act('2026-10-05', 'paap', 3), // breaks the run
+      act('2026-10-26', 'punya', 1),
+    ];
+    expect(longestStreak(acts)).toBe(4);
+    expect(longestStreak([])).toBe(0);
   });
   it('formats a local date in a time zone', () => {
     expect(localDate(new Date('2026-10-25T20:00:00Z'), 'Asia/Kolkata')).toBe('2026-10-26');

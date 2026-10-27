@@ -35,6 +35,8 @@ export interface Repo {
   saveProfile(patch: Partial<Profile>): Promise<Profile>;
   listActions(): Promise<KarmaAction[]>;
   listEntries(date: string): Promise<Entry[]>;
+  /** Newest first, capped at 300. */
+  listAllEntries(): Promise<Entry[]>;
   getReflection(date: string): Promise<DayReflection | null>;
   analyze(input: { transcript: string; date: string; language: string }): Promise<AnalyzeResponse>;
   addFeedback(actionId: string, comment: string): Promise<void>;
@@ -167,6 +169,9 @@ export const localRepo: Repo = {
   async listEntries(date) {
     return readDb().entries.filter((e) => e.entry_date === date);
   },
+  async listAllEntries() {
+    return [...readDb().entries].sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).slice(0, 300);
+  },
   async getReflection(date) {
     const r = readDb().reflections.filter((x) => x.date === date);
     return r[r.length - 1] ?? null;
@@ -277,6 +282,11 @@ export function makeSupabaseRepo(userId: string): Repo {
     },
     async listEntries(date) {
       const { data, error } = await sb.from('entries').select('*').eq('entry_date', date).order('created_at');
+      if (error) throw error;
+      return data as Entry[];
+    },
+    async listAllEntries() {
+      const { data, error } = await sb.from('entries').select('*').order('created_at', { ascending: false }).limit(300);
       if (error) throw error;
       return data as Entry[];
     },

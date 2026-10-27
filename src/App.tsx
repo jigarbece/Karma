@@ -15,6 +15,10 @@ const Talk = lazy(() => import('./pages/Talk'));
 const Insights = lazy(() => import('./pages/Insights'));
 const Pratikraman = lazy(() => import('./pages/Pratikraman'));
 const Profile = lazy(() => import('./pages/Profile'));
+const Wisdom = lazy(() => import('./pages/Wisdom'));
+const Goals = lazy(() => import('./pages/Goals'));
+const Awards = lazy(() => import('./pages/Awards'));
+const Journal = lazy(() => import('./pages/Journal'));
 
 function Loading() {
   const { t } = useI18n();
@@ -70,6 +74,11 @@ export default function App() {
               <Route path="insights" element={<Insights />} />
               <Route path="pratikraman" element={<Pratikraman />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="wisdom" element={<Wisdom />} />
+              <Route path="wisdom/:tradition" element={<Wisdom />} />
+              <Route path="goals" element={<Goals />} />
+              <Route path="awards" element={<Awards />} />
+              <Route path="journal" element={<Journal />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

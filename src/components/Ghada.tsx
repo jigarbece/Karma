@@ -1,10 +1,12 @@
 import { useId } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
+/** Pot silhouette (belly centred at 100,150). */
 const POT =
-  'M58 26 C58 40 50 48 40 56 C20 70 12 95 14 120 C16 152 40 176 80 176 C120 176 144 152 146 120 C148 95 140 70 120 56 C110 48 102 40 102 26 Z';
-const TOP = 58; // water level when full
-const BOTTOM = 170; // water level when empty
+  'M72 40 C72 54 66 62 56 72 C30 94 20 128 26 162 C32 202 60 224 100 224 C140 224 168 202 174 162 C180 128 170 94 144 72 C134 62 128 54 128 40 Z';
+const WIN_CX = 100;
+const WIN_CY = 152;
+const WIN_R = 38;
 
 interface Props {
   kind: 'punya' | 'paap';
@@ -12,94 +14,106 @@ interface Props {
   fraction: number;
   label: string;
   className?: string;
+  /** show the % on the medallion */
+  showPercent?: boolean;
 }
 
-/** SVG kalash with an animated liquid level. Colour is never the only signal: callers add text + numbers. */
-export function Ghada({ kind, fraction, label, className }: Props) {
+/**
+ * Ornate brass (Punya) or blackened (Paap) kalash. A glass medallion on the belly shows the live liquid level
+ * and the glowing surface shows at the mouth. Colour is never the only signal: callers add text + numbers.
+ */
+export function Ghada({ kind, fraction, label, className, showPercent = true }: Props) {
   const id = useId().replace(/:/g, '');
   const reduce = useReducedMotion();
   const punya = kind === 'punya';
-  const level = BOTTOM - Math.max(0, Math.min(1, fraction)) * (BOTTOM - TOP);
+  const f = Math.max(0, Math.min(1, fraction));
+  const pct = Math.round(f * 100);
+  const bottom = WIN_CY + WIN_R;
+  const level = bottom - f * (WIN_R * 2);
 
-  const water = punya ? ['#FFE08A', '#F0A81C', '#C77F0A'] : ['#6C67E6', '#3A35A8', '#1B1763'];
-  const body = punya ? ['#F1CC7B', '#C18A2C', '#7A4F10'] : ['#4A4366', '#262042', '#120F28'];
+  const body = punya
+    ? ['#6B430D', '#B98022', '#F4CE70', '#FFE9A6', '#D9A441', '#9A6618', '#5E3A0A']
+    : ['#0F0C26', '#262046', '#4E4783', '#6B63B0', '#383064', '#1E193E', '#0C0A20'];
+  const water = punya ? ['#FFE9A0', '#F2B233', '#C98312'] : ['#8C87F5', '#4B45C8', '#221D7A'];
+  const edge = punya ? '#7A4F10' : '#0A0820';
+  const glow = punya ? '#FFD36B' : '#7B76F0';
+  const emboss = punya ? '#FFF0B8' : '#9A94E8';
 
   return (
-    <svg viewBox="0 0 160 200" role="img" aria-label={label} className={className}>
+    <svg viewBox="0 0 200 250" role="img" aria-label={label} className={className}>
       <defs>
-        <linearGradient id={`b${id}`} x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0" stopColor={body[0]} />
-          <stop offset="0.55" stopColor={body[1]} />
-          <stop offset="1" stopColor={body[2]} />
+        <linearGradient id={`b${id}`} x1="0" x2="1" y1="0" y2="0">
+          {body.map((c, i) => (
+            <stop key={c + i} offset={i / (body.length - 1)} stopColor={c} />
+          ))}
         </linearGradient>
         <linearGradient id={`w${id}`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor={water[0]} />
           <stop offset="0.5" stopColor={water[1]} />
           <stop offset="1" stopColor={water[2]} />
         </linearGradient>
-        <radialGradient id={`g${id}`} cx="0.5" cy="0.6" r="0.6">
-          <stop offset="0" stopColor={punya ? '#FFD36B' : '#7B76F0'} stopOpacity="0.55" />
-          <stop offset="1" stopColor={punya ? '#FFD36B' : '#7B76F0'} stopOpacity="0" />
+        <radialGradient id={`g${id}`} cx="0.5" cy="0.62" r="0.62">
+          <stop offset="0" stopColor={glow} stopOpacity="0.45" />
+          <stop offset="1" stopColor={glow} stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`s${id}`} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor={water[0]} />
+          <stop offset="1" stopColor={water[2]} />
         </radialGradient>
         <clipPath id={`c${id}`}>
-          <path d={POT} transform="translate(80 101) scale(0.9) translate(-80 -101)" />
+          <circle cx={WIN_CX} cy={WIN_CY} r={WIN_R - 3} />
         </clipPath>
       </defs>
 
-      {/* glow */}
-      <ellipse cx="80" cy="115" rx="78" ry="80" fill={`url(#g${id})`} />
-      {/* base shadow */}
-      <ellipse cx="80" cy="186" rx="44" ry="6" fill="#000" opacity="0.18" />
-      {/* pot body */}
-      <path d={POT} fill={`url(#b${id})`} stroke={punya ? '#8A5A12' : '#0E0B22'} strokeWidth="2" />
-      {/* inner cavity */}
-      <path d={POT} transform="translate(80 101) scale(0.9) translate(-80 -101)" fill={punya ? '#5B3A0C' : '#0B0920'} opacity="0.9" />
+      <ellipse cx="100" cy="138" rx="96" ry="98" fill={`url(#g${id})`} />
+      <ellipse cx="100" cy="240" rx="52" ry="7" fill="#000" opacity="0.2" />
 
-      {/* liquid */}
+      {/* foot */}
+      <path d="M66 222 L74 238 H126 L134 222 Z" fill={`url(#b${id})`} stroke={edge} strokeWidth="1.5" />
+      <path d="M70 232 H130" stroke={emboss} strokeOpacity="0.5" strokeWidth="1" />
+
+      {/* body */}
+      <path d={POT} fill={`url(#b${id})`} stroke={edge} strokeWidth="2" />
+
+      {/* embossed lotus petals around the shoulder */}
+      <g fill="none" stroke={emboss} strokeOpacity="0.7" strokeWidth="1.2">
+        {[-60, -40, -20, 0, 20, 40, 60].map((r) => (
+          <path key={r} d="M100 80 C92 92 92 104 100 112 C108 104 108 92 100 80Z" transform={`rotate(${r} 100 150)`} />
+        ))}
+        <path d="M44 100 C70 112 130 112 156 100" strokeDasharray="1.5 3.5" />
+        <path d="M30 188 C60 206 140 206 170 188" strokeDasharray="1.5 3.5" />
+      </g>
+
+      {/* mouth: rim, inner cavity and the glowing surface */}
+      <ellipse cx="100" cy="40" rx="36" ry="9.5" fill={`url(#b${id})`} stroke={edge} strokeWidth="2" />
+      <ellipse cx="100" cy="40" rx="27" ry="6.2" fill={punya ? '#4A2C06' : '#08061A'} />
+      {f > 0.01 && <ellipse cx="100" cy="40.5" rx="25" ry="5" fill={`url(#s${id})`} opacity={0.45 + 0.55 * f} />}
+
+      {/* medallion: ring, cavity, liquid and percent */}
+      <circle cx={WIN_CX} cy={WIN_CY} r={WIN_R} fill={`url(#b${id})`} stroke={edge} strokeWidth="2" />
+      <circle cx={WIN_CX} cy={WIN_CY} r={WIN_R - 3} fill={punya ? '#3B2406' : '#07051A'} />
       <g clipPath={`url(#c${id})`}>
         <motion.g initial={false} animate={{ y: level }} transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 60, damping: 16 }}>
           <motion.path
-            d="M-80 0 Q-60 -7 -40 0 T0 0 T40 0 T80 0 T120 0 T160 0 T200 0 T240 0 V160 H-80 Z"
+            d="M40 0 Q50 -5 60 0 T80 0 T100 0 T120 0 T140 0 T160 0 T180 0 V80 H40Z"
             fill={`url(#w${id})`}
-            animate={reduce ? undefined : { x: [0, 80] }}
-            transition={reduce ? undefined : { duration: 3.2, repeat: Infinity, ease: 'linear' }}
-          />
-          <motion.path
-            d="M-80 3 Q-60 -4 -40 3 T0 3 T40 3 T80 3 T120 3 T160 3 T200 3 T240 3 V160 H-80 Z"
-            fill={punya ? '#FFE9A8' : '#8A86F2'}
-            opacity="0.35"
-            animate={reduce ? undefined : { x: [80, 0] }}
-            transition={reduce ? undefined : { duration: 4.6, repeat: Infinity, ease: 'linear' }}
+            animate={reduce ? undefined : { x: [0, -40] }}
+            transition={reduce ? undefined : { duration: 3, repeat: Infinity, ease: 'linear' }}
           />
         </motion.g>
       </g>
-
-      {/* rim + highlights */}
-      <ellipse cx="80" cy="26" rx="24" ry="6" fill={punya ? '#E7B84F' : '#3A3358'} stroke={punya ? '#8A5A12' : '#0E0B22'} strokeWidth="2" />
-      <ellipse cx="80" cy="26" rx="17" ry="3.4" fill={punya ? '#5B3A0C' : '#0B0920'} />
-      <path d="M32 82 C26 98 26 116 32 132" stroke="#fff" strokeOpacity="0.28" strokeWidth="4" strokeLinecap="round" fill="none" />
-      {/* band pattern */}
-      <path d="M22 100 C50 112 110 112 138 100" stroke={punya ? '#FFE9A8' : '#8A86F2'} strokeOpacity="0.55" strokeWidth="1.5" fill="none" strokeDasharray="2 4" />
-      {/* rising sparkles over the golden water */}
-      {punya && !reduce && fraction > 0.02 && (
-        <g fill="#FFE9A8">
-          {[0, 1, 2].map((i) => (
-            <motion.circle
-              key={i}
-              cx={62 + i * 18}
-              cy={level}
-              r={1.6 + i * 0.4}
-              initial={{ opacity: 0 }}
-              animate={{ y: [-2, -26 - i * 8], opacity: [0, 0.9, 0] }}
-              transition={{ duration: 3 + i, repeat: Infinity, delay: i * 0.9, ease: 'easeOut' }}
-            />
-          ))}
-        </g>
+      <path d={`M${WIN_CX - 28} ${WIN_CY - 14} A32 32 0 0 1 ${WIN_CX - 8} ${WIN_CY - 30}`} stroke="#fff" strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" fill="none" />
+      {showPercent && (
+        <text
+          x={WIN_CX} y={WIN_CY + 8} textAnchor="middle" fontSize="24" fontWeight="700" fill="#fff"
+          fontFamily="'Cormorant Garamond','Tiro Gujarati',Georgia,serif" stroke="#000" strokeOpacity="0.55" strokeWidth="3" paintOrder="stroke"
+        >
+          {pct}%
+        </text>
       )}
-      {/* flame / lotus mark */}
-      {punya ? (
-        <path d="M80 8c3 4 5 6 5 9a5 5 0 0 1-10 0c0-3 2-5 5-9z" fill="#FFB347" stroke="#C77F0A" strokeWidth="1" />
-      ) : null}
+
+      {/* specular highlight */}
+      <path d="M38 96 C30 116 30 138 36 158" stroke="#fff" strokeOpacity="0.32" strokeWidth="5" strokeLinecap="round" fill="none" />
     </svg>
   );
 }

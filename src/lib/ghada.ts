@@ -70,6 +70,22 @@ export function netSeries(actions: KarmaAction[], end: string, n: number) {
   });
 }
 
+/** Longest run of consecutive days with at least one scored action and net >= 0, ever. */
+export function longestStreak(actions: KarmaAction[]): number {
+  const byDay = summarizeByDay(actions);
+  const days = [...byDay.keys()].sort();
+  let best = 0;
+  let run = 0;
+  let prev: string | null = null;
+  for (const d of days) {
+    const ok = byDay.get(d)!.net >= 0;
+    run = ok ? (prev && addDays(prev, 1) === d ? run + 1 : 1) : 0;
+    prev = d;
+    if (run > best) best = run;
+  }
+  return best;
+}
+
 /** Consecutive days (ending today or yesterday) with net >= 0 and at least one scored action. */
 export function streak(actions: KarmaAction[], today: string): number {
   const byDay = summarizeByDay(actions);
