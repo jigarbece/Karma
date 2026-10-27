@@ -1,4 +1,4 @@
-﻿// LLM provider adapter. Selected with AI_PROVIDER = gemini | groq | anthropic | openai.
+// LLM provider adapter. Selected with AI_PROVIDER = gemini | groq | anthropic | openai.
 // The API key only ever lives in Edge Function secrets and never reaches the browser.
 
 export type Provider = 'gemini' | 'groq' | 'anthropic' | 'openai';
