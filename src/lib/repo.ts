@@ -47,6 +47,26 @@ export interface Repo {
 export const DAILY_ANALYSIS_LIMIT = Number(import.meta.env?.VITE_DAILY_ANALYSIS_LIMIT ?? 10);
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
+type DevAnalysis = AnalysisResult & { provider?: string; model?: string };
+
+/**
+ * DEV ONLY: scores text through the local `/dev-api/analyze` endpoint (see vite.dev-ai.ts), which runs the
+ * same pipeline as the Edge Function using AI keys from .env.local. Returns null when it is unavailable
+ * (production build, tests, or no AI key configured) so callers fall back.
+ */
+async function devAnalyze(payload: { transcript: string; date: string; language: string; tradition: string; goals: string[] }): Promise<DevAnalysis | null> {
+  if (!import.meta.env.DEV || import.meta.env.MODE === 'test') return null;
+  try {
+    const r = await fetch('/dev-api/analyze', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const body = await r.json().catch(() => null);
+    if (r.ok && body && Array.isArray(body.actions)) return body as DevAnalysis;
+    if (body && r.status !== 404 && r.status !== 501) throw new AnalyzeError(body.error ?? `http_${r.status}`, body.message ?? '');
+  } catch (e) {
+    if (e instanceof AnalyzeError) throw e;
+  }
+  return null;
+}
+
 /* ----------------------------------------------------------------------------------------
  * Demo / local repo (localStorage). Used when Supabase is not configured.
  * ------------------------------------------------------------------------------------- */
@@ -157,23 +177,8 @@ export const localRepo: Repo = {
     // 'a-' ids mark entries created through analyze (seeded history does not count)
     const used = db.entries.filter((e) => e.entry_date === date && e.id.startsWith('a-')).length;
     if (used >= DAILY_ANALYSIS_LIMIT) throw new RateLimitError(DAILY_ANALYSIS_LIMIT);
-    // Dev only: real AI through the local /dev-api/analyze endpoint (see vite.dev-ai.ts).
-    // Falls back to the keyword mock when the endpoint or AI keys are not available.
-    let result: AnalysisResult | null = null;
-    if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
-      try {
-        const r = await fetch('/dev-api/analyze', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ transcript, date, language, tradition: profile.tradition, goals: profile.goals }),
-        });
-        const body = await r.json().catch(() => null);
-        if (r.ok && body && Array.isArray(body.actions)) result = body as AnalysisResult;
-        else if (body && r.status !== 404 && r.status !== 501) throw new AnalyzeError(body.error ?? `http_${r.status}`, body.message ?? '');
-      } catch (e) {
-        if (e instanceof AnalyzeError) throw e;
-      }
-    }
+    // Dev only: real AI through the local endpoint; falls back to the keyword mock without AI keys.
+    let result: AnalysisResult | null = await devAnalyze({ transcript, date, language, tradition: profile.tradition, goals: profile.goals });
     if (!result) {
       await new Promise((r) => setTimeout(r, 700));
       result = mockAnalyze(transcript, profile, `${date}${transcript}`);
@@ -283,6 +288,30 @@ export function makeSupabaseRepo(userId: string): Repo {
       return (data?.[0] as DayReflection | undefined) ?? null;
     },
     async analyze(input) {
+      // Dev only: score locally with the key in .env.local, then save to Supabase as this user (RLS applies).
+      const { data: prof } = await sb.from('profiles').select('tradition, goals, keep_words').eq('id', userId).maybeSingle();
+      const local = await devAnalyze({
+        transcript: input.transcript, date: input.date, language: input.language,
+        tradition: prof?.tradition ?? 'general', goals: prof?.goals ?? [],
+      });
+      if (local) {
+        if (local.safety_flag) return { entry: null, actions: [], reflection: null, safety_flag: true };
+        const { data: entry, error: entryErr } = await sb.from('entries').insert({
+          user_id: userId, entry_date: input.date, transcript: prof?.keep_words === false ? null : input.transcript,
+          language: input.language, ai_provider: local.provider ?? 'dev', ai_model: local.model ?? 'dev', rubric_version: 'v1',
+        }).select('*').single();
+        if (entryErr) throw new AnalyzeError('save_failed', entryErr.message);
+        let rows: Row[] = [];
+        if (local.actions.length) {
+          const { data, error } = await sb.from('actions')
+            .insert(local.actions.map((a) => ({ ...a, user_id: userId, entry_id: entry.id, entry_date: input.date }))).select('*');
+          if (error) throw new AnalyzeError('save_failed', error.message);
+          rows = data as Row[];
+        }
+        await sb.from('reflections').insert({ user_id: userId, date: input.date, teaching_id: local.reflection.teaching_id, suggestion: local.reflection.suggestion });
+        return { entry: entry as Entry, actions: rows.map(mapAction), reflection: local.reflection, safety_flag: false };
+      }
+
       const { data, error } = await sb.functions.invoke('analyze-day', { body: input });
       if (error) {
         const ctx = (error as { context?: Response }).context;
