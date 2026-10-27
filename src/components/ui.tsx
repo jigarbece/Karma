@@ -69,7 +69,7 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
     return () => clearTimeout(timer);
   }, [shown]);
   return (
-    <li className="card flex gap-3 !p-4">
+    <li className="card flex min-w-0 gap-3 !p-4 [overflow-wrap:anywhere]">
       <span
         className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
           neutral ? 'bg-line text-muted' : punya ? 'bg-gold/25 text-saffron-text' : 'bg-indigo-soft text-indigo'

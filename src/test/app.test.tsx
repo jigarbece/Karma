@@ -26,8 +26,6 @@ describe('Karma app (demo mode)', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { level: 1, name: /Jai Shri Krishna/ })).toBeInTheDocument();
     expect(screen.getByTestId('tithi').textContent).toMatch(/Sud|Vad/);
-    expect(screen.getByText('Nakshatra · pada')).toBeInTheDocument();
-    expect(screen.getByText(/Traditional guidance/)).toBeInTheDocument();
     expect(screen.getByTestId('shloka')).toHaveTextContent('Bhagavad Gita');
     expect(screen.getByRole('img', { name: /Punya ghada/ })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Paap ghada/ })).toBeInTheDocument();

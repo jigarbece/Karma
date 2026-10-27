@@ -43,10 +43,10 @@ export function Shell() {
       {!online && <div role="status" className="bg-night px-4 py-2 text-center text-sm text-cream">{t('offline.banner')}</div>}
 
       <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-3 sm:px-5">
+        <div className="mx-auto flex h-16 max-w-5xl items-center gap-2 px-3 sm:gap-3 sm:px-5">
           <Link to="/" className="flex items-center gap-2" aria-label="Karma">
             <LotusMark size={36} />
-            <span className="font-display text-3xl font-bold leading-none text-saffron-text">Karma</span>
+            <span className="hidden font-display text-3xl font-bold leading-none text-saffron-text min-[380px]:inline">Karma</span>
           </Link>
 
           <nav aria-label={`${t('nav.label')} (top)`} className="ml-6 hidden md:block">
