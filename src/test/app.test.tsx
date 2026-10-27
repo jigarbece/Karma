@@ -76,6 +76,8 @@ describe('Karma app (demo mode)', () => {
     expect(within(dialog).getByTestId('dlg-punya')).toHaveTextContent(/\+\d+/);
     expect(within(dialog).getByTestId('dlg-growth')).toHaveTextContent(/−\d+/);
     expect(within(dialog).queryByText('Gave in charity')).not.toBeInTheDocument();
+    // the dharma teaching and its source show without tapping anything
+    expect(within(dialog).getAllByTestId('dlg-teaching')[0]).toHaveTextContent(/Annadāna|Bhagavad Gita|Mahabharata|Upanishad|Manusmriti|Puran/);
     await user.click(within(dialog).getByRole('button', { name: 'Show details' }));
     expect(within(dialog).getByText('Gave in charity')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'See my ghadas' }));

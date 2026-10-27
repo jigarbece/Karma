@@ -126,11 +126,16 @@ export function AnalysisDialog({ actions, onClose }: { actions: KarmaAction[]; o
                     {isPunya ? '+' : '−'}{num(w)}
                   </span>
                 </div>
-                {details && (tr?.reason || a.reason || principle) && (
-                  <div className="mt-1 space-y-1.5 border-t border-line/60 pt-2 text-sm">
-                    {(tr?.reason || a.reason) && <p>{tr?.reason || a.reason}</p>}
-                    {principle && <p className="font-display text-base font-bold">{principle.label} <span className="font-sans text-xs font-normal text-muted">{principle.source}</span></p>}
+                {/* the teaching behind the points is shown by default: it says nothing about what the person wrote */}
+                {principle && (
+                  <div className="mt-1.5 rounded-xl bg-sand/60 px-3 py-2 text-sm" data-testid="dlg-teaching">
+                    <p className="font-display text-base font-bold leading-snug">{principle.label}</p>
+                    <p className="leading-snug">{principle.about}</p>
+                    <p className="mt-0.5 text-xs text-muted">{principle.source}</p>
                   </div>
+                )}
+                {details && (tr?.reason || a.reason) && (
+                  <p className="mt-1.5 border-t border-line/60 pt-2 text-sm">{tr?.reason || a.reason}</p>
                 )}
               </li>
             );
