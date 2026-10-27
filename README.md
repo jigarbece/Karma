@@ -25,6 +25,21 @@ npm run dev
 
 With no Supabase variables set, Karma runs in **demo mode**: data stays in `localStorage`, 30 days of sample history are generated, and a keyword-based mock analyser stands in for the AI. Click **Try the demo** on the landing page.
 
+### Run everything locally with real AI (no Supabase function needed)
+
+Add these to the git-ignored `.env.local` (note: no `VITE_` prefix, so the key is never bundled into the browser):
+
+```
+AI_PROVIDER=groq
+AI_MODEL=openai/gpt-oss-120b
+AI_API_KEY=your-key
+# optional second provider if the first fails
+# AI_FALLBACK_PROVIDER=gemini
+# AI_FALLBACK_API_KEY=your-key
+```
+
+Run `npm run dev`, click **Try the demo**, and **Analyse** goes through the dev-only endpoint `/dev-api/analyze` (`vite.dev-ai.ts`), which runs the same scoring pipeline as the `analyze-day` Edge Function. Data stays in `localStorage`. With no AI keys, the keyword mock is used instead. This endpoint exists only in the dev server, never in a production build.
+
 ## Scripts
 
 | Script | What it does |
