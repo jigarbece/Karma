@@ -301,7 +301,6 @@
   "journal.encrypted": "आपका संदेश एन्क्रिप्ट और निजी रखा गया है। केवल अंक पाए कर्म ही दिखाए जाते हैं।",
   "talk.privacy_note": "आपका संदेश सहेजते समय एन्क्रिप्ट होता है और दोबारा कभी नहीं दिखाया जाता।",
   "act.masked": "निजी कर्म",
-  "act.masked_hint": "आपकी निजता के लिए छिपा है। क्या था यह देखने के लिए \"दिखाएँ\" दबाएँ।",
   "act.show": "दिखाएँ",
   "act.hide": "छिपाएँ",
   "home.punya_kicker": "अच्छे कर्म",
@@ -310,5 +309,8 @@
   "home.net_summary_sub": "आपके दो घड़े, साथ तौले गए।",
   "landing.shloka_intro": "हर दिन की शुरुआत एक श्लोक से।",
   "home.stage_title": "आज का आपका कर्म",
-  "landing.eyebrow": "पुण्य · पाप · धर्म"
+  "landing.eyebrow": "पुण्य · पाप · धर्म",
+  "shloka.meaning": "अर्थ",
+  "shloka.pronunciation": "उच्चारण",
+  "shloka.gita": "भगवद्गीता"
 }

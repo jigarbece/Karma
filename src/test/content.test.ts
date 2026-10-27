@@ -5,6 +5,7 @@ import hi from '../i18n/hi.json';
 import { TEACHINGS } from '../lib/teachings';
 import { CATEGORIES } from '../lib/types';
 import { PRINCIPLE_TEXT } from '../content/principleText';
+import { SHLOKAS, devanagariToGujarati } from '../content/shlokas';
 import rubric from '../../supabase/functions/_shared/rubric.v2.json';
 
 describe('teachings', () => {
@@ -75,6 +76,20 @@ describe('dharma principle translations', () => {
       }
       expect(PRINCIPLE_TEXT[p.id].gu.label).toMatch(/[\u0A80-\u0AFF]/); // Gujarati script
       expect(PRINCIPLE_TEXT[p.id].hi.label).toMatch(/[\u0900-\u097F]/); // Devanagari
+    }
+  });
+});
+
+describe('shlokas', () => {
+  it('converts Devanagari to Gujarati script letter for letter and keeps the danda marks', () => {
+    expect(devanagariToGujarati('कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।')).toBe('કર્મણ્યેવાધિકારસ્તે મા ફલેષુ કદાચન ।');
+    expect(devanagariToGujarati('॥')).toBe('॥');
+  });
+  it('has two-line verses with Roman text and meanings for every language', () => {
+    for (const s of SHLOKAS) {
+      expect(s.sa.split('\n')).toHaveLength(2);
+      expect(s.roman.split('\n')).toHaveLength(2);
+      expect(s.teachingId || s.meaning).toBeTruthy();
     }
   });
 });

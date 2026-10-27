@@ -70,6 +70,24 @@ export const SHLOKAS: Shloka[] = [
   },
 ];
 
+/**
+ * Devanagari and Gujarati share one Unicode layout (the Gujarati block is the Devanagari block plus 0x180), so a
+ * Sanskrit verse can be shown in Gujarati script by shifting each letter. The danda marks are shared.
+ */
+export function devanagariToGujarati(text: string): string {
+  let out = '';
+  for (const ch of text) {
+    const cp = ch.codePointAt(0)!;
+    out += cp >= 0x0901 && cp <= 0x097f && cp !== 0x0964 && cp !== 0x0965 ? String.fromCodePoint(cp + 0x180) : ch;
+  }
+  return out;
+}
+
+/** The verse in the reader's script: Gujarati script for Gujarati, Devanagari otherwise. */
+export function shlokaVerse(s: Shloka, lang: Lang): string {
+  return lang === 'gu' ? devanagariToGujarati(s.sa) : s.sa;
+}
+
 /** One shloka per calendar day, stable for the whole day. */
 export function shlokaOfTheDay(date: string): Shloka {
   let h = 0;

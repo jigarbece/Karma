@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
 import { RateLimitError, AnalyzeError, type AnalyzeResponse } from '../lib/repo';
@@ -24,6 +25,8 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState('');
+  const stageRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
   const tithi = useTithi(lang, today);
 
   const setBoth = useCallback((v: string) => {
@@ -45,6 +48,8 @@ export default function Home() {
       if (!r.safety_flag) {
         setBoth('');
         await refresh();
+        // bring the two ghadas into view so the new points are seen filling them
+        requestAnimationFrame(() => stageRef.current?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' }));
       }
     } catch (e) {
       setError(
@@ -75,11 +80,12 @@ export default function Home() {
       {demo && <p className="rounded-2xl bg-indigo-soft px-4 py-2 text-sm text-indigo">{t('common.demo')}</p>}
 
       <header>
-        <h1 className="text-4xl leading-tight lg:text-5xl">
-          {t('home.greeting', { greeting, name: profile?.name || '' }).replace(/, $/, '')} 🙏
+        <h1 className="text-2xl font-semibold leading-snug text-balance sm:text-3xl">
+          {t('home.greeting', { greeting, name: profile?.name || '' }).replace(/, $/, '')}{' '}
+          <span className="whitespace-nowrap" aria-hidden="true">🙏</span>
         </h1>
-        <p className="mt-1 text-lg text-muted">
-          {tithi && <span className="font-display text-xl font-semibold text-saffron-text" data-testid="tithi">{tithi}</span>}
+        <p className="mt-1 text-base text-muted">
+          {tithi && <span className="font-display text-lg font-semibold text-saffron-text" data-testid="tithi">{tithi}</span>}
           {tithi && <span className="mx-3 opacity-50">|</span>}
           {date(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
@@ -127,7 +133,7 @@ export default function Home() {
       )}
 
       {/* 2. The two glossy ghadas */}
-      <section className="stage-card" aria-labelledby="stage-title">
+      <section ref={stageRef} className="stage-card" aria-labelledby="stage-title">
         <div className="relative mb-5 text-center">
           <h2 id="stage-title" className="font-display text-3xl font-bold sm:text-4xl">{t('home.stage_title')}</h2>
           <p className="mt-1 text-muted">{t('home.net_summary_sub')}</p>
@@ -168,7 +174,7 @@ export default function Home() {
           {todays.length === 0 ? (
             <p className="text-muted">{t('talk.no_entries')}</p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="scroll-y max-h-[19rem] space-y-2 pr-2" tabIndex={0} aria-label={t('talk.today_entries')}>
               {todays.map((a) => (
                 <ActionCard key={a.id} a={a}>
                   <Disagree actionId={a.id} />

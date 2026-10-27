@@ -28,3 +28,11 @@
 - Entries saved **before** this change have no translations and keep the language they were written in.
 - Gujarati and Hindi text produced by the model can contain small grammar slips (seen in testing). The curated UI strings, principle names and sources were written by hand; have a native speaker review them before launch.
 - The message the person typed is never shown back (iteration 2), so it needs no translation.
+
+## Follow-up polish (same iteration)
+
+- **Dropped:** a coin-and-stone redesign of the ghadas and a drop-in animation. The product owner kept the golden and dark water as it was (`no need of the coin and coal thing`).
+- **Today's acts:** compact rows in a scrolling box with its own visible scrollbar; the act is masked and only an eye button reveals it (with its reason and dharma principle); the per-row privacy hint was removed.
+- **Shloka card:** the verse sits in a framed box in the reader's script (Gujarati script for Gujarati via the shared Unicode layout, Devanagari for Hindi and English); a labelled Meaning in the selected language; the Roman pronunciation line is shown for English only and labelled; the scripture name in the reference is localised.
+- **Greeting and titles:** the greeting is now about half its former size and the emoji no longer wraps onto its own line; page titles are smaller.
+- **After Analyse:** the page scrolls the two ghadas into view so the new points are seen filling them (instant under reduced motion).

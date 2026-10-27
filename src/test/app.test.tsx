@@ -92,6 +92,42 @@ describe('Karma app (demo mode)', () => {
     expect(screen.queryByText('Tell me about your day')).not.toBeInTheDocument();
   });
 
+  it("shows the shloka in the reader's script with a labelled meaning, and Roman text only in English", async () => {
+    bootDemo('/');
+    const user = userEvent.setup();
+    render(<App />);
+    const card = await screen.findByTestId('shloka');
+    // English: Devanagari verse + labelled pronunciation + labelled meaning
+    expect(card.textContent).toMatch(/[\u0900-\u097F]/);
+    expect(within(card).getByText('Pronunciation')).toBeInTheDocument();
+    expect(within(card).getByText('Meaning')).toBeInTheDocument();
+
+    // Gujarati: Gujarati-script verse, no Roman pronunciation, meaning label and reference in Gujarati
+    await user.click(screen.getByRole('button', { name: 'ગુજરાતી' }));
+    const gu = await screen.findByTestId('shloka');
+    expect(within(gu).queryByText('Pronunciation')).not.toBeInTheDocument();
+    expect(within(gu).queryByText('ઉચ્ચારણ')).not.toBeInTheDocument();
+    expect(within(gu).getByText('અર્થ')).toBeInTheDocument();
+    expect(gu.textContent).toMatch(/[\u0A80-\u0AFF]/);
+    expect((gu.textContent ?? '').replace('\u0950', '')).not.toMatch(/[\u0900-\u0963\u0966-\u097F]/); // no Devanagari letters left in Gujarati mode (the Om symbol and the shared danda marks are fine)
+    expect(gu.textContent).toContain('ભગવદ્ ગીતા');
+
+    // Hindi: Devanagari verse and meaning
+    await user.click(screen.getByRole('button', { name: 'हिंदी' }));
+    const hi = await screen.findByTestId('shloka');
+    expect(within(hi).getByText('अर्थ')).toBeInTheDocument();
+    expect(hi.textContent).toContain('भगवद्गीता');
+  });
+
+  it("keeps Today's acts compact: a scrolling list, eye-only controls and no repeated privacy hint", async () => {
+    bootDemo('/');
+    render(<App />);
+    const list = await screen.findByRole('list', { name: "Today's acts" });
+    expect(list.className).toContain('scroll-y');
+    expect(within(list).getAllByRole('button', { name: 'Show' }).length).toBeGreaterThan(1);
+    expect(screen.queryByText(/Hidden for your privacy/)).not.toBeInTheDocument();
+  });
+
   it('masks seeded acts on History too', async () => {
     bootDemo('/history');
     render(<App />);

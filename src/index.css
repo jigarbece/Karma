@@ -355,6 +355,25 @@ body::before {
   }
 }
 
+/* A list with its own visible vertical scrollbar (Today's acts) */
+.scroll-y {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--gold) / 0.7) rgb(var(--line) / 0.5);
+}
+.scroll-y::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-y::-webkit-scrollbar-track {
+  background: rgb(var(--line) / 0.5);
+  border-radius: 9999px;
+}
+.scroll-y::-webkit-scrollbar-thumb {
+  background: rgb(var(--gold) / 0.7);
+  border-radius: 9999px;
+}
+
 .sr-only-focusable:not(:focus) {
   position: absolute;
   width: 1px;

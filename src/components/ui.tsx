@@ -44,16 +44,17 @@ export function Spinner({ label }: { label: string }) {
 export function PageTitle({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
   return (
     <header className="mb-4">
-      <h1 className="text-4xl font-bold leading-tight text-ink lg:text-5xl">{children}</h1>
-      {sub ? <p className="mt-1 text-muted lg:text-lg">{sub}</p> : null}
+      <h1 className="text-3xl font-bold leading-tight text-ink lg:text-4xl">{children}</h1>
+      {sub ? <p className="mt-1 text-muted">{sub}</p> : null}
       <div className="gold-rule mt-3 max-w-xs" aria-hidden="true" />
     </header>
   );
 }
 
 /**
- * One scored act: what happened, its points (graded 1-50 by the AI), Punya/Paap with an icon,
- * and the dharma principle it was weighed against (with its source).
+ * One scored act as a compact row: icon, the act (masked), its points and an eye button.
+ * The text is hidden by default; the eye reveals the act, its reason and the dharma principle behind the points
+ * for a few seconds. No hint text is repeated on every row.
  */
 export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNode }) {
   const { t, num, lang } = useI18n();
@@ -66,73 +67,71 @@ export function ActionCard({ a, children }: { a: KarmaAction; children?: ReactNo
   const tr = a.translations?.[lang];
   const summary = tr?.summary || a.summary;
   const reason = tr?.reason || a.reason;
-  // What the person did is private: hidden by default, shown only on a deliberate tap, then hidden again.
   const [shown, setShown] = useState(false);
   useEffect(() => {
     if (!shown) return;
     const timer = setTimeout(() => setShown(false), 8000);
     return () => clearTimeout(timer);
   }, [shown]);
+
+  const tone = neutral ? 'text-muted' : punya ? 'text-good' : 'text-paapred';
   return (
-    <li className="card flex min-w-0 gap-3 !p-4 [overflow-wrap:anywhere]">
-      <span
-        className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
-          neutral ? 'bg-line text-muted' : punya ? 'bg-gold/25 text-saffron-text' : 'bg-indigo-soft text-indigo'
-        }`}
-      >
-        <Icon name={shown ? CATEGORY_ICON[a.category] : 'lotus'} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3">
+    <li className="min-w-0 rounded-2xl border border-line/70 bg-card/90 px-3 py-2 shadow-soft [overflow-wrap:anywhere]">
+      <div className="flex items-center gap-2.5">
+        <span
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${
+            neutral ? 'bg-line text-muted' : punya ? 'bg-gold/25 text-saffron-text' : 'bg-indigo-soft text-indigo'
+          }`}
+        >
+          <Icon name={shown ? CATEGORY_ICON[a.category] : 'lotus'} size={20} />
+        </span>
+
+        <div className="min-w-0 flex-1">
           {shown ? (
-            <p className="font-semibold leading-snug" data-testid="act-text">{summary}</p>
+            <p className="text-sm font-semibold leading-snug" data-testid="act-text">{summary}</p>
           ) : (
-            <p className="flex items-center gap-2 font-semibold leading-snug" data-testid="masked-act">
-              <Icon name="lock" size={16} className="shrink-0 text-saffron-text" />
-              <span aria-hidden="true" className="tracking-[0.25em] text-muted">••••••••••••</span>
+            <p className="flex items-center gap-1.5 text-sm font-semibold leading-snug" data-testid="masked-act">
+              <Icon name="lock" size={14} className="shrink-0 text-saffron-text" />
+              <span aria-hidden="true" className="tracking-[0.25em] text-muted">••••••••</span>
               <span className="sr-only">{t('act.masked')}</span>
             </p>
           )}
-          <span
-            className={`shrink-0 font-display text-3xl font-bold leading-none ${neutral ? 'text-muted' : punya ? 'text-good' : 'text-indigo'}`}
-            aria-label={`${w > 0 ? '+' : '−'}${Math.abs(w)} ${t('common.points')}`}
-          >
-            {w > 0 ? '+' : w < 0 ? '−' : ''}
-            {num(Math.abs(w))}
-          </span>
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
-          <span className={`inline-flex items-center gap-1 font-semibold ${punya ? 'text-saffron-text' : neutral ? '' : 'text-indigo'}`}>
-            <Icon name={punya ? 'up' : neutral ? 'flat' : 'down'} size={14} />
+          <p className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${punya ? 'text-saffron-text' : neutral ? 'text-muted' : 'text-indigo'}`}>
+            <Icon name={punya ? 'up' : neutral ? 'flat' : 'down'} size={12} />
             {t(punya ? 'talk.type_punya' : neutral ? 'talk.type_neutral' : 'talk.type_paap')}
-          </span>
-          {shown && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span>{t(`cat.${a.category}`)}</span>
-            </>
-          )}
-        </div>
-        {shown ? (
-          reason ? <p className="mt-1 text-sm">{reason}</p> : null
-        ) : (
-          <p className="mt-1 text-sm text-muted">{t('act.masked_hint')}</p>
-        )}
-        {shown && principle && (
-          <p className="mt-2 inline-flex flex-wrap items-baseline gap-x-2 rounded-xl bg-sand/60 px-3 py-1.5 text-sm" data-testid="basis">
-            <span className="font-display text-base font-bold">{principle.label}</span>
-            <span className="text-muted">{principle.source}</span>
+            {shown && <span className="font-normal text-muted">· {t(`cat.${a.category}`)}</span>}
           </p>
-        )}
+        </div>
+
+        <span className={`shrink-0 font-display text-2xl font-bold leading-none ${tone}`} aria-label={`${w > 0 ? '+' : '−'}${Math.abs(w)} ${t('common.points')}`}>
+          {w > 0 ? '+' : w < 0 ? '−' : ''}
+          {num(Math.abs(w))}
+        </span>
+
         <button
-          type="button" aria-pressed={shown} onClick={() => setShown((s) => !s)}
-          className="mt-1 mr-3 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-saffron-text"
+          type="button"
+          aria-pressed={shown}
+          aria-label={shown ? t('act.hide') : t('act.show')}
+          title={shown ? t('act.hide') : t('act.show')}
+          onClick={() => setShown((s) => !s)}
+          className="-mr-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-full text-saffron-text transition hover:bg-sand/60"
         >
-          <Icon name={shown ? 'eyeoff' : 'eye'} size={16} />
-          {shown ? t('act.hide') : t('act.show')}
+          <Icon name={shown ? 'eyeoff' : 'eye'} size={20} />
         </button>
-        {children}
       </div>
+
+      {shown && (
+        <div className="mt-1 space-y-1.5 border-t border-line/60 pt-2 text-sm">
+          {reason && <p>{reason}</p>}
+          {principle && (
+            <p className="inline-flex flex-wrap items-baseline gap-x-2 rounded-xl bg-sand/60 px-3 py-1" data-testid="basis">
+              <span className="font-display text-base font-bold">{principle.label}</span>
+              <span className="text-xs text-muted">{principle.source}</span>
+            </p>
+          )}
+          {children}
+        </div>
+      )}
     </li>
   );
 }

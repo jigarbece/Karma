@@ -301,7 +301,6 @@
   "journal.encrypted": "Your message is encrypted and kept private. Only the scored acts are shown.",
   "talk.privacy_note": "Your message is encrypted when saved and is never shown again.",
   "act.masked": "Private act",
-  "act.masked_hint": "Hidden for your privacy. Tap Show to see what it was.",
   "act.show": "Show",
   "act.hide": "Hide",
   "home.punya_kicker": "Positive actions",
@@ -310,5 +309,8 @@
   "home.net_summary_sub": "Your two pots, weighed together.",
   "landing.shloka_intro": "Every day begins with a verse.",
   "home.stage_title": "Your Karma Today",
-  "landing.eyebrow": "Punya · Paap · Dharma"
+  "landing.eyebrow": "Punya · Paap · Dharma",
+  "shloka.meaning": "Meaning",
+  "shloka.pronunciation": "Pronunciation",
+  "shloka.gita": "Bhagavad Gita"
 }
