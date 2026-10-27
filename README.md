@@ -14,6 +14,10 @@ Karma is a mobile-first PWA for spiritual self-reflection. You tell it about you
 
 The Home hero uses an illustrated sunrise scene. To use a photo instead, add a licensed image at `public/hero.jpg` (about 1600×700, subject on the right). It is layered automatically; delete it to return to the illustration.
 
+## Deploying
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the full checklist for https://karma.jigarpandya.info (Supabase URLs, Google origins, SQL, secrets, functions, Vercel, smoke test).
+
 ## Product and engineering docs (AI-DLC)
 
 - [Inception: vision, personas, stories, risks](docs/aidlc/01-inception.md)

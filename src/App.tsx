@@ -12,6 +12,7 @@ import Onboarding from './pages/Onboarding';
 import { About, Privacy, Terms } from './pages/Legal';
 
 const History = lazy(() => import('./pages/Journal'));
+const Insights = lazy(() => import('./pages/Insights'));
 const Profile = lazy(() => import('./pages/Profile'));
 
 function Loading() {
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/onboarding" element={<OnboardingGate />} />
             <Route element={<Protected><Shell /></Protected>}>
               <Route index element={<Home />} />
+              <Route path="insights" element={<Insights />} />
               <Route path="history" element={<History />} />
               <Route path="profile" element={<Profile />} />
             </Route>

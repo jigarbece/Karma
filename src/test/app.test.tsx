@@ -31,9 +31,9 @@ describe('Karma app (demo mode)', () => {
     expect(screen.getByRole('img', { name: /Paap ghada/ })).toBeInTheDocument();
     expect(screen.getByTestId('net-pill')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Tell me about your day' })).toBeInTheDocument();
-    // the whole app is three destinations
+    // the whole app is four destinations
     const nav = screen.getByRole('navigation', { name: 'Main navigation' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(3);
+    expect(within(nav).getAllByRole('link')).toHaveLength(4);
   });
 
   it('scores each act with its own points, masks what was done, and reveals the principle only on request', async () => {
@@ -126,6 +126,35 @@ describe('Karma app (demo mode)', () => {
     expect(list.className).toContain('scroll-y');
     expect(within(list).getAllByRole('button', { name: 'Show' }).length).toBeGreaterThan(1);
     expect(screen.queryByText(/Hidden for your privacy/)).not.toBeInTheDocument();
+  });
+
+  it('shows graphical insights by category: strengths, growth areas, radar, bars and trend', async () => {
+    bootDemo('/insights');
+    const user = userEvent.setup();
+    render(<App />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Insights' })).toBeInTheDocument();
+    expect(await screen.findByTestId('tile-strong')).toHaveTextContent('Strongest area');
+    expect(screen.getByTestId('tile-care')).toHaveTextContent('Needs care');
+    // three graphics, all labelled for screen readers
+    expect(screen.getByRole('img', { name: /Virtues by category/ })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Net karma trend/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: /\+\d+ \/ −\d+/ }).length).toBeGreaterThan(3); // one bar row per active category
+    // the range toggle redraws the charts
+    await user.click(screen.getByRole('button', { name: 'Lifetime' }));
+    expect(screen.getByRole('img', { name: /Net karma trend/ })).toBeInTheDocument();
+  });
+
+  it('invites a first entry when there is nothing to chart yet', async () => {
+    localStorage.clear();
+    localStorage.setItem('karma.lang', 'en');
+    localStorage.setItem('karma.demo.active', '1');
+    seedDemo(false); // demo profile without sample history
+    const raw = JSON.parse(localStorage.getItem('karma.demo.v1') as string);
+    raw.profile.onboarding_done = true;
+    localStorage.setItem('karma.demo.v1', JSON.stringify(raw));
+    window.history.pushState({}, '', '/insights');
+    render(<App />);
+    expect(await screen.findByText('Insights appear after your first entries.')).toBeInTheDocument();
   });
 
   it('masks seeded acts on History too', async () => {

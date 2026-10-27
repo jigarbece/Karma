@@ -9,6 +9,7 @@ import { useApp } from '../lib/app';
 
 const ITEMS = [
   { to: '/', key: 'nav.home', icon: 'home', end: true },
+  { to: '/insights', key: 'nav.insights', icon: 'chart' },
   { to: '/history', key: 'nav.history', icon: 'pen' },
   { to: '/profile', key: 'nav.profile', icon: 'user' },
 ];
