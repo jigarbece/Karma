@@ -17,8 +17,22 @@ describe('Karma app (demo mode)', () => {
   it('shows the landing page when logged out', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
-    expect(await screen.findByText('See your karma. Grow every day.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Try the demo' })).toBeInTheDocument();
+    expect(await screen.findByText('Your Punya. Your Paap. Your path forward.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Create account with email/ })).toHaveAttribute('href', '/auth?mode=signup');
+    expect(screen.queryByText(/demo/i)).not.toBeInTheDocument();
+  });
+
+  it('keeps email sign-in and registration on the real account path', async () => {
+    localStorage.setItem('karma.lang', 'en');
+    window.history.pushState({}, '', '/auth');
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByRole('textbox', { name: 'Email' }), 'person@example.com');
+    await user.type(screen.getByLabelText('Password'), 'password123');
+    await user.click(screen.getAllByRole('button', { name: /^Sign in$/ }).at(-1)!);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Sign-in is not configured');
+    expect(localStorage.getItem('karma.demo.active')).toBeNull();
   });
 
   it('keeps Home simple: greeting, tithi, two pots, net and a place to say your day', async () => {
@@ -187,30 +201,31 @@ describe('Karma app (demo mode)', () => {
     expect(screen.queryByText('Tell me about your day')).not.toBeInTheDocument();
   });
 
-  it("shows the shloka in the reader's script with a labelled meaning, and Roman text only in English", async () => {
+  it("shows the shloka, the reader's meaning, and a Hindi meaning without pronunciation", async () => {
     bootDemo('/');
     const user = userEvent.setup();
     render(<App />);
     const card = await screen.findByTestId('shloka');
-    // English: Devanagari verse + labelled pronunciation + labelled meaning
+    // English: Devanagari verse + English and Hindi meanings
     expect(card.textContent).toMatch(/[\u0900-\u097F]/);
-    expect(within(card).getByText('Pronunciation')).toBeInTheDocument();
+    expect(within(card).queryByText('Pronunciation')).not.toBeInTheDocument();
     expect(within(card).getByText('Meaning')).toBeInTheDocument();
+    expect(within(card).getByText('Hindi meaning · हिंदी अर्थ')).toBeInTheDocument();
 
-    // Gujarati: Gujarati-script verse, no Roman pronunciation, meaning label and reference in Gujarati
+    // Gujarati: Gujarati-script verse and Gujarati meaning, with a separate Hindi meaning
     await user.click(screen.getByRole('button', { name: 'ગુજરાતી' }));
     const gu = await screen.findByTestId('shloka');
     expect(within(gu).queryByText('Pronunciation')).not.toBeInTheDocument();
-    expect(within(gu).queryByText('ઉચ્ચારણ')).not.toBeInTheDocument();
     expect(within(gu).getByText('અર્થ')).toBeInTheDocument();
+    expect(within(gu).getByText('હિન્દી અર્થ · हिंदी अर्थ')).toBeInTheDocument();
     expect(gu.textContent).toMatch(/[\u0A80-\u0AFF]/);
-    expect((gu.textContent ?? '').replace('\u0950', '')).not.toMatch(/[\u0900-\u0963\u0966-\u097F]/); // no Devanagari letters left in Gujarati mode (the Om symbol and the shared danda marks are fine)
     expect(gu.textContent).toContain('ભગવદ્ ગીતા');
 
-    // Hindi: Devanagari verse and meaning
+    // Hindi: Devanagari verse and meaning, without a duplicate translation block
     await user.click(screen.getByRole('button', { name: 'हिंदी' }));
     const hi = await screen.findByTestId('shloka');
     expect(within(hi).getByText('अर्थ')).toBeInTheDocument();
+    expect(within(hi).queryByText('हिंदी अर्थ')).not.toBeInTheDocument();
     expect(hi.textContent).toContain('भगवद्गीता');
   });
 

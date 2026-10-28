@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// E2E runs the built app in demo mode (no Supabase env), so it needs no backend.
+// E2E uses local test data injected by the test; the public sign-in flow stays real.
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,

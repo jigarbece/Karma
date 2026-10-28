@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
-import { supabaseConfigured } from '../lib/supabase';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 type Mode = 'signin' | 'signup' | 'forgot' | 'reset';
@@ -12,7 +11,7 @@ export default function Auth() {
   const { signInEmail, signUp, resetPassword, updatePassword, signInGoogle } = useApp();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>(params.get('mode') === 'reset' ? 'reset' : 'signin');
+  const [mode, setMode] = useState<Mode>(params.get('mode') === 'reset' ? 'reset' : params.get('mode') === 'signup' ? 'signup' : 'signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('');
@@ -41,7 +40,7 @@ export default function Auth() {
         navigate('/');
       }
     } catch (ex) {
-      setErr(ex instanceof Error && ex.message ? ex.message : t('common.error'));
+      setErr(ex instanceof Error && ex.message === 'auth_not_configured' ? t('auth.setup') : ex instanceof Error && ex.message ? ex.message : t('common.error'));
     } finally {
       setBusy(false);
     }
@@ -55,21 +54,24 @@ export default function Auth() {
         <Link to="/welcome" className="text-sm font-semibold text-saffron-text">← {t('app.name')}</Link>
         <LanguageSwitcher />
       </div>
-      <h1 className="mt-3 text-2xl font-bold">{title}</h1>
-      {!supabaseConfigured && <p className="mt-2 rounded-xl bg-indigo-soft px-3 py-2 text-sm text-indigo">{t('common.demo')}</p>}
+      <h1 className="mt-6 text-4xl font-bold text-ink">{title}</h1>
+      {(mode === 'signin' || mode === 'signup') && <div className="mt-6 grid grid-cols-2 rounded-2xl border border-line bg-card p-1" role="group" aria-label={t('auth.signin')}>
+        <button type="button" className={`min-h-11 rounded-xl font-semibold transition ${mode === 'signin' ? 'bg-night text-cream shadow-soft' : 'text-muted hover:text-ink'}`} aria-pressed={mode === 'signin'} onClick={() => { setMode('signin'); setErr(''); setMsg(''); }}>{t('auth.signin')}</button>
+        <button type="button" className={`min-h-11 rounded-xl font-semibold transition ${mode === 'signup' ? 'bg-night text-cream shadow-soft' : 'text-muted hover:text-ink'}`} aria-pressed={mode === 'signup'} onClick={() => { setMode('signup'); setErr(''); setMsg(''); }}>{t('auth.signup')}</button>
+      </div>}
 
-      <form onSubmit={submit} className="card mt-4 space-y-4" noValidate={false}>
+      <form onSubmit={submit} className="card mt-4 space-y-4 !p-6" noValidate={false}>
         {mode !== 'reset' && (
           <div>
             <label htmlFor="email" className="mb-1 block font-semibold">{t('auth.email')}</label>
-            <input id="email" type="email" autoComplete="email" required={supabaseConfigured} className="field" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input id="email" type="email" autoComplete="email" required className="field" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
         )}
         {mode !== 'forgot' && (
           <div>
             <label htmlFor="pw" className="mb-1 block font-semibold">{mode === 'reset' ? t('auth.new_password') : t('auth.password')}</label>
             <input
-              id="pw" type="password" minLength={8} required={supabaseConfigured}
+              id="pw" type="password" minLength={8} required
               autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
               className="field" value={password} onChange={(e) => setPassword(e.target.value)} aria-describedby="pwhint"
             />
@@ -78,26 +80,20 @@ export default function Auth() {
         )}
         {err && <p role="alert" className="text-sm font-semibold text-indigo">{err}</p>}
         {msg && <p role="status" className="text-sm font-semibold text-saffron-text">{msg}</p>}
-        <button type="submit" className="btn-primary w-full" disabled={busy}>{title}</button>
+        <button type="submit" className="btn-indigo w-full" disabled={busy}>{title}</button>
       </form>
 
       {mode !== 'reset' && (
         <button
           type="button" className="btn-ghost mt-3 w-full"
-          onClick={() => signInGoogle().catch((e) => setErr(e instanceof Error && e.message === 'google_not_configured' ? t('auth.google_setup') : t('common.error')))}
+          onClick={() => signInGoogle().catch((e) => setErr(e instanceof Error && e.message === 'google_not_configured' ? t('auth.setup') : t('common.error')))}
         >
           {t('landing.google')}
         </button>
       )}
 
       <div className="mt-4 flex flex-col items-start gap-1 text-sm">
-        {mode === 'signin' && (
-          <>
-            <button type="button" className="min-h-[44px] font-semibold text-saffron-text underline" onClick={() => setMode('signup')}>{t('auth.no_account')}</button>
-            <button type="button" className="min-h-[44px] font-semibold text-saffron-text underline" onClick={() => setMode('forgot')}>{t('auth.forgot')}</button>
-          </>
-        )}
-        {mode === 'signup' && <button type="button" className="min-h-[44px] font-semibold text-saffron-text underline" onClick={() => setMode('signin')}>{t('auth.have_account')}</button>}
+        {mode === 'signin' && <button type="button" className="min-h-[44px] font-semibold text-saffron-text underline" onClick={() => setMode('forgot')}>{t('auth.forgot')}</button>}
         {(mode === 'forgot' || mode === 'reset') && <button type="button" className="min-h-[44px] font-semibold text-saffron-text underline" onClick={() => setMode('signin')}>{t('auth.back_to_signin')}</button>}
       </div>
     </div>

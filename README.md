@@ -27,14 +27,14 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the full checklist for https://
 - [Iteration 3: masked acts, glossy ghadas, shloka and panchang](docs/aidlc/05-iteration-3-privacy-and-ghada.md)
 - [Iteration 4: everything in the selected language](docs/aidlc/06-iteration-4-multilingual.md)
 
-## Try it in 30 seconds (no backend)
+## Run it locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-With no Supabase variables set, Karma runs in **demo mode**: data stays in `localStorage`, 30 days of sample history are generated, and a keyword-based mock analyser stands in for the AI. Click **Try the demo** on the landing page.
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in a git-ignored `.env.local`, then enable email and Google authentication in Supabase. The welcome page offers Google sign-in and email sign-in or registration. Without Supabase credentials, the page can be viewed, but account actions show a setup error. The local demo repository remains available to automated tests; it is not offered to visitors.
 
 ### Run everything locally with real AI (no Supabase function needed)
 
@@ -49,7 +49,7 @@ AI_API_KEY=your-key
 # AI_FALLBACK_API_KEY=your-key
 ```
 
-Run `npm run dev`, click **Try the demo**, and **Analyse** goes through the dev-only endpoint `/dev-api/analyze` (`vite.dev-ai.ts`), which runs the same scoring pipeline as the `analyze-day` Edge Function. Data stays in `localStorage`. With no AI keys, the keyword mock is used instead. This endpoint exists only in the dev server, never in a production build.
+For local development, `/dev-api/analyze` (`vite.dev-ai.ts`) runs the same scoring pipeline as the `analyze-day` Edge Function when AI credentials are provided. This endpoint exists only in the dev server, never in a production build.
 
 ## Scripts
 
@@ -58,7 +58,7 @@ Run `npm run dev`, click **Try the demo**, and **Analyse** goes through the dev-
 | `npm run dev` | Vite dev server on :5173 |
 | `npm run build` | Typecheck + production build into `dist/` |
 | `npm test` | Vitest unit and component tests |
-| `npm run e2e` | Playwright, 3 key flows against the built app (demo mode) |
+| `npm run e2e` | Playwright, 3 key flows against the built app (local test data) |
 | `npm run lint` / `npm run typecheck` | ESLint / `tsc` |
 | `npm run sync:shared` | Regenerates `supabase/functions/_shared/teachings.index.json` from `src/content/teachings.json` (a unit test fails if they drift) |
 | `npm run supabase:migrate` | `supabase db push` |

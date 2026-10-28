@@ -185,34 +185,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const signInEmail = useCallback(
     async (email: string, password: string) => {
-      if (!supabase) return startDemo(false);
+      if (!supabase) throw new Error('auth_not_configured');
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
     },
-    [startDemo],
+    [],
   );
 
   const signUp = useCallback(
     async (email: string, password: string) => {
-      if (!supabase) {
-        await startDemo(false);
-        return { needsVerification: false };
-      }
+      if (!supabase) throw new Error('auth_not_configured');
       const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
       if (error) throw error;
       return { needsVerification: !data.session };
     },
-    [startDemo],
+    [],
   );
 
   const resetPassword = useCallback(async (email: string) => {
-    if (!supabase) return;
+    if (!supabase) throw new Error('auth_not_configured');
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth?mode=reset` });
     if (error) throw error;
   }, []);
 
   const updatePassword = useCallback(async (password: string) => {
-    if (!supabase) return;
+    if (!supabase) throw new Error('auth_not_configured');
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw error;
   }, []);

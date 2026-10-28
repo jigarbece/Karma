@@ -192,6 +192,180 @@ export async function renderShareCard(spec: CardSpec): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('png_failed'))), 'image/png'));
 }
 
+export interface ShlokaShareSpec {
+  kicker: string;
+  title: string;
+  lines: string[];
+  meaning: string;
+  hindiMeaning?: string;
+  meaningLabel: string;
+  hindiMeaningLabel: string;
+  footer: string;
+  font: string;
+}
+
+/** Draw a sunrise, lotus, and open scripture as part of the exported shloka image. */
+function drawShlokaArtwork(ctx: CanvasRenderingContext2D) {
+  const sunX = W / 2;
+  const sunY = 407;
+  const aura = ctx.createRadialGradient(sunX, sunY, 20, sunX, sunY, 270);
+  aura.addColorStop(0, 'rgba(255,217,138,0.28)');
+  aura.addColorStop(1, 'rgba(255,217,138,0)');
+  ctx.fillStyle = aura;
+  ctx.fillRect(250, 150, 580, 560);
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,217,138,0.54)';
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 16; i++) {
+    const a = (i * Math.PI) / 8;
+    ctx.beginPath();
+    ctx.moveTo(sunX + Math.cos(a) * 142, sunY + Math.sin(a) * 142);
+    ctx.lineTo(sunX + Math.cos(a) * 167, sunY + Math.sin(a) * 167);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 124, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 103, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Eight lotus petals inside the sun.
+  ctx.fillStyle = 'rgba(255,217,138,0.17)';
+  for (let i = 0; i < 8; i++) {
+    ctx.save();
+    ctx.translate(sunX, sunY);
+    ctx.rotate((i * Math.PI) / 4);
+    ctx.beginPath();
+    ctx.moveTo(0, -18);
+    ctx.bezierCurveTo(-22, -42, -20, -82, 0, -97);
+    ctx.bezierCurveTo(20, -82, 22, -42, 0, -18);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.fillStyle = '#E9BD70';
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 20, 0, Math.PI * 2);
+  ctx.fill();
+
+  // An open book below the emblem, with fine page lines.
+  ctx.strokeStyle = '#F5DCAA';
+  ctx.fillStyle = '#E9D4AB';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(318, 565);
+  ctx.quadraticCurveTo(424, 525, 540, 579);
+  ctx.quadraticCurveTo(656, 525, 762, 565);
+  ctx.lineTo(762, 626);
+  ctx.quadraticCurveTo(650, 591, 540, 641);
+  ctx.quadraticCurveTo(430, 591, 318, 626);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = '#AA7F49';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(540, 579);
+  ctx.lineTo(540, 641);
+  ctx.stroke();
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 3; i++) {
+      const yy = 578 + i * 15;
+      ctx.beginPath();
+      ctx.moveTo(540 + side * 20, yy);
+      ctx.quadraticCurveTo(540 + side * 105, yy - 24, 540 + side * 188, yy - 2);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawFittedText(
+  ctx: CanvasRenderingContext2D, text: string, font: string, weight: number,
+  startY: number, bottomY: number, preferredSize: number, minSize: number,
+  maxWidth: number, color: string,
+): number {
+  let size = preferredSize;
+  let lines: string[] = [];
+  while (size >= minSize) {
+    ctx.font = `${weight} ${size}px ${font}`;
+    lines = text.split('\n').flatMap((part) => wrap(ctx, part, maxWidth));
+    if (startY + (lines.length - 1) * size * 1.46 <= bottomY) break;
+    size -= 2;
+  }
+  ctx.fillStyle = color;
+  ctx.font = `${weight} ${size}px ${font}`;
+  lines.forEach((line, i) => ctx.fillText(line, W / 2, startY + i * size * 1.46));
+  return startY + lines.length * size * 1.46;
+}
+
+/** Portrait share image for a shloka, with its verse, meaning, Hindi meaning, and devotional artwork. */
+export async function renderShlokaShareCard(spec: ShlokaShareSpec): Promise<Blob> {
+  try {
+    await Promise.all([
+      document.fonts?.load(`700 54px ${spec.font}`, spec.lines.join(' ') + spec.meaning),
+      document.fonts?.load('600 38px "Noto Sans Devanagari"', spec.hindiMeaning ?? ''),
+    ]);
+  } catch {
+    /* draw with available fonts */
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('canvas_unavailable');
+
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#171B37');
+  bg.addColorStop(0.55, '#28264D');
+  bg.addColorStop(1, '#10152C');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(242,210,157,0.42)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(42, 42, W - 84, H - 84);
+  ctx.strokeStyle = 'rgba(242,210,157,0.17)';
+  ctx.strokeRect(58, 58, W - 116, H - 116);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#F4DBA9';
+  ctx.font = '700 46px "Cormorant Garamond", Georgia, serif';
+  ctx.fillText('Karma', W / 2, 122);
+  ctx.font = `600 35px ${spec.font}`;
+  ctx.fillText(spec.kicker, W / 2, 186);
+  ctx.fillStyle = '#E7D6B9';
+  ctx.font = `500 32px ${spec.font}`;
+  ctx.fillText(spec.title, W / 2, 242);
+
+  drawShlokaArtwork(ctx);
+  drawFittedText(ctx, spec.lines.join('\n'), spec.font, 700, 760, 1110, 54, 42, W - 170, '#FFF6E7');
+
+  ctx.strokeStyle = 'rgba(242,210,157,0.45)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(370, 1154);
+  ctx.lineTo(710, 1154);
+  ctx.stroke();
+  ctx.fillStyle = '#F4DBA9';
+  ctx.font = `600 30px ${spec.font}`;
+  ctx.fillText(spec.meaningLabel, W / 2, 1208);
+  drawFittedText(ctx, spec.meaning, spec.font, 500, 1272, spec.hindiMeaning ? 1470 : 1690, 42, 32, W - 200, '#F5EBDD');
+
+  if (spec.hindiMeaning) {
+    ctx.fillStyle = '#F4DBA9';
+    ctx.font = '600 30px "Noto Sans Devanagari", sans-serif';
+    ctx.fillText(spec.hindiMeaningLabel, W / 2, 1535);
+    drawFittedText(ctx, spec.hindiMeaning, '"Noto Sans Devanagari", sans-serif', 500, 1595, 1780, 38, 30, W - 210, '#F5EBDD');
+  }
+
+  ctx.fillStyle = '#DABF8F';
+  ctx.font = '500 31px "Hind Vadodara", sans-serif';
+  ctx.fillText(spec.footer, W / 2, H - 100);
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('png_failed'))), 'image/png'));
+}
+
 /** Opens the phone's share sheet with the image; otherwise downloads it. */
 export async function shareImage(blob: Blob, filename: string, text: string, url: string): Promise<'shared' | 'downloaded' | 'cancelled'> {
   const file = new File([blob], filename, { type: 'image/png' });

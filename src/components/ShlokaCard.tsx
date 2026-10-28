@@ -2,12 +2,11 @@ import { useI18n } from '../lib/i18n';
 import { shlokaMeaning, shlokaOfTheDay, shlokaVerse, type Shloka } from '../content/shlokas';
 import { OmChakra } from './SacredArt';
 import { ShareButton } from './ShareButton';
-import { renderShareCard, SITE_URL } from '../lib/shareCard';
+import { renderShlokaShareCard, SITE_URL } from '../lib/shareCard';
 
 /**
  * Shloka of the day on a deep indigo and gold panel: the verse in the reader's script (Gujarati script for Gujarati,
- * Devanagari for Hindi and English), a labelled meaning in the selected language, and the reference.
- * The Roman pronunciation line is shown for English readers only.
+ * Devanagari for Hindi and English), a labelled meaning in the selected language, the Hindi meaning, and the reference.
  */
 export function ShlokaCard({ date, shloka }: { date: string; shloka?: Shloka }) {
   const { t, lang } = useI18n();
@@ -33,12 +32,6 @@ export function ShlokaCard({ date, shloka }: { date: string; shloka?: Shloka }) 
               <span key={l} className="block text-balance">{l}</span>
             ))}
           </p>
-          {lang === 'en' && (
-            <div className="mt-3 border-t border-gold-light/20 pt-3">
-              <p className="text-[0.7rem] font-semibold tracking-wide text-gold-light/80">{t('shloka.pronunciation')}</p>
-              <p className="iast mt-1 whitespace-pre-line text-sm leading-relaxed text-cream/90">{s.roman}</p>
-            </div>
-          )}
         </div>
 
         {/* the meaning, in the selected language */}
@@ -47,6 +40,11 @@ export function ShlokaCard({ date, shloka }: { date: string; shloka?: Shloka }) 
           <p className="mt-1 font-display text-xl leading-relaxed text-cream">{shlokaMeaning(s, lang)}</p>
         </div>
 
+        {lang !== 'hi' && <div className="mt-4 border-t border-gold-light/20 pt-4" lang="hi">
+          <p className="text-xs font-semibold tracking-wide text-gold-light/80">{t('shloka.hindi_meaning')}</p>
+          <p className="mt-1 font-deva text-base leading-relaxed text-cream/90">{shlokaMeaning(s, 'hi')}</p>
+        </div>}
+
         <div className="mt-4">
           <ShareButton
             className="btn-ghost !border-gold-light/40 !bg-white/10 !text-gold-light"
@@ -54,11 +52,14 @@ export function ShlokaCard({ date, shloka }: { date: string; shloka?: Shloka }) 
             filename="karma-shloka.png"
             url={SITE_URL}
             text={t('share.text_shloka')}
-            build={() => renderShareCard({
+            build={() => renderShlokaShareCard({
               kicker: t('shloka.title'),
               title: s.ref.replace('Bhagavad Gita', t('shloka.gita')),
               lines,
-              note: shlokaMeaning(s, lang),
+              meaning: shlokaMeaning(s, lang),
+              hindiMeaning: lang === 'hi' ? undefined : shlokaMeaning(s, 'hi'),
+              meaningLabel: t('shloka.meaning'),
+              hindiMeaningLabel: t('shloka.hindi_meaning'),
               footer: SITE_URL.replace('https://', ''),
               font: lang === 'gu' ? '"Hind Vadodara", sans-serif' : '"Noto Sans Devanagari", sans-serif',
             })}

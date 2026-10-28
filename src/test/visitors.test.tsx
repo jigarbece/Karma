@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { I18nProvider } from '../lib/i18n';
 
 const rpc = vi.fn();
-vi.mock('../lib/supabase', () => ({ supabase: { rpc: (...a: unknown[]) => rpc(...a) }, supabaseConfigured: true, demoAllowed: true }));
+vi.mock('../lib/supabase', () => ({ supabase: { rpc: (...a: unknown[]) => rpc(...a) }, supabaseConfigured: true }));
 
 import { VisitorCount } from '../components/VisitorCount';
 import { getVisitorId, loadVisitorCount, resetVisitorCache } from '../lib/visitors';
