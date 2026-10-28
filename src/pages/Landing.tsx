@@ -13,10 +13,30 @@ import { localDate } from '../lib/ghada';
 import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
 
+const INTRO_SEEN_KEY = 'karma.how-it-works.seen.v1';
+
+function hasSeenIntro() {
+  try {
+    return localStorage.getItem(INTRO_SEEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 export default function Landing() {
   const { t } = useI18n();
   const { signInGoogle } = useApp();
   const [err, setErr] = useState('');
+  const [showIntro, setShowIntro] = useState(() => !hasSeenIntro());
+
+  const skipIntro = () => {
+    setShowIntro(false);
+    try {
+      localStorage.setItem(INTRO_SEEN_KEY, '1');
+    } catch {
+      /* Intro can still be dismissed when storage is unavailable. */
+    }
+  };
 
   const google = async () => {
     try {
@@ -72,6 +92,40 @@ export default function Landing() {
           {err && <p role="alert" className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-cream">{err}</p>}
         </div>
       </section>
+
+      {showIntro ? (
+        <section className="how-it-works card mt-5" aria-labelledby="how-it-works-title">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="how-it-works-kicker">{t('landing.how_kicker')}</p>
+              <h2 id="how-it-works-title" className="mt-1 font-display text-2xl font-bold sm:text-3xl">{t('landing.how_title')}</h2>
+            </div>
+            <button type="button" className="how-it-works-skip" onClick={skipIntro}>{t('common.skip')}</button>
+          </div>
+          <ol className="mt-5 grid gap-3 sm:grid-cols-3">
+            {(['landing.f1', 'landing.f2', 'landing.f3'] as const).map((key, index) => {
+              const icon = (['mic', 'chart', 'lotus'] as const)[index];
+              return (
+                <li key={key} className="how-it-works-step">
+                  <div className="flex items-center gap-3">
+                    <span className="how-it-works-number">0{index + 1}</span>
+                    <span className="how-it-works-icon"><Icon name={icon} size={21} /></span>
+                  </div>
+                  <h3 className="mt-3 font-bold">{t(`${key}.t`)}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{t(`${key}.d`)}</p>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ) : (
+        <div className="mt-4 text-center">
+          <button type="button" className="how-it-works-replay" onClick={() => setShowIntro(true)}>
+            <Icon name="play" size={16} />
+            {t('landing.how_replay')}
+          </button>
+        </div>
+      )}
 
       <LotusDivider className="my-8" />
 

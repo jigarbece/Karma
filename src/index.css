@@ -234,20 +234,20 @@ body::before {
   transform-origin: 50% 100%;
   animation: smoke-drift 3.4s ease-in-out infinite alternate;
 }
-.smoke-trail--shadow { stroke-width: 25; filter: blur(6px); opacity: 0.52; }
-.smoke-trail--main { stroke-width: 15; opacity: 0.82; }
-.smoke-trail--side { stroke-width: 10; opacity: 0.72; animation-delay: -1.3s; animation-duration: 4.1s; }
-.smoke-trail--highlight { stroke: #fff2cb; stroke-width: 3; opacity: 0.66; animation-delay: -0.7s; animation-duration: 3.8s; }
-.ghada-smoke--punya .smoke-trail--shadow { stroke: #b86b1b; }
+.smoke-trail--shadow { stroke-width: 22; filter: blur(8px); opacity: 0.2; }
+.smoke-trail--main { stroke-width: 12; opacity: 0.44; }
+.smoke-trail--side { stroke-width: 8; opacity: 0.32; animation-delay: -1.3s; animation-duration: 4.1s; }
+.smoke-trail--highlight { stroke: #fff2cb; stroke-width: 2; opacity: 0.42; animation-delay: -0.7s; animation-duration: 3.8s; }
+.ghada-smoke--punya .smoke-trail--shadow { stroke: #d7a64d; }
 .ghada-smoke--punya .smoke-trail--main,
-.ghada-smoke--punya .smoke-trail--side { stroke: #ffc34d; }
-.ghada-smoke--paap .smoke-trail--shadow { stroke: #160c1b; opacity: 0.8; }
-.ghada-smoke--paap .smoke-trail--main { stroke: #a8253b; }
-.ghada-smoke--paap .smoke-trail--side { stroke: #e24b5a; }
-.ghada-smoke--paap .smoke-trail--highlight { stroke: #ff9a9d; opacity: 0.7; }
+.ghada-smoke--punya .smoke-trail--side { stroke: #ffd36b; }
+.ghada-smoke--paap .smoke-trail--shadow { stroke: #815361; opacity: 0.24; }
+.ghada-smoke--paap .smoke-trail--main { stroke: #ef7481; }
+.ghada-smoke--paap .smoke-trail--side { stroke: #f49aa0; }
+.ghada-smoke--paap .smoke-trail--highlight { stroke: #ffd0d1; }
 @keyframes smoke-drift {
-  from { opacity: 0.34; transform: translate3d(-3px, 5px, 0) scale(0.92); }
-  to { opacity: 0.86; transform: translate3d(3px, -5px, 0) scale(1.08); }
+  from { transform: translate3d(-2px, 4px, 0) scale(0.96); }
+  to { transform: translate3d(2px, -4px, 0) scale(1.04); }
 }
 .welcome-vessel figcaption {
   position: relative;
@@ -279,6 +279,66 @@ body::before {
 .welcome-email span { font-size: 1.3rem; line-height: 1; }
 .welcome-signin { justify-self: center; padding: 0.35rem 0.5rem; color: #ead8b5; font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; }
 .welcome-signin:hover { color: #fff; }
+.how-it-works {
+  position: relative;
+  overflow: hidden;
+  border-color: rgb(var(--gold) / 0.34);
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(var(--gold) / 0.12), transparent 48%),
+    rgb(var(--card));
+}
+.how-it-works-kicker {
+  color: rgb(var(--saffron-text));
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.how-it-works-skip {
+  flex: 0 0 auto;
+  border-radius: 9999px;
+  padding: 0.55rem 0.8rem;
+  color: rgb(var(--muted));
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.how-it-works-skip:hover { background: rgb(var(--line) / 0.35); color: rgb(var(--ink)); }
+.how-it-works-step {
+  min-width: 0;
+  border: 1px solid rgb(var(--line) / 0.72);
+  border-radius: 1.25rem;
+  padding: 1rem;
+  background: rgb(var(--bg) / 0.54);
+}
+.how-it-works-number {
+  color: rgb(var(--saffron-text));
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.how-it-works-icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  color: rgb(var(--saffron-text));
+  background: linear-gradient(135deg, rgb(var(--gold) / 0.34), rgb(var(--saffron) / 0.12));
+}
+.how-it-works-replay {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgb(var(--gold) / 0.46);
+  border-radius: 9999px;
+  padding: 0.55rem 1rem;
+  color: rgb(var(--saffron-text));
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+.how-it-works-replay:hover { transform: translateY(-1px); background: rgb(var(--gold) / 0.12); }
 @media (min-width: 900px) {
   .welcome-hero {
     grid-template-areas: 'copy vessels' 'copy actions';
@@ -562,8 +622,7 @@ body::before {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .smoke-trail { animation: none; transform: none; opacity: 0.66; }
-  .smoke-trail--shadow { opacity: 0.38; }
+  .smoke-trail { animation: none; transform: none; }
 }
 
 /* A list with its own visible vertical scrollbar (Today's acts) */
