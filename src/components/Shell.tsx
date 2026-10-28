@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Icon } from './Icon';
-import { LotusMark } from './Brand';
+import { KarmaMark } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useI18n } from '../lib/i18n';
 import { useApp } from '../lib/app';
@@ -47,7 +47,7 @@ export function Shell() {
       <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-2 px-3 sm:gap-3 sm:px-5">
           <Link to="/" className="flex items-center gap-2" aria-label={t('app.name')}>
-            <LotusMark size={36} />
+            <KarmaMark size={44} />
             <span className="hidden font-display text-3xl font-bold leading-none text-saffron-text min-[380px]:inline">{t('app.name')}</span>
           </Link>
 

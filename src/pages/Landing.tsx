@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Ghada } from '../components/Ghada';
 import { Icon } from '../components/Icon';
+import { KarmaMark } from '../components/Brand';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { LotusDivider } from '../components/Mandala';
 import { OmChakra } from '../components/SacredArt';
@@ -28,7 +29,7 @@ export default function Landing() {
     <div className="welcome-page mx-auto max-w-6xl px-4 pb-14 pt-5 sm:px-7 lg:px-9">
       <div className="flex items-center justify-between gap-4">
         <span className="flex items-center gap-2">
-          <img src="/favicon.svg" alt="" className="h-10 w-10 rounded-xl shadow-soft" />
+          <KarmaMark size={52} />
           <span className="font-display text-3xl font-bold text-ink">{t('app.name')}</span>
         </span>
         <LanguageSwitcher />
@@ -42,14 +43,19 @@ export default function Landing() {
         </div>
 
         <div className="welcome-vessels" aria-label={t('landing.f2.t')}>
-          <p className="welcome-vessels-title">{t('landing.f2.t')}</p>
           <div className="welcome-vessel-pair">
             <figure className="welcome-vessel" data-kind="punya">
-              <Ghada kind="punya" fraction={0.72} label={t('home.punya_ghada')} className="welcome-pot" />
+              <div className="welcome-pot-wrap">
+                <Ghada kind="punya" fraction={0.72} label={t('home.punya_ghada')} className="welcome-pot" />
+                <GhadaSmoke kind="punya" />
+              </div>
               <figcaption>{t('home.punya_ghada')}</figcaption>
             </figure>
             <figure className="welcome-vessel" data-kind="paap">
-              <Ghada kind="paap" fraction={0.28} label={t('home.paap_ghada')} className="welcome-pot" />
+              <div className="welcome-pot-wrap">
+                <Ghada kind="paap" fraction={0.28} label={t('home.paap_ghada')} className="welcome-pot" />
+                <GhadaSmoke kind="paap" />
+              </div>
               <figcaption>{t('home.paap_ghada')}</figcaption>
             </figure>
           </div>
@@ -102,5 +108,18 @@ export default function Landing() {
 
       <div className="mt-6 text-center"><VisitorCount /></div>
     </div>
+  );
+}
+
+function GhadaSmoke({ kind }: { kind: 'punya' | 'paap' }) {
+  return (
+    <span className={`ghada-smoke ghada-smoke--${kind}`} aria-hidden="true">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path className="smoke-trail smoke-trail--shadow" d="M49 100C28 82 67 73 47 57S65 29 51 2" />
+        <path className="smoke-trail smoke-trail--main" d="M48 100C31 83 69 72 49 56S67 28 54 4" />
+        <path className="smoke-trail smoke-trail--side" d="M54 100C71 83 35 75 55 58S39 32 62 12" />
+        <path className="smoke-trail smoke-trail--highlight" d="M47 98C39 83 59 75 43 61S53 37 47 21" />
+      </svg>
+    </span>
   );
 }

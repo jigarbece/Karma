@@ -162,6 +162,7 @@ body::before {
 .welcome-vessels {
   grid-area: vessels;
   position: relative;
+  overflow: hidden;
   min-width: 0;
   align-self: stretch;
   padding: 1.15rem 0.75rem 0.9rem;
@@ -174,13 +175,14 @@ body::before {
 }
 .welcome-vessels-title {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   text-align: center;
   color: #ead8b5;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  text-shadow: 0 1px 5px #191d37;
 }
 .welcome-vessel-pair {
   position: relative;
@@ -189,10 +191,52 @@ body::before {
   align-items: end;
   gap: 0.25rem;
   max-width: 34rem;
-  margin: 0 auto;
+  margin: 1.5rem auto 0;
 }
 .welcome-vessel { min-width: 0; margin: 0; text-align: center; }
-.welcome-pot { display: block; width: 100%; max-width: 16rem; margin: -0.1rem auto -0.65rem; }
+.welcome-pot-wrap {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 16rem;
+  margin: -0.1rem auto -0.65rem;
+}
+.welcome-pot { display: block; width: 100%; height: auto; }
+.ghada-smoke {
+  position: absolute;
+  z-index: 2;
+  bottom: 87%;
+  left: 50%;
+  width: 62%;
+  height: 30%;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.ghada-smoke svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.smoke-trail {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: smoke-drift 3.4s ease-in-out infinite alternate;
+}
+.smoke-trail--shadow { stroke-width: 25; filter: blur(6px); opacity: 0.52; }
+.smoke-trail--main { stroke-width: 15; opacity: 0.82; }
+.smoke-trail--side { stroke-width: 10; opacity: 0.72; animation-delay: -1.3s; animation-duration: 4.1s; }
+.smoke-trail--highlight { stroke: #fff2cb; stroke-width: 3; opacity: 0.66; animation-delay: -0.7s; animation-duration: 3.8s; }
+.ghada-smoke--punya .smoke-trail--shadow { stroke: #b86b1b; }
+.ghada-smoke--punya .smoke-trail--main,
+.ghada-smoke--punya .smoke-trail--side { stroke: #ffc34d; }
+.ghada-smoke--paap .smoke-trail--shadow { stroke: #160c1b; opacity: 0.8; }
+.ghada-smoke--paap .smoke-trail--main { stroke: #a8253b; }
+.ghada-smoke--paap .smoke-trail--side { stroke: #e24b5a; }
+.ghada-smoke--paap .smoke-trail--highlight { stroke: #ff9a9d; opacity: 0.7; }
+@keyframes smoke-drift {
+  from { opacity: 0.34; transform: translate3d(-3px, 5px, 0) scale(0.92); }
+  to { opacity: 0.86; transform: translate3d(3px, -5px, 0) scale(1.08); }
+}
 .welcome-vessel figcaption {
   position: relative;
   z-index: 1;
@@ -225,24 +269,40 @@ body::before {
 .welcome-signin:hover { color: #fff; }
 @media (min-width: 900px) {
   .welcome-hero {
-    grid-template-areas: 'copy vessels' 'actions vessels';
+    grid-template-areas: 'copy vessels' 'copy actions';
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.94fr);
     grid-template-rows: auto auto;
     align-items: start;
-    gap: 1.25rem 3rem;
+    gap: 1rem 2.5rem;
     min-height: 0;
-    padding: clamp(2rem, 4vw, 3rem);
+    padding: clamp(2rem, 3.5vw, 2.75rem);
   }
   .welcome-vessels {
     display: flex;
     flex-direction: column;
-    align-self: center;
+    align-self: start;
     justify-content: flex-start;
     width: 100%;
     max-width: 38rem;
     padding: 1rem 0.75rem 0.75rem;
   }
   .welcome-vessel-pair { width: 100%; }
+  .welcome-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    max-width: 42rem;
+  }
+  .welcome-email {
+    gap: 0.4rem;
+    padding-inline: 0.55rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+  .welcome-signin {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
 }
 
 :focus-visible {
@@ -490,6 +550,8 @@ body::before {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .smoke-trail { animation: none; transform: none; opacity: 0.66; }
+  .smoke-trail--shadow { opacity: 0.38; }
 }
 
 /* A list with its own visible vertical scrollbar (Today's acts) */

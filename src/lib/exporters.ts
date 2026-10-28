@@ -48,8 +48,8 @@ export function scheduleReminder(hhmm: string | null, title: string, body: strin
     timer = setTimeout(async () => {
       try {
         const reg = await navigator.serviceWorker?.getRegistration();
-        if (reg) await reg.showNotification(title, { body, icon: '/favicon.svg' });
-        else new Notification(title, { body, icon: '/favicon.svg' });
+        if (reg) await reg.showNotification(title, { body, icon: '/karma-emblem.png' });
+        else new Notification(title, { body, icon: '/karma-emblem.png' });
       } catch {
         /* ignore */
       }
