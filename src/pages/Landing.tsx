@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Ghada } from '../components/Ghada';
 import { GhadaSmoke } from '../components/GhadaSmoke';
@@ -14,6 +14,11 @@ import { useApp } from '../lib/app';
 import { useI18n } from '../lib/i18n';
 
 const INTRO_SEEN_KEY = 'karma.how-it-works.seen.v1';
+const INTRO_STEPS = [
+  { key: 'landing.f1', icon: 'mic' },
+  { key: 'landing.f2', icon: 'chart' },
+  { key: 'landing.f3', icon: 'lotus' },
+] as const;
 
 function hasSeenIntro() {
   try {
@@ -28,6 +33,19 @@ export default function Landing() {
   const { signInGoogle } = useApp();
   const [err, setErr] = useState('');
   const [showIntro, setShowIntro] = useState(() => !hasSeenIntro());
+  const [introStep, setIntroStep] = useState(0);
+  const [introPlaying, setIntroPlaying] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches !== true,
+  );
+
+  useEffect(() => {
+    if (!showIntro || !introPlaying) return;
+    const timer = window.setTimeout(() => {
+      if (introStep < INTRO_STEPS.length - 1) setIntroStep((step) => step + 1);
+      else setIntroPlaying(false);
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [introPlaying, introStep, showIntro]);
 
   const skipIntro = () => {
     setShowIntro(false);
@@ -36,6 +54,12 @@ export default function Landing() {
     } catch {
       /* Intro can still be dismissed when storage is unavailable. */
     }
+  };
+
+  const replayIntro = () => {
+    setIntroStep(0);
+    setIntroPlaying(typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches !== true);
+    setShowIntro(true);
   };
 
   const google = async () => {
@@ -102,25 +126,84 @@ export default function Landing() {
             </div>
             <button type="button" className="how-it-works-skip" onClick={skipIntro}>{t('common.skip')}</button>
           </div>
-          <ol className="mt-5 grid gap-3 sm:grid-cols-3">
-            {(['landing.f1', 'landing.f2', 'landing.f3'] as const).map((key, index) => {
-              const icon = (['mic', 'chart', 'lotus'] as const)[index];
-              return (
-                <li key={key} className="how-it-works-step">
-                  <div className="flex items-center gap-3">
-                    <span className="how-it-works-number">0{index + 1}</span>
-                    <span className="how-it-works-icon"><Icon name={icon} size={21} /></span>
+          <div className="how-it-works-player mt-5">
+            <div className="how-it-works-story" key={introStep} aria-live="off">
+              <div className="how-it-works-story-copy">
+                <div className="flex items-center gap-2 text-sm font-bold text-saffron-text">
+                  <span className="how-it-works-number">0{introStep + 1} / 03</span>
+                  <Icon name={INTRO_STEPS[introStep].icon} size={19} />
+                </div>
+                <h3 className="mt-3 font-display text-2xl font-bold">{t(`${INTRO_STEPS[introStep].key}.t`)}</h3>
+                <p className="mt-2 max-w-md leading-relaxed text-muted">{t(`${INTRO_STEPS[introStep].key}.d`)}</p>
+              </div>
+              <div className="how-it-works-scene">
+                <span className="intro-demo-label">{t('landing.demo_example')}</span>
+                {introStep === 0 && (
+                  <div className="intro-note-scene">
+                    <span className="intro-note-mark"><Icon name="vani" size={21} /></span>
+                    <p className="font-display text-lg font-semibold leading-snug text-ink">“{t('landing.intro_quote')}”</p>
+                    <div className="mt-4 flex items-center justify-between text-xs font-semibold text-muted">
+                      <span>ગુજરાતી · हिंदी · English</span>
+                      <span className="intro-mic-dot"><Icon name="mic" size={16} /></span>
+                    </div>
                   </div>
-                  <h3 className="mt-3 font-bold">{t(`${key}.t`)}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-muted">{t(`${key}.d`)}</p>
-                </li>
-              );
-            })}
-          </ol>
+                )}
+                {introStep === 1 && (
+                  <div className="intro-ghada-scene">
+                    <div className="intro-ghada-wrap">
+                      <Ghada kind="punya" fraction={0.72} centerText="+24" label={t('home.punya_ghada')} className="w-full max-w-[130px]" />
+                      <GhadaSmoke kind="punya" compact />
+                    </div>
+                    <div className="intro-ghada-wrap">
+                      <Ghada kind="paap" fraction={0.12} centerText="0" label={t('home.paap_ghada')} className="w-full max-w-[130px]" />
+                      <GhadaSmoke kind="paap" compact />
+                    </div>
+                  </div>
+                )}
+                {introStep === 2 && (
+                  <div className="intro-wisdom-scene">
+                    <span className="how-it-works-icon"><Icon name="lotus" size={22} /></span>
+                    <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.16em] text-saffron-text">{t('landing.shloka_intro')}</p>
+                    <p className="mt-2 font-display text-xl font-bold text-ink">{t('landing.f3.t')}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">“{t('landing.intro_wisdom_quote')}”</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="how-it-works-progress" aria-label={t('landing.how_title')}>
+                {INTRO_STEPS.map((step, index) => (
+                  <button
+                    key={step.key}
+                    type="button"
+                    className={`how-it-works-progress-step${index <= introStep ? ' is-active' : ''}`}
+                    aria-label={t(`${step.key}.t`)}
+                    aria-current={index === introStep ? 'step' : undefined}
+                    onClick={() => { setIntroStep(index); setIntroPlaying(false); }}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <button type="button" className="how-it-works-control" onClick={() => {
+                  if (!introPlaying && introStep === INTRO_STEPS.length - 1) setIntroStep(0);
+                  setIntroPlaying((playing) => !playing);
+                }}>
+                  {introPlaying ? t('landing.how_pause') : introStep === INTRO_STEPS.length - 1 ? t('landing.how_replay_again') : t('landing.how_play')}
+                </button>
+                {introStep < INTRO_STEPS.length - 1 ? (
+                  <button type="button" className="how-it-works-next" onClick={() => { setIntroStep((step) => step + 1); setIntroPlaying(false); }}>
+                    {t('common.continue')} <span aria-hidden="true">→</span>
+                  </button>
+                ) : (
+                  <button type="button" className="how-it-works-next" onClick={skipIntro}>{t('common.done')}</button>
+                )}
+              </div>
+            </div>
+          </div>
         </section>
       ) : (
         <div className="mt-4 text-center">
-          <button type="button" className="how-it-works-replay" onClick={() => setShowIntro(true)}>
+          <button type="button" className="how-it-works-replay" onClick={replayIntro}>
             <Icon name="play" size={16} />
             {t('landing.how_replay')}
           </button>
